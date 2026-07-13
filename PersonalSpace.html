@@ -97,6 +97,17 @@
         .content-embed-wrapper { width: 100%; height: 500px; background-color: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text-muted); overflow: hidden; position: relative; }
         .content-embed-wrapper iframe { width: 100%; height: 100%; border: none; position: absolute; top: 0; left: 0; }
 
+        .test-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background-color: var(--bg-main); z-index: 10000; flex-direction: column;
+        }
+        .test-overlay.active { display: flex; }
+        .test-overlay-header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 16px 24px; background-color: var(--bg-sidebar); border-bottom: 1px solid var(--border);
+        }
+        .test-overlay-iframe { flex: 1; width: 100%; border: none; }
+
         .table-responsive { width: 100%; margin-bottom: 32px; border: 1px solid var(--border); border-radius: 10px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
         .data-table { width: 100%; border-collapse: collapse; background-color: var(--bg-card); min-width: 700px; }
         .data-table th, .data-table td { padding: 16px 20px; text-align: left; border-bottom: 1px solid var(--border); font-size: 0.95rem; }
@@ -200,6 +211,15 @@
         </div>
     </div>
 
+    <!-- Оверлей для тестов -->
+    <div id="test-overlay" class="test-overlay">
+        <div class="test-overlay-header">
+            <div style="font-weight: 600; font-size: 1.1rem;"><i data-lucide="clipboard-check" style="width: 20px; vertical-align: middle; margin-right: 8px;"></i>Тестирование</div>
+            <button class="btn-secondary" style="padding: 8px 16px;" onclick="window.closeTestOverlay()">Закрыть</button>
+        </div>
+        <iframe id="test-overlay-iframe" class="test-overlay-iframe" src=""></iframe>
+    </div>
+
     <div id="app-screen" class="app-screen">
 
         <div id="student-view" class="role-view">
@@ -298,12 +318,8 @@
                                             <th>Инсайты / Заметки</th>
                                         </tr>
                                     </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td>Основы кинематики</td>
-                                            <td><a href="#" class="pdf-link" target="_blank"><i data-lucide="file-text" style="width: 18px;"></i> Конспект_Кинематика.pdf</a></td>
-                                            <td>Разобрался с равноускоренным движением. Нужно повторить графики.</td>
-                                        </tr>
+                                    <tbody id="dash-archive-topics-container">
+                                        <tr><td colspan="3" class="placeholder-text">Načítanie...</td></tr>
                                     </tbody>
                                 </table>
                             </div>
@@ -314,26 +330,13 @@
                                     <thead>
                                         <tr>
                                             <th>Название среза</th>
+                                            <th>Задание / Решение</th>
                                             <th>Статус</th>
                                             <th>Обратная связь</th>
                                         </tr>
                                     </thead>
-                                    <tbody id="dash-checkpoints-container">
-                                        <tr>
-                                            <td>Промежуточный срез: Кинематика</td>
-                                            <td><span class="tag green">Завершено</span></td>
-                                            <td>Отличный результат, формулы применяются без ошибок.</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Промежуточный срез: Динамика</td>
-                                            <td><span class="tag yellow">Активно</span></td>
-                                            <td>-</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Итоговое тестирование (Полугодие)</td>
-                                            <td><span class="tag gray">В перспективе</span></td>
-                                            <td>-</td>
-                                        </tr>
+                                    <tbody id="dash-archive-checkpoints-container">
+                                        <tr><td colspan="4" class="placeholder-text">Načítanie...</td></tr>
                                     </tbody>
                                 </table>
                             </div>
@@ -348,12 +351,8 @@
                                             <th>Оценка / Обратная связь</th>
                                         </tr>
                                     </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td><a href="#" class="pdf-link" target="_blank"><i data-lucide="file-text" style="width: 18px;"></i> ДЗ_Кинематика.pdf</a></td>
-                                            <td><a href="#" class="pdf-link" style="color: var(--text-muted);"><i data-lucide="paperclip" style="width: 18px;"></i> Решение_ИванИ.pdf</a></td>
-                                            <td>Обратить внимание на задачу №4, допущена ошибка в проекции вектора скорости. Остальное верно.</td>
-                                        </tr>
+                                    <tbody id="dash-archive-hw-container">
+                                        <tr><td colspan="3" class="placeholder-text">Načítanie...</td></tr>
                                     </tbody>
                                 </table>
                             </div>
@@ -560,11 +559,90 @@
                                 </div>
 
                                 <!-- Результаты тестов -->
-                                <div class="card">
-                                    <div class="card-header">
-                                        <span style="color: var(--text-main); font-size: 1.1rem;">Результаты тестов</span>
+                                <div class="card" style="padding: 0; border: none; background: transparent;">
+                                    <div class="accordion-header open" onclick="toggleAccordion(this)" style="margin-top: 0;">
+                                        <span>Результаты тестов</span>
+                                        <i data-lucide="chevron-down" class="accordion-icon"></i>
                                     </div>
-                                    <div id="admin-student-tests-container" style="display: flex; flex-direction: column; gap: 12px;"></div>
+                                    <div class="accordion-content active" style="background-color: var(--bg-card); border-radius: 0 0 10px 10px;">
+                                        <div id="admin-student-tests-container" style="display: flex; flex-direction: column;"></div>
+                                    </div>
+                                </div>
+
+                                <!-- Архив -->
+                                <div class="card" style="padding: 0; border: none; background: transparent;">
+                                    <div class="accordion-header" onclick="toggleAccordion(this)" style="margin-top: 0;">
+                                        <span>Архив и Контрольные точки</span>
+                                        <i data-lucide="chevron-down" class="accordion-icon"></i>
+                                    </div>
+                                    <div class="accordion-content" style="background-color: var(--bg-card); border-radius: 0 0 10px 10px;">
+                                        <div style="display: flex; flex-direction: column; gap: 24px;">
+                                            <div>
+                                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                                                    <h4 style="margin: 0; color: var(--text-main);">Пройденные темы</h4>
+                                                    <button id="btn-quick-archive-topic" class="btn-secondary" style="padding: 4px 10px; font-size: 0.8rem; border-color: var(--accent); color: var(--accent);">↓ Из активного курса</button>
+                                                </div>
+                                                <div class="form-row">
+                                                    <div class="form-group" style="margin-bottom: 0; flex: 2;"><input type="text" id="arch-t-title-input" class="form-input" placeholder="Тема занятия"></div>
+                                                    <div class="form-group" style="margin-bottom: 0; flex: 2;"><input type="text" id="arch-t-url-input" class="form-input" placeholder="URL материала (опц.)"></div>
+                                                    <div class="form-group" style="margin-bottom: 0; flex: 3;"><input type="text" id="arch-t-notes-input" class="form-input" placeholder="Заметки"></div>
+                                                    <button id="btn-add-arch-topic" class="btn-secondary" style="padding: 10px 16px;">Pridať</button>
+                                                </div>
+                                                <details id="details-arch-topics" style="display: none; margin-top: 16px;">
+                                                    <summary style="cursor: pointer; padding: 8px 0; color: var(--accent); font-weight: 500;">Zobraziť uložené záznamy (Показать сохраненные записи)</summary>
+                                                    <div id="admin-arch-topics-list" style="display: flex; flex-direction: column; gap: 8px; margin-top: 8px;"></div>
+                                                </details>
+                                            </div>
+
+                                            <div style="border-top: 1px solid var(--border); padding-top: 24px;">
+                                                <h4 style="margin: 0 0 12px 0; color: var(--text-main);">Контрольные точки</h4>
+                                                <div class="form-row">
+                                                    <div style="flex: 2; display: flex; flex-direction: column; gap: 8px;">
+                                                        <input type="text" id="arch-c-title-input" class="form-input" placeholder="Название среза">
+                                                        <input type="text" id="arch-c-hwurl-input" class="form-input" placeholder="URL задания (опц.)">
+                                                    </div>
+                                                    <div style="flex: 3; display: flex; flex-direction: column; gap: 8px;">
+                                                        <div style="display: flex; gap: 8px;">
+                                                            <select id="arch-c-status-input" class="form-select" style="flex: 1;">
+                                                                <option value="gray">В перспективе</option>
+                                                                <option value="yellow">Активно</option>
+                                                                <option value="green">Завершено</option>
+                                                            </select>
+                                                            <input type="text" id="arch-c-solurl-input" class="form-input" placeholder="URL решения (опц.)" style="flex: 2;">
+                                                        </div>
+                                                        <input type="text" id="arch-c-feedback-input" class="form-input" placeholder="Обратная связь">
+                                                    </div>
+                                                    <button id="btn-add-arch-checkpoint" class="btn-secondary" style="height: 100%; padding: 0 16px;">Pridať</button>
+                                                </div>
+                                                <details id="details-arch-checkpoints" style="display: none; margin-top: 16px;">
+                                                    <summary style="cursor: pointer; padding: 8px 0; color: var(--accent); font-weight: 500;">Zobraziť uložené záznamy</summary>
+                                                    <div id="admin-arch-checkpoints-list" style="display: flex; flex-direction: column; gap: 8px; margin-top: 8px;"></div>
+                                                </details>
+                                            </div>
+
+                                            <div style="border-top: 1px solid var(--border); padding-top: 24px;">
+                                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                                                    <h4 style="margin: 0; color: var(--text-main);">Домашние задания</h4>
+                                                    <button id="btn-quick-archive-hw" class="btn-secondary" style="padding: 4px 10px; font-size: 0.8rem; border-color: var(--accent); color: var(--accent);">↓ Из активного курса</button>
+                                                </div>
+                                                <div class="form-row">
+                                                    <div style="flex: 2; display: flex; flex-direction: column; gap: 8px;">
+                                                        <input type="text" id="arch-h-title-input" class="form-input" placeholder="Название ДЗ">
+                                                        <input type="text" id="arch-h-hwurl-input" class="form-input" placeholder="URL задания">
+                                                    </div>
+                                                    <div style="flex: 3; display: flex; flex-direction: column; gap: 8px;">
+                                                        <input type="text" id="arch-h-solurl-input" class="form-input" placeholder="URL решения (опц.)">
+                                                        <input type="text" id="arch-h-feedback-input" class="form-input" placeholder="Оценка / Обратная связь">
+                                                    </div>
+                                                    <button id="btn-add-arch-hw" class="btn-secondary" style="height: 100%; padding: 0 16px;">Pridať</button>
+                                                </div>
+                                                <details id="details-arch-hw" style="display: none; margin-top: 16px;">
+                                                    <summary style="cursor: pointer; padding: 8px 0; color: var(--accent); font-weight: 500;">Zobraziť uložené záznamy</summary>
+                                                    <div id="admin-arch-hw-list" style="display: flex; flex-direction: column; gap: 8px; margin-top: 8px;"></div>
+                                                </details>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
 
                                 <div>
@@ -615,12 +693,22 @@
             const content = element.nextElementSibling;
             content.classList.toggle('active');
         }
+
+        window.openTestOverlay = function(url) {
+            document.getElementById('test-overlay-iframe').src = url;
+            document.getElementById('test-overlay').classList.add('active');
+        };
+
+        window.closeTestOverlay = function() {
+            document.getElementById('test-overlay-iframe').src = '';
+            document.getElementById('test-overlay').classList.remove('active');
+        };
     </script>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc, onSnapshot, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, setDoc, onSnapshot, collection, getDocs, query, where, deleteField } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDaCvmskTUDJIVHY-u8KNVcQLuqkW88VlI",
@@ -646,6 +734,86 @@
         let currentCourseData = null;
         let currentProgressData = null;
         let currentUserUid = null;
+
+        function renderArchive() {
+            const topicsContainer = document.getElementById('dash-archive-topics-container');
+            const checkContainer = document.getElementById('dash-archive-checkpoints-container');
+            const hwContainer = document.getElementById('dash-archive-hw-container');
+            if (!topicsContainer || !checkContainer || !hwContainer) return;
+
+            const topics = currentProgressData?.archive_topics || [];
+            topicsContainer.innerHTML = '';
+            if (topics.length === 0) { topicsContainer.innerHTML = '<tr><td colspan="3" class="placeholder-text">Нет данных</td></tr>'; }
+            else {
+                topics.forEach(t => {
+                    let matUrl = '-';
+                    if (t.material_url) {
+                        const urls = t.material_url.split(/\s+/).filter(Boolean);
+                        matUrl = urls.map((u, i) => `<a href="${u}" class="pdf-link" target="_blank"><i data-lucide="file-text" style="width: 18px;"></i> ${urls.length > 1 ? 'Мат. ' + (i+1) : 'Материал'}</a>`).join('<br>');
+                    }
+                    topicsContainer.innerHTML += `<tr><td>${t.title || '-'}</td><td>${matUrl}</td><td>${t.notes || '-'}</td></tr>`;
+                });
+            }
+
+            const checks = currentProgressData?.archive_checkpoints || [];
+            checkContainer.innerHTML = '';
+            if (checks.length === 0) { checkContainer.innerHTML = '<tr><td colspan="4" class="placeholder-text">Нет данных</td></tr>'; }
+            else {
+                checks.forEach(c => {
+                    let badge = '';
+                    if (c.status === 'green') badge = '<span class="tag green">Завершено</span>';
+                    else if (c.status === 'yellow') badge = '<span class="tag yellow">Активно</span>';
+                    else badge = '<span class="tag gray">В перспективе</span>';
+                    
+                    const hwLink = c.hw_url ? `<a href="${c.hw_url}" class="pdf-link" target="_blank" style="font-size: 0.85rem;"><i data-lucide="file-text" style="width: 14px;"></i> Задание</a>` : '';
+                    const solLink = c.student_hw_url ? `<a href="${c.student_hw_url}" class="pdf-link" target="_blank" style="font-size: 0.85rem; color: var(--text-muted);"><i data-lucide="paperclip" style="width: 14px;"></i> Решение</a>` : '';
+                    const linksHtml = [hwLink, solLink].filter(Boolean).join('<br>') || '-';
+
+                    checkContainer.innerHTML += `<tr><td>${c.title || '-'}</td><td>${linksHtml}</td><td>${badge}</td><td>${c.feedback || '-'}</td></tr>`;
+                });
+            }
+
+            const hws = currentProgressData?.archive_hw || [];
+            hwContainer.innerHTML = '';
+            if (hws.length === 0) { hwContainer.innerHTML = '<tr><td colspan="3" class="placeholder-text">Нет данных</td></tr>'; }
+            else {
+                hws.forEach(h => {
+                    let taskUrl = h.hw_title || '-';
+                    if (h.hw_url) {
+                        const urls = h.hw_url.split(/\s+/).filter(Boolean);
+                        taskUrl = urls.map((u, i) => `<a href="${u}" class="pdf-link" target="_blank"><i data-lucide="file-text" style="width: 18px;"></i> ${h.hw_title || 'Задание'} ${urls.length > 1 ? (i+1) : ''}</a>`).join('<br>');
+                    }
+
+                    let solUrl = '-';
+                    if (h.student_hw_url) {
+                        const urls = h.student_hw_url.split(/\s+/).filter(Boolean);
+                        solUrl = urls.map((u, i) => `<a href="${u}" class="pdf-link" style="color: var(--text-muted);" target="_blank"><i data-lucide="paperclip" style="width: 18px;"></i> Решение ${urls.length > 1 ? (i+1) : ''}</a>`).join('<br>');
+                    }
+                    hwContainer.innerHTML += `<tr><td>${taskUrl}</td><td>${solUrl}</td><td>${h.feedback || '-'}</td></tr>`;
+                });
+            }
+        }
+
+        // Слушатель результатов из внешнего теста
+        window.addEventListener('message', async (event) => {
+            const data = event.data;
+            if (data && data.type === 'CLOSE_TEST') {
+                window.closeTestOverlay();
+            } else if (data && data.type === 'TEST_COMPLETED') {
+                if (currentUserUid && data.testId && data.score) {
+                    try {
+                        const studentRef = doc(db, 'students_progress', currentUserUid);
+                        await setDoc(studentRef, {
+                            tests_results: {
+                                [data.testId]: data.score
+                            }
+                        }, { merge: true });
+                    } catch (e) {
+                        console.error("Ошибка сохранения результата:", e);
+                    }
+                }
+            }
+        });
 
         function updateDashboardLinks() {
             const theoryContainer = document.getElementById('dash-theory-links-container');
@@ -754,8 +922,7 @@
                     testUrl = `${testUrl}${separator}uid=${currentUserUid}&test_id=${test.id}`;
                 }
 
-                // Проверка: требуется ли балльный результат
-                const needsResult = test.has_result !== 'false';
+                const detailsText = [test.limit, test.questions].filter(Boolean).join(' • ');
 
                 if (test.status === 'future') {
                     card.style.opacity = '0.5';
@@ -763,44 +930,40 @@
                     card.innerHTML = `
                         <div>
                             <h3 style="margin: 0 0 12px 0; font-size: 1.3rem;">${test.title}</h3>
-                            <p style="font-size: 0.95rem; color: var(--text-muted);">${test.limit}</p>
+                            <p style="font-size: 0.95rem; color: var(--text-muted); margin-bottom: 12px;">${detailsText}</p>
                         </div>
                         <div style="margin-top: auto; color: var(--text-muted); font-weight: bold; font-size: 1rem; padding-top: 20px; border-top: 1px solid var(--border);">В перспективе</div>
                     `;
                 } else if (test.status === 'active') {
-                    if (needsResult && score) {
+                    if (score) {
                         card.style.opacity = '0.7';
                         card.innerHTML = `
                             <div>
                                 <h3 style="margin: 0 0 12px 0; font-size: 1.3rem;">${test.title}</h3>
+                                <p style="font-size: 0.95rem; color: var(--text-muted); margin-bottom: 12px;">${detailsText}</p>
                                 <p style="font-size: 0.95rem; color: var(--text-muted);">Завершено</p>
                             </div>
                             <div style="margin-top: auto; color: var(--accent); font-weight: bold; font-size: 1.2rem; padding-top: 20px; border-top: 1px solid var(--border);">Результат: ${score}</div>
                         `;
                     } else {
-                        // Тест активен (и либо не имеет результата, либо требует его, но его еще нет)
                         card.style.borderLeft = '5px solid var(--accent)';
                         card.innerHTML = `
                             <div>
                                 <h3 style="margin: 0 0 12px 0; font-size: 1.3rem;">${test.title}</h3>
-                                <p style="font-size: 0.95rem; color: var(--text-muted);">${test.limit}</p>
+                                <p style="font-size: 0.95rem; color: var(--text-muted); margin-bottom: 12px;">${detailsText}</p>
                             </div>
-                            <button onclick="window.open('${testUrl}', '_blank')" style="background: var(--text-main); color: var(--bg-main); border: none; padding: 14px 20px; border-radius: 6px; font-weight: 600; font-size: 1rem; cursor: pointer; width: 100%; margin-top: 20px;">Начать тест</button>
+                            <button onclick="window.openTestOverlay('${testUrl}')" style="background: var(--text-main); color: var(--bg-main); border: none; padding: 14px 20px; border-radius: 6px; font-weight: 600; font-size: 1rem; cursor: pointer; width: 100%; margin-top: 20px;">Начать тест</button>
                         `;
                     }
                 } else if (test.status === 'past') {
                     card.style.opacity = '0.7';
-                    let displayScore = 'Пройдено';
-                    let scoreColor = 'var(--text-main)';
-                    
-                    if (needsResult) {
-                        displayScore = score ? `Результат: ${score}` : 'Не сдано';
-                        scoreColor = score ? 'var(--text-main)' : 'var(--text-muted)';
-                    }
+                    const displayScore = score ? `Результат: ${score}` : 'Нет результата';
+                    const scoreColor = score ? 'var(--text-main)' : 'var(--text-muted)';
 
                     card.innerHTML = `
                         <div>
                             <h3 style="margin: 0 0 12px 0; font-size: 1.3rem;">${test.title}</h3>
+                            <p style="font-size: 0.95rem; color: var(--text-muted); margin-bottom: 12px;">${detailsText}</p>
                             <p style="font-size: 0.95rem; color: var(--text-muted);">Завершено</p>
                         </div>
                         <div style="margin-top: auto; color: ${scoreColor}; font-weight: bold; font-size: 1.2rem; padding-top: 20px; border-top: 1px solid var(--border);">${displayScore}</div>
@@ -878,6 +1041,7 @@
                                     currentProgressData = docSnap.data();
                                     updateDashboardLinks();
                                     renderTests();
+                                    renderArchive();
                                 }
                             });
                         }
@@ -939,7 +1103,7 @@
                 refLinksContainer.appendChild(row);
             }
 
-            function createTestLinkRow(id = '', title = '', url = '', limit = '', status = 'active', hasResult = 'true') {
+            function createTestLinkRow(id = '', title = '', url = '', limit = '', questions = '', status = 'active') {
                 const testId = id || 'test_' + Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
                 const row = document.createElement('div'); row.className = 'test-link-row card';
                 row.style.marginBottom = '0'; row.style.padding = '16px';
@@ -948,6 +1112,7 @@
                     <div class="form-row" style="margin-bottom: 12px;">
                         <div class="form-group" style="margin-bottom: 0; flex: 2;"><input type="text" class="form-input test-title" placeholder="Название теста" value="${title}"></div>
                         <div class="form-group" style="margin-bottom: 0; flex: 1;"><input type="text" class="form-input test-limit" placeholder="Лимит (напр. 40 мин)" value="${limit}"></div>
+                        <div class="form-group" style="margin-bottom: 0; flex: 1;"><input type="text" class="form-input test-questions" placeholder="Вопросы (напр. 10 шт)" value="${questions}"></div>
                     </div>
                     <div class="form-row">
                         <div class="form-group" style="margin-bottom: 0; flex: 2;"><input type="text" class="form-input test-url" placeholder="URL Google Form / Внешний тест" value="${url}"></div>
@@ -956,12 +1121,6 @@
                                 <option value="future" ${status === 'future' ? 'selected' : ''}>В перспективе</option>
                                 <option value="active" ${status === 'active' ? 'selected' : ''}>Активно</option>
                                 <option value="past" ${status === 'past' ? 'selected' : ''}>Завершено</option>
-                            </select>
-                        </div>
-                        <div class="form-group" style="margin-bottom: 0; flex: 1;">
-                            <select class="form-select test-has-result">
-                                <option value="true" ${hasResult === 'true' ? 'selected' : ''}>С результатом</option>
-                                <option value="false" ${hasResult === 'false' ? 'selected' : ''}>Без результата</option>
                             </select>
                         </div>
                         <button class="btn-secondary remove-link-btn" style="padding: 12px; color: #EF4444; border-color: #333;" title="odstrániť">✕</button>
@@ -1008,10 +1167,14 @@
                         if (data.hw_links && Array.isArray(data.hw_links) && data.hw_links.length > 0) { data.hw_links.forEach(link => createHwLinkRow(link.title, link.url)); } else { createHwLinkRow(); }
                         if (data.reference_links && Array.isArray(data.reference_links) && data.reference_links.length > 0) { data.reference_links.forEach(link => createRefLinkRow(link.title, link.url)); } else { createRefLinkRow(); }
                         if (data.tests_list && Array.isArray(data.tests_list)) { 
-                            data.tests_list.forEach(t => createTestLinkRow(t.id, t.title, t.url, t.limit, t.status, t.has_result !== undefined ? String(t.has_result) : 'true')); 
+                            data.tests_list.forEach(t => {
+                                const limitVal = t.limit || t.details || '';
+                                const questionsVal = t.questions || '';
+                                createTestLinkRow(t.id, t.title, t.url, limitVal, questionsVal, t.status);
+                            }); 
                         }
                     } else {
-                        courseForm.querySelectorAll('input:not(.theory-link-url, .hw-link-title, .hw-link-url, .ref-link-title, .ref-link-url, .test-title, .test-url, .test-limit)').forEach(input => input.value = '');
+                        courseForm.querySelectorAll('input:not(.theory-link-url, .hw-link-title, .hw-link-url, .ref-link-title, .ref-link-url, .test-title, .test-url)').forEach(input => input.value = '');
                         createTheoryLinkRow(); createHwLinkRow(); createRefLinkRow();
                     }
                     courseForm.style.opacity = '1'; courseForm.style.pointerEvents = 'auto';
@@ -1038,10 +1201,10 @@
                     const id = row.querySelector('.test-id').value;
                     const title = row.querySelector('.test-title').value.trim();
                     const limit = row.querySelector('.test-limit').value.trim();
+                    const questions = row.querySelector('.test-questions').value.trim();
                     const url = row.querySelector('.test-url').value.trim();
                     const status = row.querySelector('.test-status').value;
-                    const has_result = row.querySelector('.test-has-result').value === 'true';
-                    if (title) testsList.push({ id, title, limit, url, status, has_result });
+                    if (title) testsList.push({ id, title, limit, questions, url, status });
                 });
 
                 const courseData = {
@@ -1071,6 +1234,260 @@
             const persTheoryContainer = document.getElementById('admin-personal-theory-container');
             const persHwContainer = document.getElementById('admin-personal-hw-container');
             const persRefContainer = document.getElementById('admin-personal-ref-container');
+
+            let adminArchiveState = { topics: [], checkpoints: [], hw: [] };
+            let adminArchiveEditState = { topic: -1, checkpoint: -1, hw: -1 };
+            let adminSelectedCourseData = null;
+            let adminSelectedProgressData = null;
+
+            function renderAdminArchiveLists() {
+                const detailsT = document.getElementById('details-arch-topics');
+                const tList = document.getElementById('admin-arch-topics-list');
+                detailsT.style.display = adminArchiveState.topics.length > 0 ? 'block' : 'none';
+                tList.innerHTML = '';
+                adminArchiveState.topics.forEach((t, i) => {
+                    const row = document.createElement('div');
+                    row.style.cssText = 'display: flex; justify-content: space-between; align-items: center; padding: 12px; background: var(--bg-hover); border-radius: 6px; border: 1px solid var(--border);';
+                    row.innerHTML = `
+                        <div style="flex: 1; font-size: 0.9rem;">
+                            <strong style="color: var(--text-main); font-size: 1rem;">${t.title}</strong>
+                            <div style="color: var(--text-muted); margin-top: 4px;">Заметки: ${t.notes || '—'} | URL: ${t.material_url ? 'Да' : 'Нет'}</div>
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <button class="btn-secondary edit-t-btn" data-index="${i}" style="padding: 6px 12px; font-size: 0.85rem;">Upraviť</button>
+                            <button class="btn-secondary del-t-btn" data-index="${i}" style="padding: 6px 12px; font-size: 0.85rem; color: var(--error); border-color: var(--border);">Zmazať</button>
+                        </div>
+                    `;
+                    tList.appendChild(row);
+                });
+
+                tList.querySelectorAll('.del-t-btn').forEach(btn => btn.onclick = (e) => {
+                    adminArchiveState.topics.splice(e.target.dataset.index, 1);
+                    adminArchiveEditState.topic = -1;
+                    document.getElementById('btn-add-arch-topic').innerText = 'Pridať';
+                    document.getElementById('arch-t-title-input').value = '';
+                    document.getElementById('arch-t-url-input').value = '';
+                    document.getElementById('arch-t-notes-input').value = '';
+                    renderAdminArchiveLists();
+                });
+                tList.querySelectorAll('.edit-t-btn').forEach(btn => btn.onclick = (e) => {
+                    const idx = parseInt(e.target.dataset.index);
+                    const item = adminArchiveState.topics[idx];
+                    document.getElementById('arch-t-title-input').value = item.title;
+                    document.getElementById('arch-t-url-input').value = item.material_url || '';
+                    document.getElementById('arch-t-notes-input').value = item.notes || '';
+                    adminArchiveEditState.topic = idx;
+                    document.getElementById('btn-add-arch-topic').innerText = 'Uložiť';
+                });
+
+                const detailsC = document.getElementById('details-arch-checkpoints');
+                const cList = document.getElementById('admin-arch-checkpoints-list');
+                detailsC.style.display = adminArchiveState.checkpoints.length > 0 ? 'block' : 'none';
+                cList.innerHTML = '';
+                adminArchiveState.checkpoints.forEach((c, i) => {
+                    const row = document.createElement('div');
+                    row.style.cssText = 'display: flex; justify-content: space-between; align-items: center; padding: 12px; background: var(--bg-hover); border-radius: 6px; border: 1px solid var(--border);';
+                    row.innerHTML = `
+                        <div style="flex: 1; font-size: 0.9rem;">
+                            <strong style="color: var(--text-main); font-size: 1rem;">${c.title}</strong> <span style="font-size: 0.8rem; padding: 2px 6px; border-radius: 4px; background: rgba(255,255,255,0.1); margin-left: 8px;">${c.status}</span>
+                            <div style="color: var(--text-muted); margin-top: 4px;">Задание: ${c.hw_url ? 'Да' : 'Нет'} | Решение: ${c.student_hw_url ? 'Да' : 'Нет'}</div>
+                            <div style="color: var(--text-muted); margin-top: 4px;">Фидбек: ${c.feedback || '—'}</div>
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <button class="btn-secondary edit-c-btn" data-index="${i}" style="padding: 6px 12px; font-size: 0.85rem;">Upraviť</button>
+                            <button class="btn-secondary del-c-btn" data-index="${i}" style="padding: 6px 12px; font-size: 0.85rem; color: var(--error); border-color: var(--border);">Zmazať</button>
+                        </div>
+                    `;
+                    cList.appendChild(row);
+                });
+
+                cList.querySelectorAll('.del-c-btn').forEach(btn => btn.onclick = (e) => {
+                    adminArchiveState.checkpoints.splice(e.target.dataset.index, 1);
+                    adminArchiveEditState.checkpoint = -1;
+                    document.getElementById('btn-add-arch-checkpoint').innerText = 'Pridať';
+                    document.getElementById('arch-c-title-input').value = '';
+                    document.getElementById('arch-c-hwurl-input').value = '';
+                    document.getElementById('arch-c-solurl-input').value = '';
+                    document.getElementById('arch-c-status-input').value = 'gray';
+                    document.getElementById('arch-c-feedback-input').value = '';
+                    renderAdminArchiveLists();
+                });
+                cList.querySelectorAll('.edit-c-btn').forEach(btn => btn.onclick = (e) => {
+                    const idx = parseInt(e.target.dataset.index);
+                    const item = adminArchiveState.checkpoints[idx];
+                    document.getElementById('arch-c-title-input').value = item.title;
+                    document.getElementById('arch-c-hwurl-input').value = item.hw_url || '';
+                    document.getElementById('arch-c-solurl-input').value = item.student_hw_url || '';
+                    document.getElementById('arch-c-status-input').value = item.status || 'gray';
+                    document.getElementById('arch-c-feedback-input').value = item.feedback || '';
+                    adminArchiveEditState.checkpoint = idx;
+                    document.getElementById('btn-add-arch-checkpoint').innerText = 'Uložiť';
+                });
+
+                const detailsH = document.getElementById('details-arch-hw');
+                const hList = document.getElementById('admin-arch-hw-list');
+                detailsH.style.display = adminArchiveState.hw.length > 0 ? 'block' : 'none';
+                hList.innerHTML = '';
+                adminArchiveState.hw.forEach((h, i) => {
+                    const row = document.createElement('div');
+                    row.style.cssText = 'display: flex; justify-content: space-between; align-items: center; padding: 12px; background: var(--bg-hover); border-radius: 6px; border: 1px solid var(--border);';
+                    row.innerHTML = `
+                        <div style="flex: 1; font-size: 0.9rem;">
+                            <strong style="color: var(--text-main); font-size: 1rem;">${h.hw_title}</strong>
+                            <div style="color: var(--text-muted); margin-top: 4px;">Оценка: ${h.feedback || '—'}</div>
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <button class="btn-secondary edit-h-btn" data-index="${i}" style="padding: 6px 12px; font-size: 0.85rem;">Upraviť</button>
+                            <button class="btn-secondary del-h-btn" data-index="${i}" style="padding: 6px 12px; font-size: 0.85rem; color: var(--error); border-color: var(--border);">Zmazať</button>
+                        </div>
+                    `;
+                    hList.appendChild(row);
+                });
+
+                hList.querySelectorAll('.del-h-btn').forEach(btn => btn.onclick = (e) => {
+                    adminArchiveState.hw.splice(e.target.dataset.index, 1);
+                    adminArchiveEditState.hw = -1;
+                    document.getElementById('btn-add-arch-hw').innerText = 'Pridať';
+                    document.getElementById('arch-h-title-input').value = '';
+                    document.getElementById('arch-h-hwurl-input').value = '';
+                    document.getElementById('arch-h-solurl-input').value = '';
+                    document.getElementById('arch-h-feedback-input').value = '';
+                    renderAdminArchiveLists();
+                });
+                hList.querySelectorAll('.edit-h-btn').forEach(btn => btn.onclick = (e) => {
+                    const idx = parseInt(e.target.dataset.index);
+                    const item = adminArchiveState.hw[idx];
+                    document.getElementById('arch-h-title-input').value = item.hw_title;
+                    document.getElementById('arch-h-hwurl-input').value = item.hw_url || '';
+                    document.getElementById('arch-h-solurl-input').value = item.student_hw_url || '';
+                    document.getElementById('arch-h-feedback-input').value = item.feedback || '';
+                    adminArchiveEditState.hw = idx;
+                    document.getElementById('btn-add-arch-hw').innerText = 'Uložiť';
+                });
+            }
+
+            document.getElementById('btn-add-arch-topic').onclick = (e) => {
+                e.preventDefault();
+                const title = document.getElementById('arch-t-title-input').value.trim();
+                const url = document.getElementById('arch-t-url-input').value.trim();
+                const notes = document.getElementById('arch-t-notes-input').value.trim();
+                if (!title) return;
+
+                const dupIdx = adminArchiveState.topics.findIndex(t => t.title === title);
+                if (dupIdx > -1 && dupIdx !== adminArchiveEditState.topic) {
+                    const btn = e.target; const oldText = btn.innerText;
+                    btn.innerText = 'Existuje'; btn.style.backgroundColor = 'var(--error)';
+                    setTimeout(() => { btn.innerText = oldText; btn.style.backgroundColor = ''; }, 2000);
+                    return;
+                }
+
+                if (adminArchiveEditState.topic > -1) {
+                    adminArchiveState.topics[adminArchiveEditState.topic] = { title, material_url: url, notes };
+                    adminArchiveEditState.topic = -1;
+                    document.getElementById('btn-add-arch-topic').innerText = 'Pridať';
+                } else {
+                    adminArchiveState.topics.push({ title, material_url: url, notes });
+                }
+
+                document.getElementById('arch-t-title-input').value = '';
+                document.getElementById('arch-t-url-input').value = '';
+                document.getElementById('arch-t-notes-input').value = '';
+                renderAdminArchiveLists();
+            };
+
+            document.getElementById('btn-add-arch-checkpoint').onclick = (e) => {
+                e.preventDefault();
+                const title = document.getElementById('arch-c-title-input').value.trim();
+                const hwUrl = document.getElementById('arch-c-hwurl-input').value.trim();
+                const solUrl = document.getElementById('arch-c-solurl-input').value.trim();
+                const status = document.getElementById('arch-c-status-input').value;
+                const feedback = document.getElementById('arch-c-feedback-input').value.trim();
+                if (!title) return;
+
+                const dupIdx = adminArchiveState.checkpoints.findIndex(c => c.title === title);
+                if (dupIdx > -1 && dupIdx !== adminArchiveEditState.checkpoint) {
+                    const btn = e.target; const oldText = btn.innerText;
+                    btn.innerText = 'Existuje'; btn.style.backgroundColor = 'var(--error)';
+                    setTimeout(() => { btn.innerText = oldText; btn.style.backgroundColor = ''; }, 2000);
+                    return;
+                }
+
+                if (adminArchiveEditState.checkpoint > -1) {
+                    adminArchiveState.checkpoints[adminArchiveEditState.checkpoint] = { title, hw_url: hwUrl, student_hw_url: solUrl, status, feedback };
+                    adminArchiveEditState.checkpoint = -1;
+                    document.getElementById('btn-add-arch-checkpoint').innerText = 'Pridať';
+                } else {
+                    adminArchiveState.checkpoints.push({ title, hw_url: hwUrl, student_hw_url: solUrl, status, feedback });
+                }
+
+                document.getElementById('arch-c-title-input').value = '';
+                document.getElementById('arch-c-hwurl-input').value = '';
+                document.getElementById('arch-c-solurl-input').value = '';
+                document.getElementById('arch-c-status-input').value = 'gray';
+                document.getElementById('arch-c-feedback-input').value = '';
+                renderAdminArchiveLists();
+            };
+
+            document.getElementById('btn-add-arch-hw').onclick = (e) => {
+                e.preventDefault();
+                const title = document.getElementById('arch-h-title-input').value.trim();
+                const hwUrl = document.getElementById('arch-h-hwurl-input').value.trim();
+                const solUrl = document.getElementById('arch-h-solurl-input').value.trim();
+                const feedback = document.getElementById('arch-h-feedback-input').value.trim();
+                if (!title) return;
+
+                const dupIdx = adminArchiveState.hw.findIndex(h => h.hw_title === title);
+                if (dupIdx > -1 && dupIdx !== adminArchiveEditState.hw) {
+                    const btn = e.target; const oldText = btn.innerText;
+                    btn.innerText = 'Existuje'; btn.style.backgroundColor = 'var(--error)';
+                    setTimeout(() => { btn.innerText = oldText; btn.style.backgroundColor = ''; }, 2000);
+                    return;
+                }
+
+                if (adminArchiveEditState.hw > -1) {
+                    adminArchiveState.hw[adminArchiveEditState.hw] = { hw_title: title, hw_url: hwUrl, student_hw_url: solUrl, feedback };
+                    adminArchiveEditState.hw = -1;
+                    document.getElementById('btn-add-arch-hw').innerText = 'Pridať';
+                } else {
+                    adminArchiveState.hw.push({ hw_title: title, hw_url: hwUrl, student_hw_url: solUrl, feedback });
+                }
+
+                document.getElementById('arch-h-title-input').value = '';
+                document.getElementById('arch-h-hwurl-input').value = '';
+                document.getElementById('arch-h-solurl-input').value = '';
+                document.getElementById('arch-h-feedback-input').value = '';
+                renderAdminArchiveLists();
+            };
+
+            document.getElementById('btn-quick-archive-topic').onclick = (e) => {
+                e.preventDefault();
+                
+                const title = adminSelectedCourseData?.topic_title || '';
+                const urls = [];
+                
+                if (adminSelectedCourseData?.theory_links) {
+                    urls.push(...adminSelectedCourseData.theory_links.map(l => typeof l === 'string' ? l : l.url));
+                }
+
+                document.getElementById('arch-t-title-input').value = title;
+                document.getElementById('arch-t-url-input').value = urls.filter(Boolean).join(' ');
+                document.getElementById('arch-t-notes-input').focus();
+            };
+
+            document.getElementById('btn-quick-archive-hw').onclick = (e) => {
+                e.preventDefault();
+                
+                let title = adminSelectedCourseData?.topic_title ? `ДЗ: ${adminSelectedCourseData.topic_title}` : 'Домашнее задание';
+                const urls = [];
+
+                if (adminSelectedCourseData?.hw_links) {
+                    urls.push(...adminSelectedCourseData.hw_links.map(l => typeof l === 'string' ? l : l.url));
+                }
+
+                document.getElementById('arch-h-title-input').value = title;
+                document.getElementById('arch-h-hwurl-input').value = urls.filter(Boolean).join(' ');
+                document.getElementById('arch-h-feedback-input').focus();
+            };
 
             function createPersonalLinkRow(container, titleCls, urlCls, titleVal = '', urlVal = '') {
                 const row = document.createElement('div'); row.className = 'form-row';
@@ -1108,6 +1525,11 @@
                 selectedStudentUid = e.target.value;
                 if (!selectedStudentUid) { studentEditor.style.display = 'none'; return; }
 
+                adminArchiveEditState = { topic: -1, checkpoint: -1, hw: -1 };
+                document.getElementById('btn-add-arch-topic').innerText = 'Pridať';
+                document.getElementById('btn-add-arch-checkpoint').innerText = 'Pridať';
+                document.getElementById('btn-add-arch-hw').innerText = 'Pridať';
+
                 const selectedOption = e.target.options[e.target.selectedIndex];
                 const courseId = selectedOption.dataset.course;
 
@@ -1120,6 +1542,9 @@
                 let progressData = {};
                 const progressSnap = await getDoc(doc(db, 'students_progress', selectedStudentUid));
                 if (progressSnap.exists()) progressData = progressSnap.data();
+
+                adminSelectedCourseData = courseData;
+                adminSelectedProgressData = progressData;
 
                 const treeUrl = courseData?.skill_tree_url || '';
                 const iframe = document.getElementById('admin-skilltree-frame');
@@ -1136,48 +1561,71 @@
                     iframe.parentElement.style.display = 'none';
                 }
 
-                adminTestsContainer.innerHTML = '';
+                const adminTestsContainerList = document.getElementById('admin-student-tests-container');
+                adminTestsContainerList.innerHTML = '';
                 const results = progressData.tests_results || {};
                 
                 if (courseData && courseData.tests_list && courseData.tests_list.length > 0) {
                     courseData.tests_list.forEach(test => {
                         const score = results[test.id];
-                        const needsResult = test.has_result !== false && test.has_result !== 'false';
-                        
-                        let displayScore = 'Не требуется';
-                        let displayStatus = test.status;
-
-                        if (needsResult) { 
-                            if (score) {
-                                displayScore = 'Балл: ' + score;
-                                displayStatus = 'Завершено';
-                            } else {
-                                displayScore = 'Нет результата';
-                            }
-                        }
+                        let displayScore = score ? score : 'Нет результата';
 
                         const row = document.createElement('div');
                         row.className = 'form-row';
                         row.style.alignItems = 'center';
                         row.style.padding = '12px 0';
                         row.style.borderBottom = '1px solid var(--border)';
+
+                        let resetBtnHtml = '';
+                        if (score) {
+                            resetBtnHtml = `<button class="btn-secondary admin-reset-test-btn" data-testid="${test.id}" style="padding: 4px 10px; font-size: 0.8rem; border-color: var(--error); color: var(--error); margin-left: 12px; transition: all 0.2s;">Zmazať</button>`;
+                        }
+
                         row.innerHTML = `
                             <div style="flex: 2;">
                                 <div style="color: var(--text-main); font-weight: 500; font-size: 1rem;">${test.title}</div>
-                                <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;">ID: ${test.id} | Статус: ${displayStatus}</div>
                             </div>
-                            <div style="flex: 1; text-align: right;">
+                            <div style="flex: 1; text-align: right; display: flex; justify-content: flex-end; align-items: center;">
                                 <span style="font-weight: 600; font-size: 1.1rem; color: ${score ? 'var(--accent)' : 'var(--text-muted)'};">
-                                    ${displayScore}
+                                    Výsledok: ${displayScore}
                                 </span>
+                                ${resetBtnHtml}
                             </div>
                         `;
-                        adminTestsContainer.appendChild(row);
+                        adminTestsContainerList.appendChild(row);
                     });
-                    if (adminTestsContainer.lastElementChild) { adminTestsContainer.lastElementChild.style.borderBottom = 'none'; }
+                    if (adminTestsContainerList.lastElementChild) { adminTestsContainerList.lastElementChild.style.borderBottom = 'none'; }
+
+                    adminTestsContainerList.querySelectorAll('.admin-reset-test-btn').forEach(btn => {
+                        btn.onclick = async (e) => {
+                            e.preventDefault();
+                            if (btn.dataset.confirm === 'true') {
+                                btn.innerText = '...';
+                                try {
+                                    await setDoc(doc(db, 'students_progress', selectedStudentUid), {
+                                        tests_results: { [btn.dataset.testid]: deleteField() }
+                                    }, { merge: true });
+                                    btn.parentElement.innerHTML = '<span style="color: var(--text-muted); font-size: 0.9rem;">Сброшено. Обновите профиль.</span>';
+                                } catch (err) { console.error(err); }
+                            } else {
+                                btn.dataset.confirm = 'true';
+                                btn.innerText = 'Точно?';
+                                btn.style.backgroundColor = 'var(--error)';
+                                btn.style.color = '#fff';
+                                setTimeout(() => { 
+                                    if (btn && btn.parentElement) { 
+                                        btn.dataset.confirm = 'false'; btn.innerText = 'Zmazať'; btn.style.background = 'transparent'; btn.style.color = 'var(--error)'; 
+                                    }
+                                }, 3000);
+                            }
+                        };
+                    });
+
                 } else {
-                    adminTestsContainer.innerHTML = '<span style="color: var(--text-muted);">В курсе ученика нет тестов.</span>';
+                    adminTestsContainerList.innerHTML = '<span style="color: var(--text-muted);">В курсе ученика нет тестов.</span>';
                 }
+                
+                if (window.lucide) window.lucide.createIcons();
 
                 persTheoryContainer.innerHTML = ''; persHwContainer.innerHTML = ''; persRefContainer.innerHTML = '';
 
@@ -1190,6 +1638,16 @@
                 if (progressData.personal_reference_links && Array.isArray(progressData.personal_reference_links)) {
                     progressData.personal_reference_links.forEach(l => createPersonalLinkRow(persRefContainer, 'pers-ref-title', 'pers-ref-url', l.title, l.url));
                 }
+
+                adminArchiveState.topics = progressData.archive_topics && Array.isArray(progressData.archive_topics) ? progressData.archive_topics : [];
+                adminArchiveState.checkpoints = progressData.archive_checkpoints && Array.isArray(progressData.archive_checkpoints) ? progressData.archive_checkpoints : [];
+                adminArchiveState.hw = progressData.archive_hw && Array.isArray(progressData.archive_hw) ? progressData.archive_hw : [];
+                
+                document.getElementById('arch-t-title-input').value = ''; document.getElementById('arch-t-url-input').value = ''; document.getElementById('arch-t-notes-input').value = '';
+                document.getElementById('arch-c-title-input').value = ''; document.getElementById('arch-c-hwurl-input').value = ''; document.getElementById('arch-c-solurl-input').value = ''; document.getElementById('arch-c-status-input').value = 'gray'; document.getElementById('arch-c-feedback-input').value = '';
+                document.getElementById('arch-h-title-input').value = ''; document.getElementById('arch-h-hwurl-input').value = ''; document.getElementById('arch-h-solurl-input').value = ''; document.getElementById('arch-h-feedback-input').value = '';
+                
+                renderAdminArchiveLists();
 
                 studentEditor.style.display = 'flex';
             };
@@ -1212,7 +1670,10 @@
                 const progressPayload = {
                     personal_theory_links: getPersonalLinks(persTheoryContainer, 'pers-theory-title', 'pers-theory-url'),
                     personal_hw_links: getPersonalLinks(persHwContainer, 'pers-hw-title', 'pers-hw-url'),
-                    personal_reference_links: getPersonalLinks(persRefContainer, 'pers-ref-title', 'pers-ref-url')
+                    personal_reference_links: getPersonalLinks(persRefContainer, 'pers-ref-title', 'pers-ref-url'),
+                    archive_topics: adminArchiveState.topics,
+                    archive_checkpoints: adminArchiveState.checkpoints,
+                    archive_hw: adminArchiveState.hw
                 };
 
                 try {
