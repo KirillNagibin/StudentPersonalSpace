@@ -109,8 +109,10 @@
         .test-overlay-iframe { flex: 1; width: 100%; border: none; }
 
         .table-responsive { width: 100%; margin-bottom: 32px; border: 1px solid var(--border); border-radius: 10px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
-        .data-table { width: 100%; border-collapse: collapse; background-color: var(--bg-card); min-width: 700px; }
-        .data-table th, .data-table td { padding: 16px 20px; text-align: left; border-bottom: 1px solid var(--border); font-size: 0.95rem; }
+        .data-table { width: 100%; border-collapse: collapse; background-color: var(--bg-card); min-width: 700px; border-style: hidden; }
+        .data-table th, .data-table td { padding: 16px 20px; text-align: center; vertical-align: middle; border: 1px solid var(--border); font-size: 0.95rem; }
+        .data-table th:first-child, .data-table td:first-child { text-align: left; }
+        .data-table th:last-child, .data-table td:last-child { text-align: left; }
         .data-table th { color: var(--text-muted); font-weight: 500; background-color: rgba(0,0,0,0.2); }
         .data-table tr:last-child td { border-bottom: none; }
 
@@ -119,9 +121,9 @@
         .tag.yellow { background-color: rgba(255, 193, 7, 0.1); color: #FFC107; border: 1px solid #FFC107; }
         .tag.gray { background-color: rgba(255, 255, 255, 0.05); color: var(--text-muted); border: 1px solid var(--border); }
         
-        .pdf-link { color: var(--accent); text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-weight: 500;}
+        .pdf-link { color: var(--accent); text-decoration: none; display: inline-flex; align-items: center; justify-content: flex-start; gap: 8px; font-weight: 500;}
 
-        .placeholder-text { text-align: center; font-size: 0.95rem; line-height: 1.5; padding: 20px; }
+        .placeholder-text { text-align: center !important; font-size: 0.95rem; line-height: 1.5; padding: 20px; }
 
         .login-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100vw; min-height: 100vh; min-height: 100dvh; background-color: var(--bg-main); z-index: 1000; padding: 20px; }
         .login-card { background-color: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 40px; width: 100%; max-width: 400px; display: flex; flex-direction: column; gap: 20px; box-sizing: border-box; }
@@ -218,6 +220,21 @@
             <button class="btn-secondary" style="padding: 8px 16px;" onclick="window.closeTestOverlay()">Закрыть</button>
         </div>
         <iframe id="test-overlay-iframe" class="test-overlay-iframe" src=""></iframe>
+    </div>
+
+    <!-- Модальное окно создания курса -->
+    <div id="course-create-modal" class="test-overlay" style="justify-content: center; align-items: center; background-color: rgba(0,0,0,0.8);">
+        <div class="card" style="width: 100%; max-width: 400px; background-color: var(--bg-card); z-index: 10001;">
+            <h2 style="margin-top: 0; border: none; padding-bottom: 0;">Vytvoriť новый kurz</h2>
+            <div class="form-group" style="margin-top: 20px;">
+                <label>ID Курса (латиница, без пробелов)</label>
+                <input type="text" id="new-course-id-input" class="form-input" placeholder="например: physics_12">
+            </div>
+            <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 24px;">
+                <button class="btn-secondary" onclick="document.getElementById('course-create-modal').classList.remove('active')">Отмена</button>
+                <button id="confirm-create-course" class="btn-primary">Vytvoriť</button>
+            </div>
+        </div>
     </div>
 
     <div id="app-screen" class="app-screen">
@@ -330,13 +347,14 @@
                                     <thead>
                                         <tr>
                                             <th>Название среза</th>
-                                            <th>Задание / Решение</th>
+                                            <th>Задание</th>
                                             <th>Статус</th>
+                                            <th>Решение</th>
                                             <th>Обратная связь</th>
                                         </tr>
                                     </thead>
                                     <tbody id="dash-archive-checkpoints-container">
-                                        <tr><td colspan="4" class="placeholder-text">Načítanie...</td></tr>
+                                        <tr><td colspan="5" class="placeholder-text">Načítanie...</td></tr>
                                     </tbody>
                                 </table>
                             </div>
@@ -405,6 +423,7 @@
                                         <datalist id="admin-course-list"></datalist>
                                     </div>
                                     <button id="admin-load-course" class="btn-secondary">Načítať данные</button>
+                                    <button id="admin-create-course-ui" class="btn-primary" style="margin-left: 12px;">Vytvoriť новый kurz</button>
                                 </div>
                             </div>
 
@@ -466,20 +485,41 @@
                                 </div>
 
                                 <div class="accordion-header" onclick="toggleAccordion(this)">
-                                    <span>Тестирования и Навыки</span>
+                                    <span>Древо Навыков</span>
                                     <i data-lucide="chevron-down" class="accordion-icon"></i>
                                 </div>
                                 <div class="accordion-content">
-                                    <div class="form-group" style="margin-bottom: 24px;">
+                                    <div class="form-group" style="margin-bottom: 0;">
                                         <label>URL графа Древа Навыков (skill_tree_url)</label>
                                         <input type="text" id="admin-skill-tree-url" class="form-input" placeholder="https://...">
                                     </div>
+                                </div>
+
+                                <div class="accordion-header" onclick="toggleAccordion(this)">
+                                    <span>Список тестов</span>
+                                    <i data-lucide="chevron-down" class="accordion-icon"></i>
+                                </div>
+                                <div class="accordion-content">
                                     <div class="form-group" style="margin-bottom: 0;">
                                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
                                             <label style="margin: 0;">Список тестов (tests_list)</label>
                                             <button id="admin-add-test-link" class="btn-secondary" style="padding: 6px 12px; font-size: 0.85rem;">+ Добавить тест</button>
                                         </div>
                                         <div id="admin-tests-links-container" style="display: flex; flex-direction: column; gap: 16px;"></div>
+                                    </div>
+                                </div>
+
+                                <div class="accordion-header" onclick="toggleAccordion(this)">
+                                    <span>Контрольные точки (Глобальные)</span>
+                                    <i data-lucide="chevron-down" class="accordion-icon"></i>
+                                </div>
+                                <div class="accordion-content">
+                                    <div class="form-group" style="margin-bottom: 0;">
+                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                                            <label style="margin: 0;">Список контрольных точек (checkpoints_list)</label>
+                                            <button id="admin-add-course-checkpoint" class="btn-secondary" style="padding: 6px 12px; font-size: 0.85rem;">+ Добавить срез</button>
+                                        </div>
+                                        <div id="admin-course-checkpoints-container" style="display: flex; flex-direction: column; gap: 16px;"></div>
                                     </div>
                                 </div>
 
@@ -491,6 +531,31 @@
                         <!-- Секция Ученики -->
                         <div id="admin-section-students" class="admin-section">
                             <h1>Ученики</h1>
+
+                            <!-- Vytvoriť študenta -->
+                            <div class="card" style="margin-bottom: 24px; padding: 0; overflow: hidden; background: transparent; border: none;">
+                                <div class="accordion-header" onclick="toggleAccordion(this)" style="margin-top: 0; background-color: var(--bg-card);">
+                                    <span>Vytvoriť нового študenta</span>
+                                    <i data-lucide="chevron-down" class="accordion-icon"></i>
+                                </div>
+                                <div class="accordion-content" style="background-color: var(--bg-card); border-radius: 0 0 10px 10px;">
+                                    <div class="form-row">
+                                        <div class="form-group"><input type="text" id="admin-new-student-login" class="form-input" placeholder="Логин (без @)"></div>
+                                        <div class="form-group"><input type="password" id="admin-new-student-pwd" class="form-input" placeholder="Heslo (пароль)"></div>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="form-group"><input type="text" id="admin-new-student-name" class="form-input" placeholder="ФИО"></div>
+                                        <div class="form-group">
+                                            <select id="admin-new-student-course" class="form-select">
+                                                <option value="">-- Выберите kurz --</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <button id="btn-create-student" class="btn-primary">Vytvoriť študenta</button>
+                                    <span id="create-student-status" style="margin-left: 12px; font-size: 0.9rem; color: var(--accent);"></span>
+                                </div>
+                            </div>
+
                             <div class="card" style="margin-bottom: 24px;">
                                 <div class="form-group" style="margin-bottom: 0;">
                                     <label>Выберите ученика</label>
@@ -501,6 +566,21 @@
                             </div>
                             
                             <div id="admin-student-editor" style="display: none; flex-direction: column; gap: 24px;">
+                                
+                                <!-- Zmeniť kurz -->
+                                <div class="card">
+                                    <div class="form-row" style="align-items: flex-end;">
+                                        <div class="form-group" style="margin-bottom: 0; flex: 2;">
+                                            <label style="color: var(--text-muted); font-size: 0.85rem;">Текущий kurz: <span id="current-student-course-display" style="color: var(--text-main); font-weight: 500;"></span></label>
+                                            <select id="admin-change-student-course" class="form-select" style="margin-top: 8px;">
+                                                <option value="">-- Vyberte новый kurz --</option>
+                                            </select>
+                                        </div>
+                                        <button id="btn-change-student-course" class="btn-secondary" style="height: 100%;">Zmeniť kurz</button>
+                                        <span id="change-course-status" style="margin-left: 12px; font-size: 0.9rem; color: var(--accent);"></span>
+                                    </div>
+                                </div>
+
                                 <!-- Древо навыков -->
                                 <div class="card" style="padding: 0; overflow: hidden;">
                                     <div class="card-header" style="padding: 24px 24px 0 24px; margin-bottom: 16px; flex-direction: column; align-items: flex-start; gap: 8px;">
@@ -585,8 +665,8 @@
                                                 <div class="form-row">
                                                     <div class="form-group" style="margin-bottom: 0; flex: 2;"><input type="text" id="arch-t-title-input" class="form-input" placeholder="Тема занятия"></div>
                                                     <div class="form-group" style="margin-bottom: 0; flex: 2;"><input type="text" id="arch-t-url-input" class="form-input" placeholder="URL материала (опц.)"></div>
-                                                    <div class="form-group" style="margin-bottom: 0; flex: 3;"><input type="text" id="arch-t-notes-input" class="form-input" placeholder="Заметки"></div>
-                                                    <button id="btn-add-arch-topic" class="btn-secondary" style="padding: 10px 16px;">Pridať</button>
+                                                    <div class="form-group" style="margin-bottom: 0; flex: 3;"><textarea id="arch-t-notes-input" class="form-input" placeholder="Заметки" rows="2" style="resize: vertical;"></textarea></div>
+                                                    <button id="btn-add-arch-topic" class="btn-secondary" style="padding: 10px 16px; height: 100%;">Pridať</button>
                                                 </div>
                                                 <details id="details-arch-topics" style="display: none; margin-top: 16px;">
                                                     <summary style="cursor: pointer; padding: 8px 0; color: var(--accent); font-weight: 500;">Zobraziť uložené záznamy (Показать сохраненные записи)</summary>
@@ -596,28 +676,7 @@
 
                                             <div style="border-top: 1px solid var(--border); padding-top: 24px;">
                                                 <h4 style="margin: 0 0 12px 0; color: var(--text-main);">Контрольные точки</h4>
-                                                <div class="form-row">
-                                                    <div style="flex: 2; display: flex; flex-direction: column; gap: 8px;">
-                                                        <input type="text" id="arch-c-title-input" class="form-input" placeholder="Название среза">
-                                                        <input type="text" id="arch-c-hwurl-input" class="form-input" placeholder="URL задания (опц.)">
-                                                    </div>
-                                                    <div style="flex: 3; display: flex; flex-direction: column; gap: 8px;">
-                                                        <div style="display: flex; gap: 8px;">
-                                                            <select id="arch-c-status-input" class="form-select" style="flex: 1;">
-                                                                <option value="gray">В перспективе</option>
-                                                                <option value="yellow">Активно</option>
-                                                                <option value="green">Завершено</option>
-                                                            </select>
-                                                            <input type="text" id="arch-c-solurl-input" class="form-input" placeholder="URL решения (опц.)" style="flex: 2;">
-                                                        </div>
-                                                        <input type="text" id="arch-c-feedback-input" class="form-input" placeholder="Обратная связь">
-                                                    </div>
-                                                    <button id="btn-add-arch-checkpoint" class="btn-secondary" style="height: 100%; padding: 0 16px;">Pridať</button>
-                                                </div>
-                                                <details id="details-arch-checkpoints" style="display: none; margin-top: 16px;">
-                                                    <summary style="cursor: pointer; padding: 8px 0; color: var(--accent); font-weight: 500;">Zobraziť uložené záznamy</summary>
-                                                    <div id="admin-arch-checkpoints-list" style="display: flex; flex-direction: column; gap: 8px; margin-top: 8px;"></div>
-                                                </details>
+                                                <div id="admin-student-checkpoints-list" style="display: flex; flex-direction: column; gap: 8px;"></div>
                                             </div>
 
                                             <div style="border-top: 1px solid var(--border); padding-top: 24px;">
@@ -631,8 +690,8 @@
                                                         <input type="text" id="arch-h-hwurl-input" class="form-input" placeholder="URL задания">
                                                     </div>
                                                     <div style="flex: 3; display: flex; flex-direction: column; gap: 8px;">
-                                                        <input type="text" id="arch-h-solurl-input" class="form-input" placeholder="URL решения (опц.)">
-                                                        <input type="text" id="arch-h-feedback-input" class="form-input" placeholder="Оценка / Обратная связь">
+                                                        <textarea id="arch-h-solurl-input" class="form-input" placeholder="URL решения (через Enter)" rows="2" style="resize: vertical;"></textarea>
+                                                        <textarea id="arch-h-feedback-input" class="form-input" placeholder="Оценка / Обратная связь" rows="2" style="resize: vertical;"></textarea>
                                                     </div>
                                                     <button id="btn-add-arch-hw" class="btn-secondary" style="height: 100%; padding: 0 16px;">Pridať</button>
                                                 </div>
@@ -707,8 +766,8 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc, onSnapshot, collection, getDocs, query, where, deleteField } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, updateDoc, onSnapshot, collection, getDocs, query, where, deleteField } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDaCvmskTUDJIVHY-u8KNVcQLuqkW88VlI",
@@ -722,6 +781,10 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
+
+        // Вторичное приложение для создания пользователей без сброса авторизации админа
+        const secondaryApp = initializeApp(firebaseConfig, "SecondaryApp");
+        const secondaryAuth = getAuth(secondaryApp);
 
         const loginScreen = document.getElementById('login-screen');
         const appScreen = document.getElementById('app-screen');
@@ -749,27 +812,35 @@
                     let matUrl = '-';
                     if (t.material_url) {
                         const urls = t.material_url.split(/\s+/).filter(Boolean);
-                        matUrl = urls.map((u, i) => `<a href="${u}" class="pdf-link" target="_blank"><i data-lucide="file-text" style="width: 18px;"></i> ${urls.length > 1 ? 'Мат. ' + (i+1) : 'Материал'}</a>`).join('<br>');
+                        matUrl = urls.map((u, i) => `<a href="${u}" class="pdf-link" target="_blank">${urls.length > 1 ? 'Мат. ' + (i+1) : 'Материал'}</a>`).join('<br>');
                     }
-                    topicsContainer.innerHTML += `<tr><td>${t.title || '-'}</td><td>${matUrl}</td><td>${t.notes || '-'}</td></tr>`;
+                    topicsContainer.innerHTML += `<tr><td>${t.title || '-'}</td><td>${matUrl}</td><td style="white-space: pre-wrap; line-height: 1.4;">${t.notes || '-'}</td></tr>`;
                 });
             }
-
-            const checks = currentProgressData?.archive_checkpoints || [];
+            const checks = currentCourseData?.checkpoints_list || [];
+            const checkResults = currentProgressData?.checkpoints_results || {};
             checkContainer.innerHTML = '';
-            if (checks.length === 0) { checkContainer.innerHTML = '<tr><td colspan="4" class="placeholder-text">Нет данных</td></tr>'; }
+            if (checks.length === 0) { checkContainer.innerHTML = '<tr><td colspan="5" class="placeholder-text">Нет данных</td></tr>'; }
             else {
                 checks.forEach(c => {
+                    const res = checkResults[c.id] || {};
                     let badge = '';
                     if (c.status === 'green') badge = '<span class="tag green">Завершено</span>';
                     else if (c.status === 'yellow') badge = '<span class="tag yellow">Активно</span>';
                     else badge = '<span class="tag gray">В перспективе</span>';
                     
-                    const hwLink = c.hw_url ? `<a href="${c.hw_url}" class="pdf-link" target="_blank" style="font-size: 0.85rem;"><i data-lucide="file-text" style="width: 14px;"></i> Задание</a>` : '';
-                    const solLink = c.student_hw_url ? `<a href="${c.student_hw_url}" class="pdf-link" target="_blank" style="font-size: 0.85rem; color: var(--text-muted);"><i data-lucide="paperclip" style="width: 14px;"></i> Решение</a>` : '';
-                    const linksHtml = [hwLink, solLink].filter(Boolean).join('<br>') || '-';
+                    let hwLink = '-';
+                    if (c.hw_url) {
+                        if (c.status === 'gray') {
+                            hwLink = `<span style="color: var(--text-muted); font-size: 0.85rem; cursor: not-allowed;" title="Zatiaľ nie je k dispozícii">Задание</span>`;
+                        } else {
+                            hwLink = `<a href="${c.hw_url}" class="pdf-link" target="_blank" style="font-size: 0.85rem;">Задание</a>`;
+                        }
+                    }
 
-                    checkContainer.innerHTML += `<tr><td>${c.title || '-'}</td><td>${linksHtml}</td><td>${badge}</td><td>${c.feedback || '-'}</td></tr>`;
+                    const solLink = res.student_hw_url ? `<a href="${res.student_hw_url}" class="pdf-link" target="_blank" style="font-size: 0.85rem; color: var(--text-muted);">Решение</a>` : '-';
+
+                    checkContainer.innerHTML += `<tr><td>${c.title || '-'}</td><td>${hwLink}</td><td>${badge}</td><td>${solLink}</td><td style="white-space: pre-wrap; line-height: 1.4;">${res.feedback || '-'}</td></tr>`;
                 });
             }
 
@@ -781,15 +852,15 @@
                     let taskUrl = h.hw_title || '-';
                     if (h.hw_url) {
                         const urls = h.hw_url.split(/\s+/).filter(Boolean);
-                        taskUrl = urls.map((u, i) => `<a href="${u}" class="pdf-link" target="_blank"><i data-lucide="file-text" style="width: 18px;"></i> ${h.hw_title || 'Задание'} ${urls.length > 1 ? (i+1) : ''}</a>`).join('<br>');
+                        taskUrl = urls.map((u, i) => `<a href="${u}" class="pdf-link" target="_blank">${h.hw_title || 'Задание'} ${urls.length > 1 ? (i+1) : ''}</a>`).join('<br>');
                     }
 
                     let solUrl = '-';
                     if (h.student_hw_url) {
                         const urls = h.student_hw_url.split(/\s+/).filter(Boolean);
-                        solUrl = urls.map((u, i) => `<a href="${u}" class="pdf-link" style="color: var(--text-muted);" target="_blank"><i data-lucide="paperclip" style="width: 18px;"></i> Решение ${urls.length > 1 ? (i+1) : ''}</a>`).join('<br>');
+                        solUrl = urls.map((u, i) => `<a href="${u}" class="pdf-link" style="color: var(--text-muted);" target="_blank">Решение ${urls.length > 1 ? (i+1) : ''}</a>`).join('<br>');
                     }
-                    hwContainer.innerHTML += `<tr><td>${taskUrl}</td><td>${solUrl}</td><td>${h.feedback || '-'}</td></tr>`;
+                    hwContainer.innerHTML += `<tr><td>${taskUrl}</td><td>${solUrl}</td><td style="white-space: pre-wrap; line-height: 1.4;">${h.feedback || '-'}</td></tr>`;
                 });
             }
         }
@@ -1130,22 +1201,80 @@
                 testsLinksContainer.appendChild(row);
             }
 
+            function createCourseCheckpointRow(id = '', title = '', url = '', status = 'gray') {
+                const cpId = id || 'cp_' + Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
+                const row = document.createElement('div'); row.className = 'course-cp-row card';
+                row.style.marginBottom = '0'; row.style.padding = '16px';
+                row.innerHTML = `
+                    <input type="hidden" class="cp-id" value="${cpId}">
+                    <div class="form-row" style="margin-bottom: 12px;">
+                        <div class="form-group" style="margin-bottom: 0; flex: 2;"><input type="text" class="form-input cp-title" placeholder="Название среза" value="${title}"></div>
+                        <div class="form-group" style="margin-bottom: 0; flex: 2;"><input type="text" class="form-input cp-url" placeholder="URL задания (опц.)" value="${url}"></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group" style="margin-bottom: 0; flex: 1;">
+                            <select class="form-select cp-status">
+                                <option value="gray" ${status === 'gray' ? 'selected' : ''}>В перспективе</option>
+                                <option value="yellow" ${status === 'yellow' ? 'selected' : ''}>Активно</option>
+                                <option value="green" ${status === 'green' ? 'selected' : ''}>Завершено</option>
+                            </select>
+                        </div>
+                        <button class="btn-secondary remove-link-btn" style="padding: 12px; color: #EF4444; border-color: #333;" title="odstrániť">✕</button>
+                    </div>
+                `;
+                row.querySelector('.remove-link-btn').onclick = (e) => { e.preventDefault(); row.remove(); };
+                document.getElementById('admin-course-checkpoints-container').appendChild(row);
+            }
+
             document.getElementById('admin-add-theory-link').onclick = (e) => { e.preventDefault(); createTheoryLinkRow(); };
             document.getElementById('admin-add-hw-link').onclick = (e) => { e.preventDefault(); createHwLinkRow(); };
             document.getElementById('admin-add-ref-link').onclick = (e) => { e.preventDefault(); createRefLinkRow(); };
             document.getElementById('admin-add-test-link').onclick = (e) => { e.preventDefault(); createTestLinkRow(); };
+            document.getElementById('admin-add-course-checkpoint').onclick = (e) => { e.preventDefault(); createCourseCheckpointRow(); };
 
             async function fetchCourses() {
                 try {
                     const coursesSnap = await getDocs(collection(db, 'courses'));
                     courseList.innerHTML = '';
+                    const newStudentCourseSelect = document.getElementById('admin-new-student-course');
+                    const changeStudentCourseSelect = document.getElementById('admin-change-student-course');
+                    
+                    let optionsHtml = '<option value="">-- Vyberte kurz --</option>';
+                    
                     coursesSnap.forEach(courseDoc => {
                         const option = document.createElement('option'); option.value = courseDoc.id;
                         courseList.appendChild(option);
+                        optionsHtml += `<option value="${courseDoc.id}">${courseDoc.id}</option>`;
                     });
+                    
+                    newStudentCourseSelect.innerHTML = optionsHtml;
+                    changeStudentCourseSelect.innerHTML = optionsHtml;
                 } catch (error) { console.error("Ошибка при получении списка курсов:", error); }
             }
             fetchCourses();
+
+            document.getElementById('admin-create-course-ui').onclick = () => {
+                document.getElementById('new-course-id-input').value = '';
+                document.getElementById('course-create-modal').classList.add('active');
+                document.getElementById('new-course-id-input').focus();
+            };
+
+            document.getElementById('confirm-create-course').onclick = () => {
+                const newId = document.getElementById('new-course-id-input').value.trim();
+                if (!newId) return;
+
+                document.getElementById('course-create-modal').classList.remove('active');
+                document.getElementById('admin-course-id').value = newId;
+                
+                courseForm.querySelectorAll('input:not(.theory-link-url, .hw-link-title, .hw-link-url, .ref-link-title, .ref-link-url, .test-title, .test-url, .test-limit, .test-questions, .cp-title, .cp-url)').forEach(input => input.value = '');
+                theoryLinksContainer.innerHTML = ''; hwLinksContainer.innerHTML = ''; refLinksContainer.innerHTML = ''; testsLinksContainer.innerHTML = ''; document.getElementById('admin-course-checkpoints-container').innerHTML = '';
+                createTheoryLinkRow(); createHwLinkRow(); createRefLinkRow();
+                courseForm.style.opacity = '1'; courseForm.style.pointerEvents = 'auto';
+                document.getElementById('admin-topic-title').focus();
+                
+                const statusMsg = document.getElementById('admin-save-status');
+                statusMsg.textContent = "Kurz готов к заполнению. Нажмите 'Uložiť изменения' для сохранения.";
+            };
 
             loadBtn.onclick = async () => {
                 const courseId = document.getElementById('admin-course-id').value.trim();
@@ -1155,6 +1284,7 @@
                 try {
                     const docSnap = await getDoc(doc(db, 'courses', courseId));
                     theoryLinksContainer.innerHTML = ''; hwLinksContainer.innerHTML = ''; refLinksContainer.innerHTML = ''; testsLinksContainer.innerHTML = '';
+                    const cpContainer = document.getElementById('admin-course-checkpoints-container'); cpContainer.innerHTML = '';
 
                     if (docSnap.exists()) {
                         const data = docSnap.data();
@@ -1173,8 +1303,11 @@
                                 createTestLinkRow(t.id, t.title, t.url, limitVal, questionsVal, t.status);
                             }); 
                         }
+                        if (data.checkpoints_list && Array.isArray(data.checkpoints_list)) {
+                            data.checkpoints_list.forEach(cp => createCourseCheckpointRow(cp.id, cp.title, cp.hw_url, cp.status));
+                        }
                     } else {
-                        courseForm.querySelectorAll('input:not(.theory-link-url, .hw-link-title, .hw-link-url, .ref-link-title, .ref-link-url, .test-title, .test-url)').forEach(input => input.value = '');
+                        courseForm.querySelectorAll('input:not(.theory-link-url, .hw-link-title, .hw-link-url, .ref-link-title, .ref-link-url, .test-title, .test-url, .test-limit, .test-questions, .cp-title, .cp-url)').forEach(input => input.value = '');
                         createTheoryLinkRow(); createHwLinkRow(); createRefLinkRow();
                     }
                     courseForm.style.opacity = '1'; courseForm.style.pointerEvents = 'auto';
@@ -1207,6 +1340,15 @@
                     if (title) testsList.push({ id, title, limit, questions, url, status });
                 });
 
+                const checkpointsList = [];
+                document.querySelectorAll('.course-cp-row').forEach(row => {
+                    const id = row.querySelector('.cp-id').value;
+                    const title = row.querySelector('.cp-title').value.trim();
+                    const url = row.querySelector('.cp-url').value.trim();
+                    const status = row.querySelector('.cp-status').value;
+                    if (title) checkpointsList.push({ id, title, hw_url: url, status });
+                });
+
                 const courseData = {
                     topic_title: document.getElementById('admin-topic-title').value,
                     hw_deadline: document.getElementById('admin-hw-deadline').value,
@@ -1215,7 +1357,8 @@
                     theory_links: getLinks('.theory-link-row', '.theory-link-title', '.theory-link-url'),
                     hw_links: getLinks('.hw-link-row', '.hw-link-title', '.hw-link-url'),
                     reference_links: getLinks('.ref-link-row', '.ref-link-title', '.ref-link-url'),
-                    tests_list: testsList
+                    tests_list: testsList,
+                    checkpoints_list: checkpointsList
                 };
 
                 try {
@@ -1235,8 +1378,8 @@
             const persHwContainer = document.getElementById('admin-personal-hw-container');
             const persRefContainer = document.getElementById('admin-personal-ref-container');
 
-            let adminArchiveState = { topics: [], checkpoints: [], hw: [] };
-            let adminArchiveEditState = { topic: -1, checkpoint: -1, hw: -1 };
+            let adminArchiveState = { topics: [], hw: [] };
+            let adminArchiveEditState = { topic: -1, hw: -1 };
             let adminSelectedCourseData = null;
             let adminSelectedProgressData = null;
 
@@ -1251,7 +1394,8 @@
                     row.innerHTML = `
                         <div style="flex: 1; font-size: 0.9rem;">
                             <strong style="color: var(--text-main); font-size: 1rem;">${t.title}</strong>
-                            <div style="color: var(--text-muted); margin-top: 4px;">Заметки: ${t.notes || '—'} | URL: ${t.material_url ? 'Да' : 'Нет'}</div>
+                            <div style="color: var(--text-muted); margin-top: 4px;">URL: ${t.material_url ? 'Да' : 'Нет'}</div>
+                            <div style="color: var(--text-muted); margin-top: 4px; white-space: pre-wrap; line-height: 1.4;">Заметки: ${t.notes || '—'}</div>
                         </div>
                         <div style="display: flex; gap: 8px;">
                             <button class="btn-secondary edit-t-btn" data-index="${i}" style="padding: 6px 12px; font-size: 0.85rem;">Upraviť</button>
@@ -1280,50 +1424,6 @@
                     document.getElementById('btn-add-arch-topic').innerText = 'Uložiť';
                 });
 
-                const detailsC = document.getElementById('details-arch-checkpoints');
-                const cList = document.getElementById('admin-arch-checkpoints-list');
-                detailsC.style.display = adminArchiveState.checkpoints.length > 0 ? 'block' : 'none';
-                cList.innerHTML = '';
-                adminArchiveState.checkpoints.forEach((c, i) => {
-                    const row = document.createElement('div');
-                    row.style.cssText = 'display: flex; justify-content: space-between; align-items: center; padding: 12px; background: var(--bg-hover); border-radius: 6px; border: 1px solid var(--border);';
-                    row.innerHTML = `
-                        <div style="flex: 1; font-size: 0.9rem;">
-                            <strong style="color: var(--text-main); font-size: 1rem;">${c.title}</strong> <span style="font-size: 0.8rem; padding: 2px 6px; border-radius: 4px; background: rgba(255,255,255,0.1); margin-left: 8px;">${c.status}</span>
-                            <div style="color: var(--text-muted); margin-top: 4px;">Задание: ${c.hw_url ? 'Да' : 'Нет'} | Решение: ${c.student_hw_url ? 'Да' : 'Нет'}</div>
-                            <div style="color: var(--text-muted); margin-top: 4px;">Фидбек: ${c.feedback || '—'}</div>
-                        </div>
-                        <div style="display: flex; gap: 8px;">
-                            <button class="btn-secondary edit-c-btn" data-index="${i}" style="padding: 6px 12px; font-size: 0.85rem;">Upraviť</button>
-                            <button class="btn-secondary del-c-btn" data-index="${i}" style="padding: 6px 12px; font-size: 0.85rem; color: var(--error); border-color: var(--border);">Zmazať</button>
-                        </div>
-                    `;
-                    cList.appendChild(row);
-                });
-
-                cList.querySelectorAll('.del-c-btn').forEach(btn => btn.onclick = (e) => {
-                    adminArchiveState.checkpoints.splice(e.target.dataset.index, 1);
-                    adminArchiveEditState.checkpoint = -1;
-                    document.getElementById('btn-add-arch-checkpoint').innerText = 'Pridať';
-                    document.getElementById('arch-c-title-input').value = '';
-                    document.getElementById('arch-c-hwurl-input').value = '';
-                    document.getElementById('arch-c-solurl-input').value = '';
-                    document.getElementById('arch-c-status-input').value = 'gray';
-                    document.getElementById('arch-c-feedback-input').value = '';
-                    renderAdminArchiveLists();
-                });
-                cList.querySelectorAll('.edit-c-btn').forEach(btn => btn.onclick = (e) => {
-                    const idx = parseInt(e.target.dataset.index);
-                    const item = adminArchiveState.checkpoints[idx];
-                    document.getElementById('arch-c-title-input').value = item.title;
-                    document.getElementById('arch-c-hwurl-input').value = item.hw_url || '';
-                    document.getElementById('arch-c-solurl-input').value = item.student_hw_url || '';
-                    document.getElementById('arch-c-status-input').value = item.status || 'gray';
-                    document.getElementById('arch-c-feedback-input').value = item.feedback || '';
-                    adminArchiveEditState.checkpoint = idx;
-                    document.getElementById('btn-add-arch-checkpoint').innerText = 'Uložiť';
-                });
-
                 const detailsH = document.getElementById('details-arch-hw');
                 const hList = document.getElementById('admin-arch-hw-list');
                 detailsH.style.display = adminArchiveState.hw.length > 0 ? 'block' : 'none';
@@ -1334,7 +1434,7 @@
                     row.innerHTML = `
                         <div style="flex: 1; font-size: 0.9rem;">
                             <strong style="color: var(--text-main); font-size: 1rem;">${h.hw_title}</strong>
-                            <div style="color: var(--text-muted); margin-top: 4px;">Оценка: ${h.feedback || '—'}</div>
+                            <div style="color: var(--text-muted); margin-top: 4px; white-space: pre-wrap; line-height: 1.4;">Оценка: ${h.feedback || '—'}</div>
                         </div>
                         <div style="display: flex; gap: 8px;">
                             <button class="btn-secondary edit-h-btn" data-index="${i}" style="padding: 6px 12px; font-size: 0.85rem;">Upraviť</button>
@@ -1392,39 +1492,6 @@
                 document.getElementById('arch-t-title-input').value = '';
                 document.getElementById('arch-t-url-input').value = '';
                 document.getElementById('arch-t-notes-input').value = '';
-                renderAdminArchiveLists();
-            };
-
-            document.getElementById('btn-add-arch-checkpoint').onclick = (e) => {
-                e.preventDefault();
-                const title = document.getElementById('arch-c-title-input').value.trim();
-                const hwUrl = document.getElementById('arch-c-hwurl-input').value.trim();
-                const solUrl = document.getElementById('arch-c-solurl-input').value.trim();
-                const status = document.getElementById('arch-c-status-input').value;
-                const feedback = document.getElementById('arch-c-feedback-input').value.trim();
-                if (!title) return;
-
-                const dupIdx = adminArchiveState.checkpoints.findIndex(c => c.title === title);
-                if (dupIdx > -1 && dupIdx !== adminArchiveEditState.checkpoint) {
-                    const btn = e.target; const oldText = btn.innerText;
-                    btn.innerText = 'Existuje'; btn.style.backgroundColor = 'var(--error)';
-                    setTimeout(() => { btn.innerText = oldText; btn.style.backgroundColor = ''; }, 2000);
-                    return;
-                }
-
-                if (adminArchiveEditState.checkpoint > -1) {
-                    adminArchiveState.checkpoints[adminArchiveEditState.checkpoint] = { title, hw_url: hwUrl, student_hw_url: solUrl, status, feedback };
-                    adminArchiveEditState.checkpoint = -1;
-                    document.getElementById('btn-add-arch-checkpoint').innerText = 'Pridať';
-                } else {
-                    adminArchiveState.checkpoints.push({ title, hw_url: hwUrl, student_hw_url: solUrl, status, feedback });
-                }
-
-                document.getElementById('arch-c-title-input').value = '';
-                document.getElementById('arch-c-hwurl-input').value = '';
-                document.getElementById('arch-c-solurl-input').value = '';
-                document.getElementById('arch-c-status-input').value = 'gray';
-                document.getElementById('arch-c-feedback-input').value = '';
                 renderAdminArchiveLists();
             };
 
@@ -1508,6 +1575,7 @@
                 try {
                     const q = query(collection(db, "users"), where("role", "==", "student"));
                     const querySnapshot = await getDocs(q);
+                    const currentSelection = studentSelector.value;
                     studentSelector.innerHTML = '<option value="">-- Vyberte študenta --</option>';
                     querySnapshot.forEach((docSnap) => {
                         const data = docSnap.data();
@@ -1517,21 +1585,90 @@
                         option.textContent = `${data.name || 'Без имени'} (${data.course_id || 'Без курса'})`;
                         studentSelector.appendChild(option);
                     });
+                    if (currentSelection) studentSelector.value = currentSelection;
                 } catch (error) { console.error("Ошибка загрузки учеников:", error); }
             }
             fetchStudentsForAdmin();
+
+            document.getElementById('btn-create-student').onclick = async (e) => {
+                e.preventDefault();
+                const btn = e.target;
+                const status = document.getElementById('create-student-status');
+                const loginRaw = document.getElementById('admin-new-student-login').value.trim();
+                const pwd = document.getElementById('admin-new-student-pwd').value;
+                const name = document.getElementById('admin-new-student-name').value.trim();
+                const courseId = document.getElementById('admin-new-student-course').value;
+
+                if (!loginRaw || !pwd || !name) { status.textContent = "Заполните все текстовые поля."; status.style.color = "var(--error)"; return; }
+                if (pwd.length < 6) { status.textContent = "Heslo должно быть от 6 символов."; status.style.color = "var(--error)"; return; }
+
+                const email = loginRaw.includes('@') ? loginRaw : `${loginRaw.toLowerCase().replace(/\s+/g, '')}@platform.local`;
+
+                btn.disabled = true; btn.textContent = "Vytváranie..."; status.textContent = "";
+
+                try {
+                    const userCredential = await createUserWithEmailAndPassword(secondaryAuth, email, pwd);
+                    const newUid = userCredential.user.uid;
+                    await setDoc(doc(db, 'users', newUid), { name: name, role: 'student', course_id: courseId });
+                    await signOut(secondaryAuth);
+
+                    status.textContent = "Študent успешно создан!"; status.style.color = "var(--accent)";
+                    document.getElementById('admin-new-student-login').value = '';
+                    document.getElementById('admin-new-student-pwd').value = '';
+                    document.getElementById('admin-new-student-name').value = '';
+                    document.getElementById('admin-new-student-course').value = '';
+                    fetchStudentsForAdmin();
+                } catch (error) {
+                    console.error(error);
+                    status.textContent = "Chyba: " + error.message; status.style.color = "var(--error)";
+                } finally {
+                    btn.disabled = false; btn.textContent = "Vytvoriť študenta";
+                }
+            };
+
+            document.getElementById('btn-change-student-course').onclick = async (e) => {
+                e.preventDefault();
+                if (!selectedStudentUid) return;
+                
+                const btn = e.target;
+                const status = document.getElementById('change-course-status');
+                const newCourseId = document.getElementById('admin-change-student-course').value;
+                
+                if (!newCourseId) { status.textContent = "Vyberte kurz"; status.style.color = "var(--error)"; return; }
+
+                btn.disabled = true; status.textContent = "";
+                
+                try {
+                    await updateDoc(doc(db, 'users', selectedStudentUid), { course_id: newCourseId });
+                    status.textContent = "Kurz zmenený!"; status.style.color = "var(--accent)";
+                    await fetchStudentsForAdmin(); // Обновляем селектор (data-course)
+                    
+                    // Эмулируем смену селектора для перезагрузки интерфейса редактора
+                    const event = new Event('change');
+                    studentSelector.dispatchEvent(event);
+                    
+                    setTimeout(() => status.textContent = "", 3000);
+                } catch (error) {
+                    console.error(error);
+                    status.textContent = "Chyba при смене курса."; status.style.color = "var(--error)";
+                } finally {
+                    btn.disabled = false;
+                }
+            };
 
             studentSelector.onchange = async (e) => {
                 selectedStudentUid = e.target.value;
                 if (!selectedStudentUid) { studentEditor.style.display = 'none'; return; }
 
-                adminArchiveEditState = { topic: -1, checkpoint: -1, hw: -1 };
+                adminArchiveEditState = { topic: -1, hw: -1 };
                 document.getElementById('btn-add-arch-topic').innerText = 'Pridať';
-                document.getElementById('btn-add-arch-checkpoint').innerText = 'Pridať';
                 document.getElementById('btn-add-arch-hw').innerText = 'Pridať';
 
                 const selectedOption = e.target.options[e.target.selectedIndex];
                 const courseId = selectedOption.dataset.course;
+                
+                document.getElementById('current-student-course-display').textContent = courseId || 'Не назначен';
+                document.getElementById('admin-change-student-course').value = courseId || '';
 
                 let courseData = null;
                 if (courseId) {
@@ -1639,12 +1776,36 @@
                     progressData.personal_reference_links.forEach(l => createPersonalLinkRow(persRefContainer, 'pers-ref-title', 'pers-ref-url', l.title, l.url));
                 }
 
+                const adminCheckpointsContainer = document.getElementById('admin-student-checkpoints-list');
+                adminCheckpointsContainer.innerHTML = '';
+                if (courseData && courseData.checkpoints_list && courseData.checkpoints_list.length > 0) {
+                    courseData.checkpoints_list.forEach(cp => {
+                        const res = progressData.checkpoints_results?.[cp.id] || { student_hw_url: '', feedback: '' };
+                        const row = document.createElement('div');
+                        row.className = 'form-row cp-result-row';
+                        row.style.marginBottom = '16px';
+                        row.style.borderBottom = '1px solid var(--border)';
+                        row.style.paddingBottom = '16px';
+                        row.innerHTML = `
+                            <input type="hidden" class="cp-id" value="${cp.id}">
+                            <div style="flex: 2; display: flex; flex-direction: column; gap: 8px;">
+                                <div style="color: var(--text-main); font-weight: 500; font-size: 1rem;">${cp.title} <span class="tag ${cp.status}" style="font-size: 0.7rem; margin-left: 8px;">${cp.status}</span></div>
+                                <textarea class="form-input cp-solurl" placeholder="URL решения (через Enter)" rows="2" style="resize: vertical;">${res.student_hw_url || ''}</textarea>
+                            </div>
+                            <div style="flex: 3; display: flex; flex-direction: column;">
+                                <textarea class="form-input cp-feedback" placeholder="Обратная связь" rows="3" style="resize: vertical;">${res.feedback || ''}</textarea>
+                            </div>
+                        `;
+                        adminCheckpointsContainer.appendChild(row);
+                    });
+                } else {
+                    adminCheckpointsContainer.innerHTML = '<span style="color: var(--text-muted);">В курсе нет контрольных точек.</span>';
+                }
+
                 adminArchiveState.topics = progressData.archive_topics && Array.isArray(progressData.archive_topics) ? progressData.archive_topics : [];
-                adminArchiveState.checkpoints = progressData.archive_checkpoints && Array.isArray(progressData.archive_checkpoints) ? progressData.archive_checkpoints : [];
                 adminArchiveState.hw = progressData.archive_hw && Array.isArray(progressData.archive_hw) ? progressData.archive_hw : [];
                 
                 document.getElementById('arch-t-title-input').value = ''; document.getElementById('arch-t-url-input').value = ''; document.getElementById('arch-t-notes-input').value = '';
-                document.getElementById('arch-c-title-input').value = ''; document.getElementById('arch-c-hwurl-input').value = ''; document.getElementById('arch-c-solurl-input').value = ''; document.getElementById('arch-c-status-input').value = 'gray'; document.getElementById('arch-c-feedback-input').value = '';
                 document.getElementById('arch-h-title-input').value = ''; document.getElementById('arch-h-hwurl-input').value = ''; document.getElementById('arch-h-solurl-input').value = ''; document.getElementById('arch-h-feedback-input').value = '';
                 
                 renderAdminArchiveLists();
@@ -1667,12 +1828,20 @@
                     return arr;
                 };
 
+                const cpResults = {};
+                document.querySelectorAll('.cp-result-row').forEach(row => {
+                    const id = row.querySelector('.cp-id').value;
+                    const url = row.querySelector('.cp-solurl').value.trim();
+                    const feedback = row.querySelector('.cp-feedback').value.trim();
+                    if (url || feedback) cpResults[id] = { student_hw_url: url, feedback: feedback };
+                });
+
                 const progressPayload = {
                     personal_theory_links: getPersonalLinks(persTheoryContainer, 'pers-theory-title', 'pers-theory-url'),
                     personal_hw_links: getPersonalLinks(persHwContainer, 'pers-hw-title', 'pers-hw-url'),
                     personal_reference_links: getPersonalLinks(persRefContainer, 'pers-ref-title', 'pers-ref-url'),
                     archive_topics: adminArchiveState.topics,
-                    archive_checkpoints: adminArchiveState.checkpoints,
+                    checkpoints_results: cpResults,
                     archive_hw: adminArchiveState.hw
                 };
 
