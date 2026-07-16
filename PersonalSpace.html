@@ -1980,7 +1980,11 @@
                 const adminCheckpointsContainer = document.getElementById('admin-student-checkpoints-list');
                 adminCheckpointsContainer.innerHTML = '';
                 if (courseData && courseData.checkpoints_list && courseData.checkpoints_list.length > 0) {
+                    let hasActive = false;
                     courseData.checkpoints_list.forEach(cp => {
+                        if (cp.status !== 'yellow') return;
+                        hasActive = true;
+                        
                         const res = progressData.checkpoints_results?.[cp.id] || { student_hw_url: '', feedback: '' };
                         const row = document.createElement('div');
                         row.className = 'form-row cp-result-row';
@@ -1990,7 +1994,7 @@
                         row.innerHTML = `
                             <input type="hidden" class="cp-id" value="${cp.id}">
                             <div style="flex: 2; display: flex; flex-direction: column; gap: 8px;">
-                                <div style="color: var(--text-main); font-weight: 500; font-size: 1rem;">${cp.title} <span class="tag ${cp.status}" style="font-size: 0.7rem; margin-left: 8px;">${cp.status}</span></div>
+                                <div style="color: var(--text-main); font-weight: 500; font-size: 1rem;">${cp.title} <span class="tag ${cp.status}" style="font-size: 0.7rem; margin-left: 8px;">Активно</span></div>
                                 <textarea class="form-input cp-solurl" placeholder="URL решения (через Enter)" rows="2" style="resize: vertical;">${res.student_hw_url || ''}</textarea>
                             </div>
                             <div style="flex: 3; display: flex; flex-direction: column;">
@@ -1999,6 +2003,10 @@
                         `;
                         adminCheckpointsContainer.appendChild(row);
                     });
+                    
+                    if (!hasActive) {
+                        adminCheckpointsContainer.innerHTML = '<span style="color: var(--text-muted);">Нет активных контрольных точек для проверки.</span>';
+                    }
                 } else {
                     adminCheckpointsContainer.innerHTML = '<span style="color: var(--text-muted);">В курсе нет контрольных точек.</span>';
                 }
