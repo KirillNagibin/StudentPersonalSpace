@@ -18,6 +18,7 @@
             --accent: #4CAF50;
             --text-main: #ffffff;
             --text-muted: #888888;
+            --error: #EF4444;
         }
 
         * { box-sizing: border-box; }
@@ -94,8 +95,7 @@
         .horizontal-card { background-color: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 24px; margin-bottom: 32px; display: flex; align-items: center; justify-content: space-between; transition: border-color 0.2s; }
         .test-card { display: flex; flex-direction: column; justify-content: space-between; min-height: 200px; }
 
-        .content-embed-wrapper { width: 100%; height: 500px; background-color: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text-muted); overflow: hidden; position: relative; }
-        .content-embed-wrapper iframe { width: 100%; height: 100%; border: none; position: absolute; top: 0; left: 0; }
+        .content-embed-wrapper { width: 100%; background-color: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; display: flex; flex-direction: column; align-items: stretch; justify-content: flex-start; color: var(--text-muted); overflow: hidden; position: relative; padding: 40px; }
 
         .test-overlay {
             display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
@@ -131,7 +131,7 @@
         .login-input { width: 100%; padding: 14px; border-radius: 6px; border: 1px solid var(--border); background-color: var(--bg-main); color: var(--text-main); font-family: 'Inter', sans-serif; }
         .login-btn { width: 100%; padding: 14px; border-radius: 6px; border: none; font-weight: 600; background-color: var(--accent); color: #fff; cursor: pointer; transition: opacity 0.2s; }
         .login-btn:hover { opacity: 0.9; }
-        .error-message { color: #EF4444; font-size: 0.9rem; text-align: center; min-height: 20px; }
+        .error-message { color: var(--error); font-size: 0.9rem; text-align: center; min-height: 20px; }
         
         .app-screen { display: none; flex: 1; width: 100%; height: 100%; flex-direction: column; }
         
@@ -170,7 +170,13 @@
         .accordion-header.open { border-radius: 6px 6px 0 0; }
 
         .logout-btn { background: none; border: none; color: var(--text-muted); cursor: pointer; margin-left: auto; padding: 8px; }
-        .logout-btn:hover { color: #EF4444; }
+        .logout-btn:hover { color: var(--error); }
+
+        /* Стили для формы отправки ДЗ */
+        .hw-dropzone { border: 2px dashed var(--border); border-radius: 8px; padding: 40px; text-align: center; cursor: pointer; transition: all 0.2s; background-color: rgba(255,255,255,0.02); }
+        .hw-dropzone:hover, .hw-dropzone.dragover { border-color: var(--accent); background-color: rgba(76, 175, 80, 0.05); }
+        .file-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background: var(--bg-hover); border-radius: 6px; border: 1px solid var(--border); font-size: 0.9rem; }
+        .file-item-remove { color: var(--error); cursor: pointer; background: none; border: none; padding: 4px; }
 
         @media (hover: hover) {
             .nav-item:hover { color: var(--text-main); background-color: var(--bg-hover); }
@@ -197,7 +203,7 @@
             h1 { font-size: 1.8rem; margin-bottom: 24px; }
             h2 { font-size: 1.25rem; margin: 32px 0 16px 0; }
             .card-title { font-size: 1.15rem; }
-            .content-embed-wrapper { height: 400px; }
+            .content-embed-wrapper { padding: 24px; }
         }
     </style>
 </head>
@@ -213,7 +219,6 @@
         </div>
     </div>
 
-    <!-- Оверлей для тестов -->
     <div id="test-overlay" class="test-overlay">
         <div class="test-overlay-header">
             <div style="font-weight: 600; font-size: 1.1rem;"><i data-lucide="clipboard-check" style="width: 20px; vertical-align: middle; margin-right: 8px;"></i>Тестирование</div>
@@ -222,17 +227,16 @@
         <iframe id="test-overlay-iframe" class="test-overlay-iframe" src=""></iframe>
     </div>
 
-    <!-- Модальное окно создания курса -->
     <div id="course-create-modal" class="test-overlay" style="justify-content: center; align-items: center; background-color: rgba(0,0,0,0.8);">
         <div class="card" style="width: 100%; max-width: 400px; background-color: var(--bg-card); z-index: 10001;">
-            <h2 style="margin-top: 0; border: none; padding-bottom: 0;">Vytvoriť новый kurz</h2>
+            <h2 style="margin-top: 0; border: none; padding-bottom: 0;">Создать новый курс</h2>
             <div class="form-group" style="margin-top: 20px;">
-                <label>ID Курса (латиница, без пробелов)</label>
-                <input type="text" id="new-course-id-input" class="form-input" placeholder="например: physics_12">
+                <label>Название или ID курса (можно на русском)</label>
+                <input type="text" id="new-course-id-input" class="form-input" placeholder="например: Физика 11 класс">
             </div>
             <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 24px;">
                 <button class="btn-secondary" onclick="document.getElementById('course-create-modal').classList.remove('active')">Отмена</button>
-                <button id="confirm-create-course" class="btn-primary">Vytvoriť</button>
+                <button id="confirm-create-course" class="btn-primary">Создать</button>
             </div>
         </div>
     </div>
@@ -274,30 +278,45 @@
                             <div class="grid-2">
                                 <div class="card">
                                     <div class="card-header"><span>Будущее занятие</span><i data-lucide="book-open"></i></div>
-                                    <div class="card-title" id="dash-topic-title">Načítanie...</div>
+                                    <div class="card-title" id="dash-topic-title">Загрузка...</div>
                                     <div id="dash-theory-links-container" style="display: flex; flex-direction: column; gap: 12px; margin-top: 20px;">
-                                        Načítanie...
+                                        Загрузка...
                                     </div>
                                 </div>
                                 <div class="card">
                                     <div class="card-header"><span>Актуальное ДЗ</span><i data-lucide="clock"></i></div>
                                     <div id="dash-hw-links-container" style="display: flex; flex-direction: column; gap: 12px; margin-top: 20px;">
-                                        Načítanie...
+                                        Загрузка...
                                     </div>
-                                    <p style="margin-top: 16px; font-size: 0.9rem; color: #EF4444; font-weight: 500;" id="dash-hw-deadline"></p>
+                                    <p style="margin-top: 16px; font-size: 0.9rem; color: var(--error); font-weight: 500;" id="dash-hw-deadline"></p>
                                 </div>
                             </div>
 
                             <div class="card" style="margin-bottom: 32px;">
                                 <div class="card-header"><span>Справочные материалы</span><i data-lucide="library"></i></div>
                                 <div id="dash-ref-links-container" style="display: flex; flex-direction: column; gap: 12px; margin-top: 16px;">
-                                    Načítanie...
+                                    Загрузка...
                                 </div>
                             </div>
 
                             <h2>Отправка домашнего задания</h2>
                             <div class="content-embed-wrapper" id="dash-embed-container">
-                                <div class="placeholder-text"><i data-lucide="upload-cloud" style="width: 56px; height: 56px; opacity: 0.3; margin-bottom: 16px; display: inline-block;"></i><br>Načítanie modulu...</div>
+                                <div class="form-group" style="width: 100%;">
+                                    <label style="color: var(--text-main); font-weight: 500; font-size: 1rem;">Тема задания</label>
+                                    <input type="text" id="student-hw-topic" class="form-input" placeholder="Например: Законы Ньютона">
+                                </div>
+                                <div class="form-group" style="width: 100%; margin-top: 20px;">
+                                    <label style="color: var(--text-main); font-weight: 500; font-size: 1rem;">Файлы решения</label>
+                                    <div id="hw-dropzone" class="hw-dropzone">
+                                        <i data-lucide="upload-cloud" style="width: 48px; height: 48px; color: var(--text-muted); margin-bottom: 16px; display: inline-block;"></i>
+                                        <p style="margin: 0; color: var(--text-main); font-weight: 500;">Нажмите или перетащите файлы сюда</p>
+                                        <p style="margin: 8px 0 0 0; font-size: 0.85rem; color: var(--text-muted);">Изображения или PDF (до 10 МБ на файл)</p>
+                                        <input type="file" id="student-hw-files" multiple style="display: none;">
+                                    </div>
+                                    <div id="hw-file-list" style="margin-top: 16px; display: flex; flex-direction: column; gap: 8px;"></div>
+                                </div>
+                                <button id="student-submit-hw" class="btn-primary" style="margin-top: 24px; width: 100%;">Отправить решение</button>
+                                <div id="student-hw-status" style="margin-top: 16px; text-align: center; font-size: 0.9rem; font-weight: 500;"></div>
                             </div>
                         </div>
                     </div>
@@ -316,7 +335,7 @@
                         <div class="content-container">
                             <h1>Тесты</h1>
                             <div class="grid-2" id="dash-tests-container">
-                                <div class="placeholder-text" style="grid-column: span 2;">Načítanie...</div>
+                                <div class="placeholder-text" style="grid-column: span 2;">Загрузка...</div>
                             </div>
                         </div>
                     </div>
@@ -336,7 +355,7 @@
                                         </tr>
                                     </thead>
                                     <tbody id="dash-archive-topics-container">
-                                        <tr><td colspan="3" class="placeholder-text">Načítanie...</td></tr>
+                                        <tr><td colspan="3" class="placeholder-text">Загрузка...</td></tr>
                                     </tbody>
                                 </table>
                             </div>
@@ -354,7 +373,7 @@
                                         </tr>
                                     </thead>
                                     <tbody id="dash-archive-checkpoints-container">
-                                        <tr><td colspan="5" class="placeholder-text">Načítanie...</td></tr>
+                                        <tr><td colspan="5" class="placeholder-text">Загрузка...</td></tr>
                                     </tbody>
                                 </table>
                             </div>
@@ -370,7 +389,7 @@
                                         </tr>
                                     </thead>
                                     <tbody id="dash-archive-hw-container">
-                                        <tr><td colspan="3" class="placeholder-text">Načítanie...</td></tr>
+                                        <tr><td colspan="3" class="placeholder-text">Загрузка...</td></tr>
                                     </tbody>
                                 </table>
                             </div>
@@ -397,10 +416,10 @@
             </header>
             <aside class="sidebar" id="admin-sidebar">
                 <div class="user-profile">
-                    <div class="avatar" style="background-color: #EF4444;">АДМ</div>
+                    <div class="avatar" style="background-color: var(--error);">АДМ</div>
                     <div>
                         <div style="font-weight: 600; font-size: 1.1rem;" id="admin-profile-name">Преподаватель</div>
-                        <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;">Панель správa</div>
+                        <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;">Панель управления</div>
                     </div>
                     <button class="logout-btn" title="Выйти"><i data-lucide="log-out"></i></button>
                 </div>
@@ -418,12 +437,12 @@
                             <div class="card" style="margin-bottom: 24px;">
                                 <div class="form-row" style="align-items: flex-end;">
                                     <div class="form-group" style="margin-bottom: 0;">
-                                        <label>ID Курса (course_id)</label>
+                                        <label>Выберите или введите курс</label>
                                         <input type="text" id="admin-course-id" list="admin-course-list" class="form-input" placeholder="Выберите из списка или введите новый" autocomplete="off">
                                         <datalist id="admin-course-list"></datalist>
                                     </div>
-                                    <button id="admin-load-course" class="btn-secondary">Načítať данные</button>
-                                    <button id="admin-create-course-ui" class="btn-primary" style="margin-left: 12px;">Vytvoriť новый kurz</button>
+                                    <button id="admin-load-course" class="btn-primary">Загрузить данные</button>
+                                    <button id="admin-create-course-ui" class="btn-secondary" style="margin-left: 12px;">Создать новый курс</button>
                                 </div>
                             </div>
 
@@ -464,8 +483,8 @@
                                         </div>
                                         <div id="admin-hw-links-container" style="display: flex; flex-direction: column; gap: 12px;"></div>
                                     </div>
-                                    <div class="form-group" style="margin-bottom: 0;">
-                                        <label>Embed URL формы сдачи ДЗ (hw_embed_url)</label>
+                                    <div class="form-group" style="margin-bottom: 0; display: none;">
+                                        <label>Embed URL формы сдачи ДЗ (устарело) (hw_embed_url)</label>
                                         <input type="text" id="admin-hw-embed" class="form-input">
                                     </div>
                                 </div>
@@ -523,7 +542,7 @@
                                     </div>
                                 </div>
 
-                                <button id="admin-save-course" class="btn-primary" style="margin-top: 24px;">Uložiť изменения</button>
+                                <button id="admin-save-course" class="btn-primary" style="margin-top: 24px;">Сохранить изменения</button>
                                 <span id="admin-save-status" style="margin-left: 16px; color: var(--accent); font-size: 0.9rem;"></span>
                             </div>
                         </div>
@@ -532,26 +551,26 @@
                         <div id="admin-section-students" class="admin-section">
                             <h1>Ученики</h1>
 
-                            <!-- Vytvoriť študenta -->
+                            <!-- Создать ученика -->
                             <div class="card" style="margin-bottom: 24px; padding: 0; overflow: hidden; background: transparent; border: none;">
                                 <div class="accordion-header" onclick="toggleAccordion(this)" style="margin-top: 0; background-color: var(--bg-card);">
-                                    <span>Vytvoriť нового študenta</span>
+                                    <span>Создать нового ученика</span>
                                     <i data-lucide="chevron-down" class="accordion-icon"></i>
                                 </div>
                                 <div class="accordion-content" style="background-color: var(--bg-card); border-radius: 0 0 10px 10px;">
                                     <div class="form-row">
                                         <div class="form-group"><input type="text" id="admin-new-student-login" class="form-input" placeholder="Логин (без @)"></div>
-                                        <div class="form-group"><input type="password" id="admin-new-student-pwd" class="form-input" placeholder="Heslo (пароль)"></div>
+                                        <div class="form-group"><input type="password" id="admin-new-student-pwd" class="form-input" placeholder="Пароль"></div>
                                     </div>
                                     <div class="form-row">
                                         <div class="form-group"><input type="text" id="admin-new-student-name" class="form-input" placeholder="ФИО"></div>
                                         <div class="form-group">
                                             <select id="admin-new-student-course" class="form-select">
-                                                <option value="">-- Выберите kurz --</option>
+                                                <option value="">-- Выберите курс --</option>
                                             </select>
                                         </div>
                                     </div>
-                                    <button id="btn-create-student" class="btn-primary">Vytvoriť študenta</button>
+                                    <button id="btn-create-student" class="btn-primary">Создать ученика</button>
                                     <span id="create-student-status" style="margin-left: 12px; font-size: 0.9rem; color: var(--accent);"></span>
                                 </div>
                             </div>
@@ -560,24 +579,90 @@
                                 <div class="form-group" style="margin-bottom: 0;">
                                     <label>Выберите ученика</label>
                                     <select id="admin-student-selector" class="form-select">
-                                        <option value="">-- Vyberte študenta --</option>
+                                        <option value="">-- Выберите ученика --</option>
                                     </select>
                                 </div>
                             </div>
                             
                             <div id="admin-student-editor" style="display: none; flex-direction: column; gap: 24px;">
                                 
-                                <!-- Zmeniť kurz -->
+                                <!-- Изменить курс -->
                                 <div class="card">
                                     <div class="form-row" style="align-items: flex-end;">
                                         <div class="form-group" style="margin-bottom: 0; flex: 2;">
-                                            <label style="color: var(--text-muted); font-size: 0.85rem;">Текущий kurz: <span id="current-student-course-display" style="color: var(--text-main); font-weight: 500;"></span></label>
+                                            <label style="color: var(--text-muted); font-size: 0.85rem;">Текущий курс: <span id="current-student-course-display" style="color: var(--text-main); font-weight: 500;"></span></label>
                                             <select id="admin-change-student-course" class="form-select" style="margin-top: 8px;">
-                                                <option value="">-- Vyberte новый kurz --</option>
+                                                <option value="">-- Выберите новый курс --</option>
                                             </select>
                                         </div>
-                                        <button id="btn-change-student-course" class="btn-secondary" style="height: 100%;">Zmeniť kurz</button>
+                                        <button id="btn-change-student-course" class="btn-secondary" style="height: 100%;">Изменить курс</button>
                                         <span id="change-course-status" style="margin-left: 12px; font-size: 0.9rem; color: var(--accent);"></span>
+                                    </div>
+                                </div>
+
+                                <!-- Ожидающие проверки ДЗ -->
+                                <div class="card" style="padding: 0; border: none; background: transparent;">
+                                    <div class="accordion-header open" onclick="toggleAccordion(this)" style="margin-top: 0; border-color: var(--accent);">
+                                        <span>ДЗ на проверку (Ожидающие)</span>
+                                        <i data-lucide="chevron-down" class="accordion-icon"></i>
+                                    </div>
+                                    <div class="accordion-content active" style="background-color: var(--bg-card); border-radius: 0 0 10px 10px; border-color: var(--accent);">
+                                        <div id="admin-pending-hw-list" style="display: flex; flex-direction: column; gap: 8px;"></div>
+                                    </div>
+                                </div>
+
+                                <!-- Архив -->
+                                <div class="card" style="padding: 0; border: none; background: transparent;">
+                                    <div class="accordion-header" onclick="toggleAccordion(this)" style="margin-top: 0;">
+                                        <span>Архив и Контрольные точки</span>
+                                        <i data-lucide="chevron-down" class="accordion-icon"></i>
+                                    </div>
+                                    <div class="accordion-content" style="background-color: var(--bg-card); border-radius: 0 0 10px 10px;">
+                                        <div style="display: flex; flex-direction: column; gap: 24px;">
+                                            <div>
+                                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                                                    <h4 style="margin: 0; color: var(--text-main);">Пройденные темы</h4>
+                                                    <button id="btn-quick-archive-topic" class="btn-secondary" style="padding: 4px 10px; font-size: 0.8rem; border-color: var(--accent); color: var(--accent);">↓ Из активного курса</button>
+                                                </div>
+                                                <div class="form-row">
+                                                    <div class="form-group" style="margin-bottom: 0; flex: 2;"><input type="text" id="arch-t-title-input" class="form-input" placeholder="Тема занятия"></div>
+                                                    <div class="form-group" style="margin-bottom: 0; flex: 2;"><input type="text" id="arch-t-url-input" class="form-input" placeholder="URL материала (опц.)"></div>
+                                                    <div class="form-group" style="margin-bottom: 0; flex: 3;"><textarea id="arch-t-notes-input" class="form-input" placeholder="Заметки" rows="2" style="resize: vertical;"></textarea></div>
+                                                    <button id="btn-add-arch-topic" class="btn-secondary" style="padding: 10px 16px; height: 100%;">Добавить</button>
+                                                </div>
+                                                <details id="details-arch-topics" style="display: none; margin-top: 16px;">
+                                                    <summary style="cursor: pointer; padding: 8px 0; color: var(--accent); font-weight: 500;">Показать сохраненные записи</summary>
+                                                    <div id="admin-arch-topics-list" style="display: flex; flex-direction: column; gap: 8px; margin-top: 8px;"></div>
+                                                </details>
+                                            </div>
+
+                                            <div style="border-top: 1px solid var(--border); padding-top: 24px;">
+                                                <h4 style="margin: 0 0 12px 0; color: var(--text-main);">Контрольные точки</h4>
+                                                <div id="admin-student-checkpoints-list" style="display: flex; flex-direction: column; gap: 8px;"></div>
+                                            </div>
+
+                                            <div style="border-top: 1px solid var(--border); padding-top: 24px;">
+                                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                                                    <h4 style="margin: 0; color: var(--text-main);">Домашние задания</h4>
+                                                    <button id="btn-quick-archive-hw" class="btn-secondary" style="padding: 4px 10px; font-size: 0.8rem; border-color: var(--accent); color: var(--accent);">↓ Из активного курса</button>
+                                                </div>
+                                                <div class="form-row">
+                                                    <div style="flex: 2; display: flex; flex-direction: column; gap: 8px;">
+                                                        <input type="text" id="arch-h-title-input" class="form-input" placeholder="Название ДЗ">
+                                                        <input type="text" id="arch-h-hwurl-input" class="form-input" placeholder="URL задания">
+                                                    </div>
+                                                    <div style="flex: 3; display: flex; flex-direction: column; gap: 8px;">
+                                                        <textarea id="arch-h-solurl-input" class="form-input" placeholder="URL решения (через Enter)" rows="2" style="resize: vertical;"></textarea>
+                                                        <textarea id="arch-h-feedback-input" class="form-input" placeholder="Оценка / Обратная связь" rows="2" style="resize: vertical;"></textarea>
+                                                    </div>
+                                                    <button id="btn-add-arch-hw" class="btn-secondary" style="height: 100%; padding: 0 16px;">Добавить</button>
+                                                </div>
+                                                <details id="details-arch-hw" style="display: none; margin-top: 16px;">
+                                                    <summary style="cursor: pointer; padding: 8px 0; color: var(--accent); font-weight: 500;">Показать сохраненные записи</summary>
+                                                    <div id="admin-arch-hw-list" style="display: flex; flex-direction: column; gap: 8px; margin-top: 8px;"></div>
+                                                </details>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
 
@@ -640,72 +725,17 @@
 
                                 <!-- Результаты тестов -->
                                 <div class="card" style="padding: 0; border: none; background: transparent;">
-                                    <div class="accordion-header open" onclick="toggleAccordion(this)" style="margin-top: 0;">
+                                    <div class="accordion-header" onclick="toggleAccordion(this)" style="margin-top: 0;">
                                         <span>Результаты тестов</span>
                                         <i data-lucide="chevron-down" class="accordion-icon"></i>
                                     </div>
-                                    <div class="accordion-content active" style="background-color: var(--bg-card); border-radius: 0 0 10px 10px;">
+                                    <div class="accordion-content" style="background-color: var(--bg-card); border-radius: 0 0 10px 10px;">
                                         <div id="admin-student-tests-container" style="display: flex; flex-direction: column;"></div>
                                     </div>
                                 </div>
 
-                                <!-- Архив -->
-                                <div class="card" style="padding: 0; border: none; background: transparent;">
-                                    <div class="accordion-header" onclick="toggleAccordion(this)" style="margin-top: 0;">
-                                        <span>Архив и Контрольные точки</span>
-                                        <i data-lucide="chevron-down" class="accordion-icon"></i>
-                                    </div>
-                                    <div class="accordion-content" style="background-color: var(--bg-card); border-radius: 0 0 10px 10px;">
-                                        <div style="display: flex; flex-direction: column; gap: 24px;">
-                                            <div>
-                                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                                                    <h4 style="margin: 0; color: var(--text-main);">Пройденные темы</h4>
-                                                    <button id="btn-quick-archive-topic" class="btn-secondary" style="padding: 4px 10px; font-size: 0.8rem; border-color: var(--accent); color: var(--accent);">↓ Из активного курса</button>
-                                                </div>
-                                                <div class="form-row">
-                                                    <div class="form-group" style="margin-bottom: 0; flex: 2;"><input type="text" id="arch-t-title-input" class="form-input" placeholder="Тема занятия"></div>
-                                                    <div class="form-group" style="margin-bottom: 0; flex: 2;"><input type="text" id="arch-t-url-input" class="form-input" placeholder="URL материала (опц.)"></div>
-                                                    <div class="form-group" style="margin-bottom: 0; flex: 3;"><textarea id="arch-t-notes-input" class="form-input" placeholder="Заметки" rows="2" style="resize: vertical;"></textarea></div>
-                                                    <button id="btn-add-arch-topic" class="btn-secondary" style="padding: 10px 16px; height: 100%;">Pridať</button>
-                                                </div>
-                                                <details id="details-arch-topics" style="display: none; margin-top: 16px;">
-                                                    <summary style="cursor: pointer; padding: 8px 0; color: var(--accent); font-weight: 500;">Zobraziť uložené záznamy (Показать сохраненные записи)</summary>
-                                                    <div id="admin-arch-topics-list" style="display: flex; flex-direction: column; gap: 8px; margin-top: 8px;"></div>
-                                                </details>
-                                            </div>
-
-                                            <div style="border-top: 1px solid var(--border); padding-top: 24px;">
-                                                <h4 style="margin: 0 0 12px 0; color: var(--text-main);">Контрольные точки</h4>
-                                                <div id="admin-student-checkpoints-list" style="display: flex; flex-direction: column; gap: 8px;"></div>
-                                            </div>
-
-                                            <div style="border-top: 1px solid var(--border); padding-top: 24px;">
-                                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                                                    <h4 style="margin: 0; color: var(--text-main);">Домашние задания</h4>
-                                                    <button id="btn-quick-archive-hw" class="btn-secondary" style="padding: 4px 10px; font-size: 0.8rem; border-color: var(--accent); color: var(--accent);">↓ Из активного курса</button>
-                                                </div>
-                                                <div class="form-row">
-                                                    <div style="flex: 2; display: flex; flex-direction: column; gap: 8px;">
-                                                        <input type="text" id="arch-h-title-input" class="form-input" placeholder="Название ДЗ">
-                                                        <input type="text" id="arch-h-hwurl-input" class="form-input" placeholder="URL задания">
-                                                    </div>
-                                                    <div style="flex: 3; display: flex; flex-direction: column; gap: 8px;">
-                                                        <textarea id="arch-h-solurl-input" class="form-input" placeholder="URL решения (через Enter)" rows="2" style="resize: vertical;"></textarea>
-                                                        <textarea id="arch-h-feedback-input" class="form-input" placeholder="Оценка / Обратная связь" rows="2" style="resize: vertical;"></textarea>
-                                                    </div>
-                                                    <button id="btn-add-arch-hw" class="btn-secondary" style="height: 100%; padding: 0 16px;">Pridať</button>
-                                                </div>
-                                                <details id="details-arch-hw" style="display: none; margin-top: 16px;">
-                                                    <summary style="cursor: pointer; padding: 8px 0; color: var(--accent); font-weight: 500;">Zobraziť uložené záznamy</summary>
-                                                    <div id="admin-arch-hw-list" style="display: flex; flex-direction: column; gap: 8px; margin-top: 8px;"></div>
-                                                </details>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
                                 <div>
-                                    <button id="admin-save-progress" class="btn-primary">Uložiť прогресс</button>
+                                    <button id="admin-save-progress" class="btn-primary">Сохранить прогресс</button>
                                     <span id="admin-progress-status" style="margin-left: 16px; color: var(--accent); font-size: 0.9rem;"></span>
                                 </div>
                             </div>
@@ -720,6 +750,10 @@
 
     <script>
         lucide.createIcons();
+
+        // КОНСТАНТА ДЛЯ ОТПРАВКИ ФАЙЛОВ В GOOGLE DRIVE
+        // Выполните инструкции ниже, чтобы получить URL и вставить его сюда
+        const GAS_WEB_APP_URL = "ВАШ_URL_СКРИПТА";
 
         function switchView(viewId, element) {
             document.querySelectorAll('#student-view .nav-item').forEach(el => el.classList.remove('active'));
@@ -765,9 +799,9 @@
     </script>
 
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc, updateDoc, onSnapshot, collection, getDocs, query, where, deleteField } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.7.1/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.7.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, updateDoc, onSnapshot, collection, getDocs, query, where, deleteField } from "https://www.gstatic.com/firebasejs/11.7.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDaCvmskTUDJIVHY-u8KNVcQLuqkW88VlI",
@@ -782,7 +816,6 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // Вторичное приложение для создания пользователей без сброса авторизации админа
         const secondaryApp = initializeApp(firebaseConfig, "SecondaryApp");
         const secondaryAuth = getAuth(secondaryApp);
 
@@ -797,6 +830,120 @@
         let currentCourseData = null;
         let currentProgressData = null;
         let currentUserUid = null;
+        let currentUserName = null;
+
+        /* Логика формы отправки ДЗ (Ученик) */
+        let studentFilesQueue = [];
+        const hwDropzone = document.getElementById('hw-dropzone');
+        const hwFileInput = document.getElementById('student-hw-files');
+        const hwFileList = document.getElementById('hw-file-list');
+        const hwSubmitBtn = document.getElementById('student-submit-hw');
+        const hwStatus = document.getElementById('student-hw-status');
+
+        if (hwDropzone) {
+            hwDropzone.addEventListener('click', () => hwFileInput.click());
+            hwDropzone.addEventListener('dragover', (e) => { e.preventDefault(); hwDropzone.classList.add('dragover'); });
+            hwDropzone.addEventListener('dragleave', () => hwDropzone.classList.remove('dragover'));
+            hwDropzone.addEventListener('drop', (e) => {
+                e.preventDefault(); hwDropzone.classList.remove('dragover');
+                if (e.dataTransfer.files.length) handleFilesSelect(e.dataTransfer.files);
+            });
+            hwFileInput.addEventListener('change', (e) => {
+                if (e.target.files.length) handleFilesSelect(e.target.files);
+            });
+        }
+
+        function handleFilesSelect(files) {
+            Array.from(files).forEach(file => {
+                if (file.size > 10 * 1024 * 1024) { alert(`Файл ${file.name} слишком велик (макс 10 МБ)`); return; }
+                studentFilesQueue.push(file);
+            });
+            renderFileQueue();
+        }
+
+        function renderFileQueue() {
+            hwFileList.innerHTML = '';
+            studentFilesQueue.forEach((file, index) => {
+                const item = document.createElement('div'); item.className = 'file-item';
+                item.innerHTML = `<span><i data-lucide="file" style="width: 14px; margin-right: 8px; vertical-align: middle;"></i>${file.name}</span> <button class="file-item-remove" data-index="${index}"><i data-lucide="x" style="width: 16px;"></i></button>`;
+                hwFileList.appendChild(item);
+            });
+            hwFileList.querySelectorAll('.file-item-remove').forEach(btn => {
+                btn.onclick = (e) => { e.stopPropagation(); studentFilesQueue.splice(btn.dataset.index, 1); renderFileQueue(); };
+            });
+            if (window.lucide) window.lucide.createIcons({ root: hwFileList });
+        }
+
+        const fileToBase64 = (file) => new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => resolve(reader.result.split(',')[1]);
+            reader.onerror = error => reject(error);
+        });
+
+        if (hwSubmitBtn) {
+            hwSubmitBtn.addEventListener('click', async () => {
+                const topicName = document.getElementById('student-hw-topic').value.trim();
+                if (!topicName) { hwStatus.textContent = "Укажите тему задания."; hwStatus.style.color = "var(--error)"; return; }
+                if (studentFilesQueue.length === 0) { hwStatus.textContent = "Прикрепите хотя бы один файл."; hwStatus.style.color = "var(--error)"; return; }
+                if (GAS_WEB_APP_URL === "ВАШ_URL_СКРИПТА") { hwStatus.textContent = "Бэкенд не настроен (URL скрипта не указан в коде)."; hwStatus.style.color = "var(--error)"; return; }
+
+                hwSubmitBtn.disabled = true;
+                hwSubmitBtn.textContent = "Отправка...";
+                hwStatus.textContent = "Загрузка файлов на сервер (может занять некоторое время)...";
+                hwStatus.style.color = "var(--text-muted)";
+
+                try {
+                    let uploadedUrls = [];
+                    for (let file of studentFilesQueue) {
+                        const base64 = await fileToBase64(file);
+                        const payload = {
+                            fileData: base64,
+                            fileName: file.name,
+                            mimeType: file.type,
+                            studentName: currentUserName,
+                            topicName: topicName
+                        };
+
+                        const response = await fetch(GAS_WEB_APP_URL, {
+                            method: "POST",
+                            body: JSON.stringify(payload)
+                        });
+                        
+                        const result = await response.json();
+                        if (result.status === "success") {
+                            uploadedUrls.push(result.url);
+                        } else {
+                            throw new Error(result.message);
+                        }
+                    }
+
+                    const currentPending = currentProgressData?.pending_hw || [];
+                    currentPending.push({
+                        topic: topicName,
+                        file_urls: uploadedUrls,
+                        timestamp: Date.now()
+                    });
+
+                    await setDoc(doc(db, 'students_progress', currentUserUid), { pending_hw: currentPending }, { merge: true });
+
+                    hwStatus.textContent = "Решение успешно отправлено на проверку!";
+                    hwStatus.style.color = "var(--accent)";
+                    document.getElementById('student-hw-topic').value = '';
+                    studentFilesQueue = [];
+                    renderFileQueue();
+
+                } catch (error) {
+                    console.error(error);
+                    hwStatus.textContent = "Ошибка при отправке: " + error.message;
+                    hwStatus.style.color = "var(--error)";
+                } finally {
+                    hwSubmitBtn.disabled = false;
+                    hwSubmitBtn.textContent = "Отправить решение";
+                }
+            });
+        }
+
 
         function renderArchive() {
             const topicsContainer = document.getElementById('dash-archive-topics-container');
@@ -812,7 +959,7 @@
                     let matUrl = '-';
                     if (t.material_url) {
                         const urls = t.material_url.split(/\s+/).filter(Boolean);
-                        matUrl = urls.map((u, i) => `<a href="${u}" class="pdf-link" target="_blank">${urls.length > 1 ? 'Мат. ' + (i+1) : 'Материал'}</a>`).join('<br>');
+                        matUrl = urls.map((u, i) => `<a href="${u}" class="pdf-link" target="_blank">${urls.length > 1 ? 'Материал ' + (i+1) : 'Материал'}</a>`).join('<br>');
                     }
                     topicsContainer.innerHTML += `<tr><td>${t.title || '-'}</td><td>${matUrl}</td><td style="white-space: pre-wrap; line-height: 1.4;">${t.notes || '-'}</td></tr>`;
                 });
@@ -832,7 +979,7 @@
                     let hwLink = '-';
                     if (c.hw_url) {
                         if (c.status === 'gray') {
-                            hwLink = `<span style="color: var(--text-muted); font-size: 0.85rem; cursor: not-allowed;" title="Zatiaľ nie je k dispozícii">Задание</span>`;
+                            hwLink = `<span style="color: var(--text-muted); font-size: 0.85rem; cursor: not-allowed;" title="Пока недоступно">Задание</span>`;
                         } else {
                             hwLink = `<a href="${c.hw_url}" class="pdf-link" target="_blank" style="font-size: 0.85rem;">Задание</a>`;
                         }
@@ -865,7 +1012,6 @@
             }
         }
 
-        // Слушатель результатов из внешнего теста
         window.addEventListener('message', async (event) => {
             const data = event.data;
             if (data && data.type === 'CLOSE_TEST') {
@@ -950,17 +1096,17 @@
             const email = login.includes('@') ? login : `${login}@platform.local`;
             
             errorMsg.textContent = "";
-            loginBtn.textContent = "Načítanie...";
+            loginBtn.textContent = "Загрузка...";
             loginBtn.disabled = true;
 
             try {
                 await signInWithEmailAndPassword(auth, email, password);
             } catch (error) {
                 if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
-                    errorMsg.textContent = "Chyba: Неверный логин или пароль.";
+                    errorMsg.textContent = "Ошибка: Неверный логин или пароль.";
                 } else if (error.code === 'auth/invalid-email') {
-                    errorMsg.textContent = "Chyba: Недопустимый формат логина (уберите кириллицу).";
-                } else { errorMsg.textContent = `Chyba: ${error.message}`; }
+                    errorMsg.textContent = "Ошибка: Недопустимый формат логина (уберите кириллицу).";
+                } else { errorMsg.textContent = `Ошибка: ${error.message}`; }
                 console.error("Auth error:", error);
             } finally {
                 loginBtn.textContent = "Войти";
@@ -993,7 +1139,7 @@
                     testUrl = `${testUrl}${separator}uid=${currentUserUid}&test_id=${test.id}`;
                 }
 
-                const detailsText = [test.limit, test.questions].filter(Boolean).join(' • ');
+                const detailsText = [test.limit, test.questions].filter(Boolean).join('<br>');
 
                 if (test.status === 'future') {
                     card.style.opacity = '0.5';
@@ -1001,7 +1147,7 @@
                     card.innerHTML = `
                         <div>
                             <h3 style="margin: 0 0 12px 0; font-size: 1.3rem;">${test.title}</h3>
-                            <p style="font-size: 0.95rem; color: var(--text-muted); margin-bottom: 12px;">${detailsText}</p>
+                            <p style="font-size: 0.95rem; color: var(--text-muted); margin-bottom: 12px; line-height: 1.5;">${detailsText}</p>
                         </div>
                         <div style="margin-top: auto; color: var(--text-muted); font-weight: bold; font-size: 1rem; padding-top: 20px; border-top: 1px solid var(--border);">В перспективе</div>
                     `;
@@ -1011,7 +1157,7 @@
                         card.innerHTML = `
                             <div>
                                 <h3 style="margin: 0 0 12px 0; font-size: 1.3rem;">${test.title}</h3>
-                                <p style="font-size: 0.95rem; color: var(--text-muted); margin-bottom: 12px;">${detailsText}</p>
+                                <p style="font-size: 0.95rem; color: var(--text-muted); margin-bottom: 12px; line-height: 1.5;">${detailsText}</p>
                                 <p style="font-size: 0.95rem; color: var(--text-muted);">Завершено</p>
                             </div>
                             <div style="margin-top: auto; color: var(--accent); font-weight: bold; font-size: 1.2rem; padding-top: 20px; border-top: 1px solid var(--border);">Результат: ${score}</div>
@@ -1021,7 +1167,7 @@
                         card.innerHTML = `
                             <div>
                                 <h3 style="margin: 0 0 12px 0; font-size: 1.3rem;">${test.title}</h3>
-                                <p style="font-size: 0.95rem; color: var(--text-muted); margin-bottom: 12px;">${detailsText}</p>
+                                <p style="font-size: 0.95rem; color: var(--text-muted); margin-bottom: 12px; line-height: 1.5;">${detailsText}</p>
                             </div>
                             <button onclick="window.openTestOverlay('${testUrl}')" style="background: var(--text-main); color: var(--bg-main); border: none; padding: 14px 20px; border-radius: 6px; font-weight: 600; font-size: 1rem; cursor: pointer; width: 100%; margin-top: 20px;">Начать тест</button>
                         `;
@@ -1034,7 +1180,7 @@
                     card.innerHTML = `
                         <div>
                             <h3 style="margin: 0 0 12px 0; font-size: 1.3rem;">${test.title}</h3>
-                            <p style="font-size: 0.95rem; color: var(--text-muted); margin-bottom: 12px;">${detailsText}</p>
+                            <p style="font-size: 0.95rem; color: var(--text-muted); margin-bottom: 12px; line-height: 1.5;">${detailsText}</p>
                             <p style="font-size: 0.95rem; color: var(--text-muted);">Завершено</p>
                         </div>
                         <div style="margin-top: auto; color: ${scoreColor}; font-weight: bold; font-size: 1.2rem; padding-top: 20px; border-top: 1px solid var(--border);">${displayScore}</div>
@@ -1056,22 +1202,22 @@
                     
                     if (userSnap.exists()) {
                         const userData = userSnap.data();
-                        const userName = userData.name || user.email.split('@')[0];
+                        currentUserName = userData.name || user.email.split('@')[0];
                         const role = userData.role || 'student';
                         const courseId = userData.course_id || '';
                         
                         if (role === 'admin') {
                             document.getElementById('student-view').classList.remove('active');
                             document.getElementById('admin-view').classList.add('active');
-                            document.getElementById('admin-profile-name').textContent = userName;
+                            document.getElementById('admin-profile-name').textContent = currentUserName;
                             setupAdminLogic();
                         } else {
                             document.getElementById('admin-view').classList.remove('active');
                             document.getElementById('student-view').classList.add('active');
                             
-                            document.getElementById('profile-name').textContent = userName;
+                            document.getElementById('profile-name').textContent = currentUserName;
                             document.getElementById('profile-course').textContent = courseId;
-                            document.getElementById('dash-greeting-name').textContent = userName.split(' ')[0];
+                            document.getElementById('dash-greeting-name').textContent = currentUserName.split(' ')[0];
                             
                             if (courseId) {
                                 unsubCourse = onSnapshot(doc(db, 'courses', courseId), (docSnap) => {
@@ -1097,11 +1243,6 @@
                                         document.getElementById('dash-hw-deadline').textContent = currentCourseData.hw_deadline ? `Дедлайн: ${currentCourseData.hw_deadline}` : '';
 
                                         updateDashboardLinks();
-
-                                        const embedContainer = document.getElementById('dash-embed-container');
-                                        if (currentCourseData.hw_embed_url) { embedContainer.innerHTML = `<iframe src="${currentCourseData.hw_embed_url}"></iframe>`; } 
-                                        else { embedContainer.innerHTML = `<div class="placeholder-text">Форма не назначена</div>`; }
-                                        
                                         renderTests();
                                     }
                                 });
@@ -1120,10 +1261,11 @@
                         document.getElementById('admin-view').classList.remove('active');
                         document.getElementById('student-view').classList.add('active');
                     }
-                } catch (error) { console.error("Chyba databázy:", error); }
+                } catch (error) { console.error("Ошибка базы данных:", error); }
                 if (window.lucide) window.lucide.createIcons();
             } else {
                 currentUserUid = null;
+                currentUserName = null;
                 appScreen.style.display = 'none';
                 document.getElementById('student-view').classList.remove('active');
                 document.getElementById('admin-view').classList.remove('active');
@@ -1151,7 +1293,7 @@
                 const row = document.createElement('div'); row.className = 'form-row theory-link-row';
                 row.innerHTML = `<div class="form-group" style="margin-bottom: 0;"><input type="text" class="form-input theory-link-title" placeholder="Название материала" value="${title}"></div>
                                  <div class="form-group" style="margin-bottom: 0;"><input type="text" class="form-input theory-link-url" placeholder="Ссылка на PDF теории" value="${url}"></div>
-                                 <button class="btn-secondary remove-link-btn" style="padding: 12px; color: #EF4444; border-color: #333;" title="odstrániť">✕</button>`;
+                                 <button class="btn-secondary remove-link-btn" style="padding: 12px; color: var(--error); border-color: #333;" title="удалить">✕</button>`;
                 row.querySelector('.remove-link-btn').onclick = (e) => { e.preventDefault(); row.remove(); };
                 theoryLinksContainer.appendChild(row);
             }
@@ -1160,7 +1302,7 @@
                 const row = document.createElement('div'); row.className = 'form-row hw-link-row';
                 row.innerHTML = `<div class="form-group" style="margin-bottom: 0;"><input type="text" class="form-input hw-link-title" placeholder="Название (напр. Часть 1)" value="${title}"></div>
                                  <div class="form-group" style="margin-bottom: 0;"><input type="text" class="form-input hw-link-url" placeholder="Ссылка на PDF" value="${url}"></div>
-                                 <button class="btn-secondary remove-link-btn" style="padding: 12px; color: #EF4444; border-color: #333;" title="odstrániť">✕</button>`;
+                                 <button class="btn-secondary remove-link-btn" style="padding: 12px; color: var(--error); border-color: #333;" title="удалить">✕</button>`;
                 row.querySelector('.remove-link-btn').onclick = (e) => { e.preventDefault(); row.remove(); };
                 hwLinksContainer.appendChild(row);
             }
@@ -1169,7 +1311,7 @@
                 const row = document.createElement('div'); row.className = 'form-row ref-link-row';
                 row.innerHTML = `<div class="form-group" style="margin-bottom: 0;"><input type="text" class="form-input ref-link-title" placeholder="Название справочника" value="${title}"></div>
                                  <div class="form-group" style="margin-bottom: 0;"><input type="text" class="form-input ref-link-url" placeholder="Ссылка на PDF" value="${url}"></div>
-                                 <button class="btn-secondary remove-link-btn" style="padding: 12px; color: #EF4444; border-color: #333;" title="odstrániť">✕</button>`;
+                                 <button class="btn-secondary remove-link-btn" style="padding: 12px; color: var(--error); border-color: #333;" title="удалить">✕</button>`;
                 row.querySelector('.remove-link-btn').onclick = (e) => { e.preventDefault(); row.remove(); };
                 refLinksContainer.appendChild(row);
             }
@@ -1194,7 +1336,7 @@
                                 <option value="past" ${status === 'past' ? 'selected' : ''}>Завершено</option>
                             </select>
                         </div>
-                        <button class="btn-secondary remove-link-btn" style="padding: 12px; color: #EF4444; border-color: #333;" title="odstrániť">✕</button>
+                        <button class="btn-secondary remove-link-btn" style="padding: 12px; color: var(--error); border-color: #333;" title="удалить">✕</button>
                     </div>
                 `;
                 row.querySelector('.remove-link-btn').onclick = (e) => { e.preventDefault(); row.remove(); };
@@ -1219,7 +1361,7 @@
                                 <option value="green" ${status === 'green' ? 'selected' : ''}>Завершено</option>
                             </select>
                         </div>
-                        <button class="btn-secondary remove-link-btn" style="padding: 12px; color: #EF4444; border-color: #333;" title="odstrániť">✕</button>
+                        <button class="btn-secondary remove-link-btn" style="padding: 12px; color: var(--error); border-color: #333;" title="удалить">✕</button>
                     </div>
                 `;
                 row.querySelector('.remove-link-btn').onclick = (e) => { e.preventDefault(); row.remove(); };
@@ -1239,7 +1381,7 @@
                     const newStudentCourseSelect = document.getElementById('admin-new-student-course');
                     const changeStudentCourseSelect = document.getElementById('admin-change-student-course');
                     
-                    let optionsHtml = '<option value="">-- Vyberte kurz --</option>';
+                    let optionsHtml = '<option value="">-- Выберите курс --</option>';
                     
                     coursesSnap.forEach(courseDoc => {
                         const option = document.createElement('option'); option.value = courseDoc.id;
@@ -1273,7 +1415,7 @@
                 document.getElementById('admin-topic-title').focus();
                 
                 const statusMsg = document.getElementById('admin-save-status');
-                statusMsg.textContent = "Kurz готов к заполнению. Нажмите 'Uložiť изменения' для сохранения.";
+                statusMsg.textContent = "Курс готов к заполнению. Нажмите 'Сохранить изменения' для сохранения.";
             };
 
             loadBtn.onclick = async () => {
@@ -1290,7 +1432,6 @@
                         const data = docSnap.data();
                         document.getElementById('admin-topic-title').value = data.topic_title || '';
                         document.getElementById('admin-hw-deadline').value = data.hw_deadline || '';
-                        document.getElementById('admin-hw-embed').value = data.hw_embed_url || '';
                         document.getElementById('admin-skill-tree-url').value = data.skill_tree_url || '';
                         
                         if (data.theory_links && Array.isArray(data.theory_links) && data.theory_links.length > 0) { data.theory_links.forEach(link => { typeof link === 'string' ? createTheoryLinkRow('', link) : createTheoryLinkRow(link.title, link.url); }); } else { createTheoryLinkRow(); }
@@ -1311,7 +1452,7 @@
                         createTheoryLinkRow(); createHwLinkRow(); createRefLinkRow();
                     }
                     courseForm.style.opacity = '1'; courseForm.style.pointerEvents = 'auto';
-                } catch (error) { console.error("Ошибка чтения курса:", error); } finally { loadBtn.textContent = "Načítať данные"; }
+                } catch (error) { console.error("Ошибка чтения курса:", error); } finally { loadBtn.textContent = "Загрузить данные"; }
             };
 
             saveBtn.onclick = async () => {
@@ -1352,7 +1493,6 @@
                 const courseData = {
                     topic_title: document.getElementById('admin-topic-title').value,
                     hw_deadline: document.getElementById('admin-hw-deadline').value,
-                    hw_embed_url: document.getElementById('admin-hw-embed').value,
                     skill_tree_url: document.getElementById('admin-skill-tree-url').value.trim(),
                     theory_links: getLinks('.theory-link-row', '.theory-link-title', '.theory-link-url'),
                     hw_links: getLinks('.hw-link-row', '.hw-link-title', '.hw-link-url'),
@@ -1363,9 +1503,9 @@
 
                 try {
                     await setDoc(doc(db, 'courses', courseId), courseData, { merge: true });
-                    statusMsg.textContent = "Uložené! (Успешно)"; fetchCourses(); 
+                    statusMsg.textContent = "Успешно сохранено!"; fetchCourses(); 
                     setTimeout(() => statusMsg.textContent = "", 3000);
-                } catch (error) { statusMsg.textContent = "Chyba при сохранении."; } finally { saveBtn.disabled = false; saveBtn.textContent = "Uložiť изменения"; }
+                } catch (error) { statusMsg.textContent = "Ошибка при сохранении."; } finally { saveBtn.disabled = false; saveBtn.textContent = "Сохранить изменения"; }
             };
 
             const studentSelector = document.getElementById('admin-student-selector');
@@ -1378,10 +1518,63 @@
             const persHwContainer = document.getElementById('admin-personal-hw-container');
             const persRefContainer = document.getElementById('admin-personal-ref-container');
 
-            let adminArchiveState = { topics: [], hw: [] };
+            let adminArchiveState = { topics: [], hw: [], pending_hw: [] };
             let adminArchiveEditState = { topic: -1, hw: -1 };
             let adminSelectedCourseData = null;
             let adminSelectedProgressData = null;
+
+            function renderAdminPendingHwList() {
+                const list = document.getElementById('admin-pending-hw-list');
+                list.innerHTML = '';
+                if (adminArchiveState.pending_hw.length === 0) {
+                    list.innerHTML = '<span style="color: var(--text-muted); font-size: 0.9rem;">Нет новых заданий на проверку.</span>';
+                    return;
+                }
+
+                adminArchiveState.pending_hw.forEach((phw, i) => {
+                    const row = document.createElement('div');
+                    row.style.cssText = 'display: flex; justify-content: space-between; align-items: center; padding: 12px; background: rgba(76, 175, 80, 0.05); border-radius: 6px; border: 1px solid var(--accent);';
+                    
+                    const urlsHtml = phw.file_urls.map((u, j) => `<a href="${u}" class="pdf-link" target="_blank" style="font-size: 0.85rem; margin-right: 12px;">Файл ${j+1}</a>`).join('');
+                    const dateStr = new Date(phw.timestamp).toLocaleString('ru-RU');
+
+                    row.innerHTML = `
+                        <div style="flex: 1; font-size: 0.9rem;">
+                            <strong style="color: var(--text-main); font-size: 1rem;">${phw.topic}</strong>
+                            <div style="color: var(--text-muted); margin-top: 4px;">Отправлено: ${dateStr}</div>
+                            <div style="margin-top: 8px;">${urlsHtml}</div>
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <button class="btn-primary evaluate-phw-btn" data-index="${i}" style="padding: 6px 12px; font-size: 0.85rem;">Оценить</button>
+                        </div>
+                    `;
+                    list.appendChild(row);
+                });
+
+                list.querySelectorAll('.evaluate-phw-btn').forEach(btn => {
+                    btn.onclick = (e) => {
+                        e.preventDefault();
+                        const idx = parseInt(btn.dataset.index);
+                        const item = adminArchiveState.pending_hw[idx];
+                        
+                        document.getElementById('arch-h-title-input').value = `ДЗ: ${item.topic}`;
+                        document.getElementById('arch-h-solurl-input').value = item.file_urls.join('\n');
+                        
+                        const headers = document.querySelectorAll('.accordion-header span');
+                        let targetHeader = null;
+                        headers.forEach(h => {
+                            if (h.textContent.includes("Архив и Контрольные точки")) {
+                                targetHeader = h.parentElement;
+                            }
+                        });
+                        if (targetHeader && !targetHeader.classList.contains('open')) {
+                            targetHeader.click();
+                        }
+                        
+                        document.getElementById('arch-h-feedback-input').focus();
+                    };
+                });
+            }
 
             function renderAdminArchiveLists() {
                 const detailsT = document.getElementById('details-arch-topics');
@@ -1398,8 +1591,8 @@
                             <div style="color: var(--text-muted); margin-top: 4px; white-space: pre-wrap; line-height: 1.4;">Заметки: ${t.notes || '—'}</div>
                         </div>
                         <div style="display: flex; gap: 8px;">
-                            <button class="btn-secondary edit-t-btn" data-index="${i}" style="padding: 6px 12px; font-size: 0.85rem;">Upraviť</button>
-                            <button class="btn-secondary del-t-btn" data-index="${i}" style="padding: 6px 12px; font-size: 0.85rem; color: var(--error); border-color: var(--border);">Zmazať</button>
+                            <button class="btn-secondary edit-t-btn" data-index="${i}" style="padding: 6px 12px; font-size: 0.85rem;">Изменить</button>
+                            <button class="btn-secondary del-t-btn" data-index="${i}" style="padding: 6px 12px; font-size: 0.85rem; color: var(--error); border-color: var(--border);">Удалить</button>
                         </div>
                     `;
                     tList.appendChild(row);
@@ -1408,7 +1601,7 @@
                 tList.querySelectorAll('.del-t-btn').forEach(btn => btn.onclick = (e) => {
                     adminArchiveState.topics.splice(e.target.dataset.index, 1);
                     adminArchiveEditState.topic = -1;
-                    document.getElementById('btn-add-arch-topic').innerText = 'Pridať';
+                    document.getElementById('btn-add-arch-topic').innerText = 'Добавить';
                     document.getElementById('arch-t-title-input').value = '';
                     document.getElementById('arch-t-url-input').value = '';
                     document.getElementById('arch-t-notes-input').value = '';
@@ -1421,7 +1614,7 @@
                     document.getElementById('arch-t-url-input').value = item.material_url || '';
                     document.getElementById('arch-t-notes-input').value = item.notes || '';
                     adminArchiveEditState.topic = idx;
-                    document.getElementById('btn-add-arch-topic').innerText = 'Uložiť';
+                    document.getElementById('btn-add-arch-topic').innerText = 'Сохранить';
                 });
 
                 const detailsH = document.getElementById('details-arch-hw');
@@ -1437,8 +1630,8 @@
                             <div style="color: var(--text-muted); margin-top: 4px; white-space: pre-wrap; line-height: 1.4;">Оценка: ${h.feedback || '—'}</div>
                         </div>
                         <div style="display: flex; gap: 8px;">
-                            <button class="btn-secondary edit-h-btn" data-index="${i}" style="padding: 6px 12px; font-size: 0.85rem;">Upraviť</button>
-                            <button class="btn-secondary del-h-btn" data-index="${i}" style="padding: 6px 12px; font-size: 0.85rem; color: var(--error); border-color: var(--border);">Zmazať</button>
+                            <button class="btn-secondary edit-h-btn" data-index="${i}" style="padding: 6px 12px; font-size: 0.85rem;">Изменить</button>
+                            <button class="btn-secondary del-h-btn" data-index="${i}" style="padding: 6px 12px; font-size: 0.85rem; color: var(--error); border-color: var(--border);">Удалить</button>
                         </div>
                     `;
                     hList.appendChild(row);
@@ -1447,7 +1640,7 @@
                 hList.querySelectorAll('.del-h-btn').forEach(btn => btn.onclick = (e) => {
                     adminArchiveState.hw.splice(e.target.dataset.index, 1);
                     adminArchiveEditState.hw = -1;
-                    document.getElementById('btn-add-arch-hw').innerText = 'Pridať';
+                    document.getElementById('btn-add-arch-hw').innerText = 'Добавить';
                     document.getElementById('arch-h-title-input').value = '';
                     document.getElementById('arch-h-hwurl-input').value = '';
                     document.getElementById('arch-h-solurl-input').value = '';
@@ -1462,7 +1655,7 @@
                     document.getElementById('arch-h-solurl-input').value = item.student_hw_url || '';
                     document.getElementById('arch-h-feedback-input').value = item.feedback || '';
                     adminArchiveEditState.hw = idx;
-                    document.getElementById('btn-add-arch-hw').innerText = 'Uložiť';
+                    document.getElementById('btn-add-arch-hw').innerText = 'Сохранить';
                 });
             }
 
@@ -1476,7 +1669,7 @@
                 const dupIdx = adminArchiveState.topics.findIndex(t => t.title === title);
                 if (dupIdx > -1 && dupIdx !== adminArchiveEditState.topic) {
                     const btn = e.target; const oldText = btn.innerText;
-                    btn.innerText = 'Existuje'; btn.style.backgroundColor = 'var(--error)';
+                    btn.innerText = 'Уже существует'; btn.style.backgroundColor = 'var(--error)';
                     setTimeout(() => { btn.innerText = oldText; btn.style.backgroundColor = ''; }, 2000);
                     return;
                 }
@@ -1484,7 +1677,7 @@
                 if (adminArchiveEditState.topic > -1) {
                     adminArchiveState.topics[adminArchiveEditState.topic] = { title, material_url: url, notes };
                     adminArchiveEditState.topic = -1;
-                    document.getElementById('btn-add-arch-topic').innerText = 'Pridať';
+                    document.getElementById('btn-add-arch-topic').innerText = 'Добавить';
                 } else {
                     adminArchiveState.topics.push({ title, material_url: url, notes });
                 }
@@ -1506,7 +1699,7 @@
                 const dupIdx = adminArchiveState.hw.findIndex(h => h.hw_title === title);
                 if (dupIdx > -1 && dupIdx !== adminArchiveEditState.hw) {
                     const btn = e.target; const oldText = btn.innerText;
-                    btn.innerText = 'Existuje'; btn.style.backgroundColor = 'var(--error)';
+                    btn.innerText = 'Уже существует'; btn.style.backgroundColor = 'var(--error)';
                     setTimeout(() => { btn.innerText = oldText; btn.style.backgroundColor = ''; }, 2000);
                     return;
                 }
@@ -1514,9 +1707,18 @@
                 if (adminArchiveEditState.hw > -1) {
                     adminArchiveState.hw[adminArchiveEditState.hw] = { hw_title: title, hw_url: hwUrl, student_hw_url: solUrl, feedback };
                     adminArchiveEditState.hw = -1;
-                    document.getElementById('btn-add-arch-hw').innerText = 'Pridať';
+                    document.getElementById('btn-add-arch-hw').innerText = 'Добавить';
                 } else {
                     adminArchiveState.hw.push({ hw_title: title, hw_url: hwUrl, student_hw_url: solUrl, feedback });
+                }
+
+                if (solUrl) {
+                    const solUrlClean = solUrl.replace(/\s/g, '');
+                    const pendingIdx = adminArchiveState.pending_hw.findIndex(p => p.file_urls.join('').replace(/\s/g, '') === solUrlClean);
+                    if (pendingIdx > -1) {
+                        adminArchiveState.pending_hw.splice(pendingIdx, 1);
+                        renderAdminPendingHwList();
+                    }
                 }
 
                 document.getElementById('arch-h-title-input').value = '';
@@ -1560,7 +1762,7 @@
                 const row = document.createElement('div'); row.className = 'form-row';
                 row.innerHTML = `<div class="form-group" style="margin-bottom: 0;"><input type="text" class="form-input ${titleCls}" placeholder="Название" value="${titleVal}"></div>
                                  <div class="form-group" style="margin-bottom: 0;"><input type="text" class="form-input ${urlCls}" placeholder="URL" value="${urlVal}"></div>
-                                 <button class="btn-secondary remove-link-btn" style="padding: 12px; color: #EF4444; border-color: #333;" title="odstrániť">✕</button>`;
+                                 <button class="btn-secondary remove-link-btn" style="padding: 12px; color: var(--error); border-color: #333;" title="удалить">✕</button>`;
                 row.querySelector('.remove-link-btn').onclick = (e) => { e.preventDefault(); row.remove(); };
                 container.appendChild(row);
             }
@@ -1576,7 +1778,7 @@
                     const q = query(collection(db, "users"), where("role", "==", "student"));
                     const querySnapshot = await getDocs(q);
                     const currentSelection = studentSelector.value;
-                    studentSelector.innerHTML = '<option value="">-- Vyberte študenta --</option>';
+                    studentSelector.innerHTML = '<option value="">-- Выберите ученика --</option>';
                     querySnapshot.forEach((docSnap) => {
                         const data = docSnap.data();
                         const option = document.createElement('option');
@@ -1600,11 +1802,11 @@
                 const courseId = document.getElementById('admin-new-student-course').value;
 
                 if (!loginRaw || !pwd || !name) { status.textContent = "Заполните все текстовые поля."; status.style.color = "var(--error)"; return; }
-                if (pwd.length < 6) { status.textContent = "Heslo должно быть от 6 символов."; status.style.color = "var(--error)"; return; }
+                if (pwd.length < 6) { status.textContent = "Пароль должен быть от 6 символов."; status.style.color = "var(--error)"; return; }
 
                 const email = loginRaw.includes('@') ? loginRaw : `${loginRaw.toLowerCase().replace(/\s+/g, '')}@platform.local`;
 
-                btn.disabled = true; btn.textContent = "Vytváranie..."; status.textContent = "";
+                btn.disabled = true; btn.textContent = "Создание..."; status.textContent = "";
 
                 try {
                     const userCredential = await createUserWithEmailAndPassword(secondaryAuth, email, pwd);
@@ -1612,7 +1814,7 @@
                     await setDoc(doc(db, 'users', newUid), { name: name, role: 'student', course_id: courseId });
                     await signOut(secondaryAuth);
 
-                    status.textContent = "Študent успешно создан!"; status.style.color = "var(--accent)";
+                    status.textContent = "Ученик успешно создан!"; status.style.color = "var(--accent)";
                     document.getElementById('admin-new-student-login').value = '';
                     document.getElementById('admin-new-student-pwd').value = '';
                     document.getElementById('admin-new-student-name').value = '';
@@ -1620,9 +1822,9 @@
                     fetchStudentsForAdmin();
                 } catch (error) {
                     console.error(error);
-                    status.textContent = "Chyba: " + error.message; status.style.color = "var(--error)";
+                    status.textContent = "Ошибка: " + error.message; status.style.color = "var(--error)";
                 } finally {
-                    btn.disabled = false; btn.textContent = "Vytvoriť študenta";
+                    btn.disabled = false; btn.textContent = "Создать ученика";
                 }
             };
 
@@ -1634,23 +1836,22 @@
                 const status = document.getElementById('change-course-status');
                 const newCourseId = document.getElementById('admin-change-student-course').value;
                 
-                if (!newCourseId) { status.textContent = "Vyberte kurz"; status.style.color = "var(--error)"; return; }
+                if (!newCourseId) { status.textContent = "Выберите курс"; status.style.color = "var(--error)"; return; }
 
                 btn.disabled = true; status.textContent = "";
                 
                 try {
                     await updateDoc(doc(db, 'users', selectedStudentUid), { course_id: newCourseId });
-                    status.textContent = "Kurz zmenený!"; status.style.color = "var(--accent)";
-                    await fetchStudentsForAdmin(); // Обновляем селектор (data-course)
+                    status.textContent = "Курс изменен!"; status.style.color = "var(--accent)";
+                    await fetchStudentsForAdmin(); 
                     
-                    // Эмулируем смену селектора для перезагрузки интерфейса редактора
                     const event = new Event('change');
                     studentSelector.dispatchEvent(event);
                     
                     setTimeout(() => status.textContent = "", 3000);
                 } catch (error) {
                     console.error(error);
-                    status.textContent = "Chyba при смене курса."; status.style.color = "var(--error)";
+                    status.textContent = "Ошибка при смене курса."; status.style.color = "var(--error)";
                 } finally {
                     btn.disabled = false;
                 }
@@ -1661,8 +1862,8 @@
                 if (!selectedStudentUid) { studentEditor.style.display = 'none'; return; }
 
                 adminArchiveEditState = { topic: -1, hw: -1 };
-                document.getElementById('btn-add-arch-topic').innerText = 'Pridať';
-                document.getElementById('btn-add-arch-hw').innerText = 'Pridať';
+                document.getElementById('btn-add-arch-topic').innerText = 'Добавить';
+                document.getElementById('btn-add-arch-hw').innerText = 'Добавить';
 
                 const selectedOption = e.target.options[e.target.selectedIndex];
                 const courseId = selectedOption.dataset.course;
@@ -1715,7 +1916,7 @@
 
                         let resetBtnHtml = '';
                         if (score) {
-                            resetBtnHtml = `<button class="btn-secondary admin-reset-test-btn" data-testid="${test.id}" style="padding: 4px 10px; font-size: 0.8rem; border-color: var(--error); color: var(--error); margin-left: 12px; transition: all 0.2s;">Zmazať</button>`;
+                            resetBtnHtml = `<button class="btn-secondary admin-reset-test-btn" data-testid="${test.id}" style="padding: 4px 10px; font-size: 0.8rem; border-color: var(--error); color: var(--error); margin-left: 12px; transition: all 0.2s;">Удалить</button>`;
                         }
 
                         row.innerHTML = `
@@ -1724,7 +1925,7 @@
                             </div>
                             <div style="flex: 1; text-align: right; display: flex; justify-content: flex-end; align-items: center;">
                                 <span style="font-weight: 600; font-size: 1.1rem; color: ${score ? 'var(--accent)' : 'var(--text-muted)'};">
-                                    Výsledok: ${displayScore}
+                                    Результат: ${displayScore}
                                 </span>
                                 ${resetBtnHtml}
                             </div>
@@ -1751,7 +1952,7 @@
                                 btn.style.color = '#fff';
                                 setTimeout(() => { 
                                     if (btn && btn.parentElement) { 
-                                        btn.dataset.confirm = 'false'; btn.innerText = 'Zmazať'; btn.style.background = 'transparent'; btn.style.color = 'var(--error)'; 
+                                        btn.dataset.confirm = 'false'; btn.innerText = 'Удалить'; btn.style.background = 'transparent'; btn.style.color = 'var(--error)'; 
                                     }
                                 }, 3000);
                             }
@@ -1804,10 +2005,12 @@
 
                 adminArchiveState.topics = progressData.archive_topics && Array.isArray(progressData.archive_topics) ? progressData.archive_topics : [];
                 adminArchiveState.hw = progressData.archive_hw && Array.isArray(progressData.archive_hw) ? progressData.archive_hw : [];
+                adminArchiveState.pending_hw = progressData.pending_hw && Array.isArray(progressData.pending_hw) ? progressData.pending_hw : [];
                 
                 document.getElementById('arch-t-title-input').value = ''; document.getElementById('arch-t-url-input').value = ''; document.getElementById('arch-t-notes-input').value = '';
                 document.getElementById('arch-h-title-input').value = ''; document.getElementById('arch-h-hwurl-input').value = ''; document.getElementById('arch-h-solurl-input').value = ''; document.getElementById('arch-h-feedback-input').value = '';
                 
+                renderAdminPendingHwList();
                 renderAdminArchiveLists();
 
                 studentEditor.style.display = 'flex';
@@ -1842,18 +2045,19 @@
                     personal_reference_links: getPersonalLinks(persRefContainer, 'pers-ref-title', 'pers-ref-url'),
                     archive_topics: adminArchiveState.topics,
                     checkpoints_results: cpResults,
-                    archive_hw: adminArchiveState.hw
+                    archive_hw: adminArchiveState.hw,
+                    pending_hw: adminArchiveState.pending_hw
                 };
 
                 try {
                     await setDoc(doc(db, 'students_progress', selectedStudentUid), progressPayload, { merge: true });
-                    progressStatus.textContent = "Uložené!";
+                    progressStatus.textContent = "Успешно сохранено!";
                     setTimeout(() => progressStatus.textContent = "", 3000);
                 } catch (error) {
                     console.error(error);
-                    progressStatus.textContent = "Chyba при сохранении.";
+                    progressStatus.textContent = "Ошибка при сохранении.";
                 } finally {
-                    saveProgressBtn.disabled = false; saveProgressBtn.textContent = "Uložiť прогресс";
+                    saveProgressBtn.disabled = false; saveProgressBtn.textContent = "Сохранить прогресс";
                 }
             };
         }
