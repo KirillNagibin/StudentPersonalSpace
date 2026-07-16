@@ -437,9 +437,10 @@
                             <div class="card" style="margin-bottom: 24px;">
                                 <div class="form-row" style="align-items: flex-end;">
                                     <div class="form-group" style="margin-bottom: 0;">
-                                        <label>Выберите или введите курс</label>
-                                        <input type="text" id="admin-course-id" list="admin-course-list" class="form-input" placeholder="Выберите из списка или введите новый" autocomplete="off">
-                                        <datalist id="admin-course-list"></datalist>
+                                        <label>Выберите курс</label>
+                                        <select id="admin-course-id" class="form-select">
+                                            <option value="">-- Выберите курс --</option>
+                                        </select>
                                     </div>
                                     <button id="admin-load-course" class="btn-primary">Загрузить данные</button>
                                     <button id="admin-create-course-ui" class="btn-secondary" style="margin-left: 12px;">Создать новый курс</button>
@@ -1377,20 +1378,22 @@
             async function fetchCourses() {
                 try {
                     const coursesSnap = await getDocs(collection(db, 'courses'));
-                    courseList.innerHTML = '';
+                    const adminCourseSelect = document.getElementById('admin-course-id');
                     const newStudentCourseSelect = document.getElementById('admin-new-student-course');
                     const changeStudentCourseSelect = document.getElementById('admin-change-student-course');
                     
+                    const currentSelection = adminCourseSelect.value;
                     let optionsHtml = '<option value="">-- Выберите курс --</option>';
                     
                     coursesSnap.forEach(courseDoc => {
-                        const option = document.createElement('option'); option.value = courseDoc.id;
-                        courseList.appendChild(option);
                         optionsHtml += `<option value="${courseDoc.id}">${courseDoc.id}</option>`;
                     });
                     
+                    adminCourseSelect.innerHTML = optionsHtml;
                     newStudentCourseSelect.innerHTML = optionsHtml;
                     changeStudentCourseSelect.innerHTML = optionsHtml;
+
+                    if (currentSelection) adminCourseSelect.value = currentSelection;
                 } catch (error) { console.error("Ошибка при получении списка курсов:", error); }
             }
             fetchCourses();
@@ -1406,7 +1409,16 @@
                 if (!newId) return;
 
                 document.getElementById('course-create-modal').classList.remove('active');
-                document.getElementById('admin-course-id').value = newId;
+                
+                const adminCourseSelect = document.getElementById('admin-course-id');
+                let optionExists = Array.from(adminCourseSelect.options).some(opt => opt.value === newId);
+                if (!optionExists) {
+                    const newOpt = document.createElement('option');
+                    newOpt.value = newId;
+                    newOpt.textContent = newId;
+                    adminCourseSelect.appendChild(newOpt);
+                }
+                adminCourseSelect.value = newId;
                 
                 courseForm.querySelectorAll('input:not(.theory-link-url, .hw-link-title, .hw-link-url, .ref-link-title, .ref-link-url, .test-title, .test-url, .test-limit, .test-questions, .cp-title, .cp-url)').forEach(input => input.value = '');
                 theoryLinksContainer.innerHTML = ''; hwLinksContainer.innerHTML = ''; refLinksContainer.innerHTML = ''; testsLinksContainer.innerHTML = ''; document.getElementById('admin-course-checkpoints-container').innerHTML = '';
