@@ -1496,6 +1496,7 @@
                         document.getElementById('admin-topic-title').value = data.topic_title || '';
                         document.getElementById('admin-hw-deadline').value = data.hw_deadline || '';
                         document.getElementById('admin-skill-tree-url').value = data.skill_tree_url || '';
+                        document.getElementById('admin-course-flashcards').value = data.allowed_flashcards || '';
                         
                         if (data.theory_links && Array.isArray(data.theory_links) && data.theory_links.length > 0) { data.theory_links.forEach(link => { typeof link === 'string' ? createTheoryLinkRow('', link) : createTheoryLinkRow(link.title, link.url); }); } else { createTheoryLinkRow(); }
                         if (data.hw_links && Array.isArray(data.hw_links) && data.hw_links.length > 0) { data.hw_links.forEach(link => createHwLinkRow(link.title, link.url)); } else { createHwLinkRow(); }
@@ -1557,6 +1558,7 @@
                     topic_title: document.getElementById('admin-topic-title').value,
                     hw_deadline: document.getElementById('admin-hw-deadline').value,
                     skill_tree_url: document.getElementById('admin-skill-tree-url').value.trim(),
+                    allowed_flashcards: document.getElementById('admin-course-flashcards').value.trim(),
                     theory_links: getLinks('.theory-link-row', '.theory-link-title', '.theory-link-url'),
                     hw_links: getLinks('.hw-link-row', '.hw-link-title', '.hw-link-url'),
                     reference_links: getLinks('.ref-link-row', '.ref-link-title', '.ref-link-url'),
@@ -2172,6 +2174,63 @@
                     saveProgressBtn.disabled = false; saveProgressBtn.textContent = "Сохранить прогресс";
                 }
             };
+            
+            // ЛОГИКА РЕДАКТОРА КАРТОЧЕК
+            const fcJsonTextarea = document.getElementById('admin-fc-json');
+            const fcFormatBtn = document.getElementById('admin-fc-format');
+            const fcSaveBtn = document.getElementById('admin-fc-save');
+            const fcStatus = document.getElementById('admin-fc-status');
+
+            async function loadGlobalFlashcardsAdmin() {
+                try {
+                    const docSnap = await getDoc(doc(db, 'courses', '_global_flashcards_'));
+                    if (docSnap.exists()) {
+                        fcJsonTextarea.value = docSnap.data().json_data || '{}';
+                        formatJson();
+                    } else {
+                        fcJsonTextarea.value = '{\n  "kinematics": {\n    "title": "Кинематика",\n    "cards": []\n  }\n}';
+                    }
+                } catch (e) {
+                    fcJsonTextarea.value = 'Ошибка загрузки: ' + e.message;
+                }
+            }
+
+            function formatJson() {
+                try {
+                    const obj = JSON.parse(fcJsonTextarea.value);
+                    fcJsonTextarea.value = JSON.stringify(obj, null, 4);
+                    fcStatus.textContent = "JSON валиден и отформатирован.";
+                    fcStatus.style.color = "var(--success)";
+                } catch (e) {
+                    fcStatus.textContent = "Ошибка: Неверный формат JSON. " + e.message;
+                    fcStatus.style.color = "var(--error)";
+                }
+            }
+
+            fcFormatBtn.onclick = formatJson;
+
+            fcSaveBtn.onclick = async () => {
+                fcSaveBtn.disabled = true;
+                fcSaveBtn.textContent = "Сохранение...";
+                try {
+                    const obj = JSON.parse(fcJsonTextarea.value);
+                    const formatted = JSON.stringify(obj, null, 4);
+                    fcJsonTextarea.value = formatted;
+                    
+                    await setDoc(doc(db, 'courses', '_global_flashcards_'), { json_data: formatted }, { merge: true });
+                    fcStatus.textContent = "База карточек успешно сохранена!";
+                    fcStatus.style.color = "var(--accent)";
+                    setTimeout(() => fcStatus.textContent = "", 3000);
+                } catch (e) {
+                    fcStatus.textContent = "Невозможно сохранить: Ошибка парсинга JSON.";
+                    fcStatus.style.color = "var(--error)";
+                } finally {
+                    fcSaveBtn.disabled = false;
+                    fcSaveBtn.textContent = "Сохранить в базу";
+                }
+            };
+
+            loadGlobalFlashcardsAdmin();
         }
     </script>
 </body>
