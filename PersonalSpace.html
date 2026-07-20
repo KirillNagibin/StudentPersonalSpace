@@ -129,15 +129,16 @@
         .login-card { background-color: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 40px; width: 100%; max-width: 400px; display: flex; flex-direction: column; gap: 20px; box-sizing: border-box; }
         .login-card h2 { margin: 0; border: none; padding: 0; text-align: center; }
         .login-input { width: 100%; padding: 14px; border-radius: 6px; border: 1px solid var(--border); background-color: var(--bg-main); color: var(--text-main); font-family: 'Inter', sans-serif; }
+        
         .password-wrapper { position: relative; width: 100%; }
         .password-toggle-btn { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 4px; display: flex; align-items: center; justify-content: center; transition: color 0.2s; }
         .password-toggle-btn:hover { color: var(--text-main); }
+        
         .login-btn { width: 100%; padding: 14px; border-radius: 6px; border: none; font-weight: 600; background-color: var(--accent); color: #fff; cursor: pointer; transition: opacity 0.2s; }
         .login-btn:hover { opacity: 0.9; }
         .error-message { color: var(--error); font-size: 0.9rem; text-align: center; min-height: 20px; }
         
         .app-screen { display: none; flex: 1; width: 100%; height: 100%; flex-direction: column; }
-        
         .role-view { display: none; width: 100%; height: 100%; flex-direction: row; flex: 1; }
         .role-view.active { display: flex; }
 
@@ -175,7 +176,6 @@
         .logout-btn { background: none; border: none; color: var(--text-muted); cursor: pointer; margin-left: auto; padding: 8px; }
         .logout-btn:hover { color: var(--error); }
 
-        /* Стили для формы отправки ДЗ */
         .hw-dropzone { border: 2px dashed var(--border); border-radius: 8px; padding: 40px; text-align: center; cursor: pointer; transition: all 0.2s; background-color: rgba(255,255,255,0.02); }
         .hw-dropzone:hover, .hw-dropzone.dragover { border-color: var(--accent); background-color: rgba(76, 175, 80, 0.05); }
         .file-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background: var(--bg-hover); border-radius: 6px; border: 1px solid var(--border); font-size: 0.9rem; }
@@ -460,10 +460,11 @@
                             <h1>Управление курсами</h1>
                             <div class="card" style="margin-bottom: 24px;">
                                 <div class="form-row" style="align-items: flex-end;">
-                                    <div class="form-group" style="margin-bottom: 0;">
-                                        <label>Выберите или введите курс</label>
-                                        <input type="text" id="admin-course-id" list="admin-course-list" class="form-input" placeholder="Выберите из списка или введите новый" autocomplete="off">
-                                        <datalist id="admin-course-list"></datalist>
+                                    <div class="form-group" style="margin-bottom: 0; flex: 1;">
+                                        <label>Выберите курс</label>
+                                        <select id="admin-course-id" class="form-select">
+                                            <option value="">-- Выберите курс --</option>
+                                        </select>
                                     </div>
                                     <button id="admin-load-course" class="btn-primary">Загрузить данные</button>
                                     <button id="admin-create-course-ui" class="btn-secondary" style="margin-left: 12px;">Создать новый курс</button>
@@ -571,11 +572,9 @@
                             </div>
                         </div>
 
-                        <!-- Секция Ученики -->
                         <div id="admin-section-students" class="admin-section">
                             <h1>Ученики</h1>
 
-                            <!-- Создать ученика -->
                             <div class="card" style="margin-bottom: 24px; padding: 0; overflow: hidden; background: transparent; border: none;">
                                 <div class="accordion-header" onclick="toggleAccordion(this)" style="margin-top: 0; background-color: var(--bg-card);">
                                     <span>Создать нового ученика</span>
@@ -610,7 +609,6 @@
                             
                             <div id="admin-student-editor" style="display: none; flex-direction: column; gap: 24px;">
                                 
-                                <!-- Изменить курс -->
                                 <div class="card">
                                     <div class="form-row" style="align-items: flex-end;">
                                         <div class="form-group" style="margin-bottom: 0; flex: 2;">
@@ -624,7 +622,6 @@
                                     </div>
                                 </div>
 
-                                <!-- Ожидающие проверки ДЗ -->
                                 <div class="card" style="padding: 0; border: none; background: transparent;">
                                     <div class="accordion-header open" onclick="toggleAccordion(this)" style="margin-top: 0; border-color: var(--accent);">
                                         <span>ДЗ на проверку (Ожидающие)</span>
@@ -635,7 +632,6 @@
                                     </div>
                                 </div>
 
-                                <!-- Архив -->
                                 <div class="card" style="padding: 0; border: none; background: transparent;">
                                     <div class="accordion-header" onclick="toggleAccordion(this)" style="margin-top: 0;">
                                         <span>Архив и Контрольные точки</span>
@@ -690,7 +686,6 @@
                                     </div>
                                 </div>
 
-                                <!-- Древо навыков -->
                                 <div class="card" style="padding: 0; overflow: hidden;">
                                     <div class="card-header" style="padding: 24px 24px 0 24px; margin-bottom: 16px; flex-direction: column; align-items: flex-start; gap: 8px;">
                                         <span style="color: var(--text-main); font-size: 1.1rem;">Древо навыков</span>
@@ -704,7 +699,6 @@
                                     </div>
                                 </div>
 
-                                <!-- Индивидуальные материалы -->
                                 <div class="card">
                                     <div class="card-header" style="margin-bottom: 0;">
                                         <span style="color: var(--text-main); font-size: 1.1rem;">Индивидуальные материалы</span>
@@ -750,7 +744,6 @@
                                     </div>
                                 </div>
 
-                                <!-- Результаты тестов -->
                                 <div class="card" style="padding: 0; border: none; background: transparent;">
                                     <div class="accordion-header" onclick="toggleAccordion(this)" style="margin-top: 0;">
                                         <span>Результаты тестов</span>
@@ -779,7 +772,6 @@
         lucide.createIcons();
 
         // КОНСТАНТА ДЛЯ ОТПРАВКИ ФАЙЛОВ В GOOGLE DRIVE
-        // Выполните инструкции ниже, чтобы получить URL и вставить его сюда
         const GAS_WEB_APP_URL = "ВАШ_URL_СКРИПТА";
 
         function switchView(viewId, element) {
@@ -870,7 +862,7 @@
             }
         });
 
-        /* Логика пароля */
+        /* Логика пароля (Глазик) */
         togglePwdBtn.addEventListener('click', () => {
             const type = pwdInput.getAttribute('type') === 'password' ? 'text' : 'password';
             pwdInput.setAttribute('type', type);
@@ -878,7 +870,6 @@
             if (window.lucide) window.lucide.createIcons();
         });
 
-        /* Логика формы отправки ДЗ (Ученик) */
         let studentFilesQueue = [];
         const hwDropzone = document.getElementById('hw-dropzone');
         const hwFileInput = document.getElementById('student-hw-files');
@@ -927,6 +918,9 @@
             reader.onerror = error => reject(error);
         });
 
+        // Вспомогательная функция для паузы отправки
+        const delay = ms => new Promise(res => setTimeout(res, ms));
+
         if (hwSubmitBtn) {
             hwSubmitBtn.addEventListener('click', async () => {
                 const topicName = document.getElementById('student-hw-topic').value.trim();
@@ -953,6 +947,9 @@
 
                         const response = await fetch(GAS_WEB_APP_URL, {
                             method: "POST",
+                            headers: {
+                                "Content-Type": "text/plain;charset=utf-8"
+                            },
                             body: JSON.stringify(payload)
                         });
                         
@@ -962,6 +959,7 @@
                         } else {
                             throw new Error(result.message);
                         }
+                        await delay(2000); 
                     }
 
                     const currentPending = currentProgressData?.pending_hw || [];
@@ -989,7 +987,6 @@
                 }
             });
         }
-
 
         function renderArchive() {
             const topicsContainer = document.getElementById('dash-archive-topics-container');
@@ -1329,12 +1326,19 @@
             const saveBtn = document.getElementById('admin-save-course');
             const courseForm = document.getElementById('admin-course-form');
             const statusMsg = document.getElementById('admin-save-status');
-            const courseList = document.getElementById('admin-course-list');
             
             const theoryLinksContainer = document.getElementById('admin-theory-links-container');
             const hwLinksContainer = document.getElementById('admin-hw-links-container');
             const refLinksContainer = document.getElementById('admin-ref-links-container');
             const testsLinksContainer = document.getElementById('admin-tests-links-container');
+
+            function markUnsaved() { hasUnsavedAdminChanges = true; }
+
+            document.getElementById('admin-student-editor').addEventListener('input', (e) => {
+                if(e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') {
+                    markUnsaved();
+                }
+            });
 
             function createTheoryLinkRow(title = '', url = '') {
                 const row = document.createElement('div'); row.className = 'form-row theory-link-row';
@@ -1424,20 +1428,23 @@
             async function fetchCourses() {
                 try {
                     const coursesSnap = await getDocs(collection(db, 'courses'));
-                    courseList.innerHTML = '';
+                    
+                    const adminCourseSelect = document.getElementById('admin-course-id');
                     const newStudentCourseSelect = document.getElementById('admin-new-student-course');
                     const changeStudentCourseSelect = document.getElementById('admin-change-student-course');
                     
+                    const currentSelection = adminCourseSelect.value;
                     let optionsHtml = '<option value="">-- Выберите курс --</option>';
                     
                     coursesSnap.forEach(courseDoc => {
-                        const option = document.createElement('option'); option.value = courseDoc.id;
-                        courseList.appendChild(option);
                         optionsHtml += `<option value="${courseDoc.id}">${courseDoc.id}</option>`;
                     });
                     
+                    adminCourseSelect.innerHTML = optionsHtml;
                     newStudentCourseSelect.innerHTML = optionsHtml;
                     changeStudentCourseSelect.innerHTML = optionsHtml;
+                    
+                    if (currentSelection) adminCourseSelect.value = currentSelection;
                 } catch (error) { console.error("Ошибка при получении списка курсов:", error); }
             }
             fetchCourses();
@@ -1574,15 +1581,6 @@
             const persHwContainer = document.getElementById('admin-personal-hw-container');
             const persRefContainer = document.getElementById('admin-personal-ref-container');
 
-            function markUnsaved() { hasUnsavedAdminChanges = true; }
-
-            // Добавляем отслеживание изменений в инпутах
-            document.getElementById('admin-student-editor').addEventListener('input', (e) => {
-                if(e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') {
-                    markUnsaved();
-                }
-            });
-
             let adminArchiveState = { topics: [], hw: [], pending_hw: [] };
             let adminArchiveEditState = { topic: -1, hw: -1 };
             let adminSelectedCourseData = null;
@@ -1596,7 +1594,7 @@
                     return;
                 }
 
-                // Используем копию массива для реверса, чтобы не менять оригинальные индексы для удаления
+                // Реверс массива для вывода новых заданий сверху
                 const reversedPending = adminArchiveState.pending_hw.map((item, index) => ({ item, index })).reverse();
 
                 reversedPending.forEach((obj) => {
@@ -1646,13 +1644,6 @@
                     };
                 });
             }
-
-            HTMLElement.prototype.querySelectorContains = function(selector, text) {
-                const elements = this.querySelectorAll(selector);
-                return Array.prototype.find.call(elements, function(element) {
-                    return RegExp(text).test(element.textContent);
-                });
-            };
 
             function renderAdminArchiveLists() {
                 const detailsT = document.getElementById('details-arch-topics');
@@ -1822,14 +1813,11 @@
 
             document.getElementById('btn-quick-archive-topic').onclick = (e) => {
                 e.preventDefault();
-                
                 const title = adminSelectedCourseData?.topic_title || '';
                 const urls = [];
-                
                 if (adminSelectedCourseData?.theory_links) {
                     urls.push(...adminSelectedCourseData.theory_links.map(l => typeof l === 'string' ? l : l.url));
                 }
-
                 document.getElementById('arch-t-title-input').value = title;
                 document.getElementById('arch-t-url-input').value = urls.filter(Boolean).join(' ');
                 document.getElementById('arch-t-notes-input').focus();
@@ -1837,14 +1825,11 @@
 
             document.getElementById('btn-quick-archive-hw').onclick = (e) => {
                 e.preventDefault();
-                
                 let title = adminSelectedCourseData?.topic_title ? `ДЗ: ${adminSelectedCourseData.topic_title}` : 'Домашнее задание';
                 const urls = [];
-
                 if (adminSelectedCourseData?.hw_links) {
                     urls.push(...adminSelectedCourseData.hw_links.map(l => typeof l === 'string' ? l : l.url));
                 }
-
                 document.getElementById('arch-h-title-input').value = title;
                 document.getElementById('arch-h-hwurl-input').value = urls.filter(Boolean).join(' ');
                 document.getElementById('arch-h-feedback-input').focus();
@@ -1988,6 +1973,7 @@
                     linkDisplay.textContent = `URL: ${finalUrl}`;
                     iframe.parentElement.style.display = 'block';
                     copyBtn.style.display = 'inline-flex';
+                    
                     copyBtn.onclick = () => {
                         try {
                             navigator.clipboard.writeText(finalUrl);
@@ -1996,14 +1982,12 @@
                             if (window.lucide) window.lucide.createIcons();
                             setTimeout(() => { copyBtn.innerHTML = oldHtml; if (window.lucide) window.lucide.createIcons(); }, 2000);
                         } catch (err) {
-                            // Fallback
                             const textArea = document.createElement("textarea");
                             textArea.value = finalUrl;
                             document.body.appendChild(textArea);
                             textArea.select();
                             document.execCommand("copy");
                             document.body.removeChild(textArea);
-                            
                             const oldHtml = copyBtn.innerHTML;
                             copyBtn.innerHTML = '<i data-lucide="check" style="width: 16px; height: 16px; color: var(--accent);"></i>';
                             if (window.lucide) window.lucide.createIcons();
@@ -2062,7 +2046,7 @@
                                         tests_results: { [btn.dataset.testid]: deleteField() }
                                     }, { merge: true });
                                     btn.parentElement.innerHTML = '<span style="color: var(--text-muted); font-size: 0.9rem;">Сброшено. Обновите профиль.</span>';
-                                    markUnsaved(); // Косвенное изменение
+                                    markUnsaved(); 
                                 } catch (err) { console.error(err); }
                             } else {
                                 btn.dataset.confirm = 'true';
