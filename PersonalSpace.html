@@ -344,54 +344,69 @@
                         <div class="content-container">
                             <h1>Архив и Материалы</h1>
                             
-                            <h2>Пройденные темы</h2>
-                            <div class="table-responsive">
-                                <table class="data-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Тема занятия</th>
-                                            <th>Материалы (PDF)</th>
-                                            <th>Инсайты / Заметки</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="dash-archive-topics-container">
-                                        <tr><td colspan="3" class="placeholder-text">Загрузка...</td></tr>
-                                    </tbody>
-                                </table>
+                            <div class="accordion-header" onclick="toggleAccordion(this)" style="margin-top: 0;">
+                                <span>Пройденные темы</span>
+                                <i data-lucide="chevron-down" class="accordion-icon"></i>
+                            </div>
+                            <div class="accordion-content">
+                                <div class="table-responsive" style="margin-bottom: 0;">
+                                    <table class="data-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Тема занятия</th>
+                                                <th>Материалы (PDF)</th>
+                                                <th>Инсайты / Заметки</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="dash-archive-topics-container">
+                                            <tr><td colspan="3" class="placeholder-text">Загрузка...</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
 
-                            <h2>Контрольные точки</h2>
-                            <div class="table-responsive">
-                                <table class="data-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Название среза</th>
-                                            <th>Задание</th>
-                                            <th>Статус</th>
-                                            <th>Решение</th>
-                                            <th>Обратная связь</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="dash-archive-checkpoints-container">
-                                        <tr><td colspan="5" class="placeholder-text">Загрузка...</td></tr>
-                                    </tbody>
-                                </table>
+                            <div class="accordion-header" onclick="toggleAccordion(this)">
+                                <span>Контрольные точки</span>
+                                <i data-lucide="chevron-down" class="accordion-icon"></i>
+                            </div>
+                            <div class="accordion-content">
+                                <div class="table-responsive" style="margin-bottom: 0;">
+                                    <table class="data-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Название среза</th>
+                                                <th>Задание</th>
+                                                <th>Статус</th>
+                                                <th>Решение</th>
+                                                <th>Обратная связь</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="dash-archive-checkpoints-container">
+                                            <tr><td colspan="5" class="placeholder-text">Загрузка...</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
 
-                            <h2>Домашние задания</h2>
-                            <div class="table-responsive">
-                                <table class="data-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Файл задания</th>
-                                            <th>Решение ученика</th>
-                                            <th>Оценка / Обратная связь</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="dash-archive-hw-container">
-                                        <tr><td colspan="3" class="placeholder-text">Загрузка...</td></tr>
-                                    </tbody>
-                                </table>
+                            <div class="accordion-header" onclick="toggleAccordion(this)">
+                                <span>Домашние задания</span>
+                                <i data-lucide="chevron-down" class="accordion-icon"></i>
+                            </div>
+                            <div class="accordion-content">
+                                <div class="table-responsive" style="margin-bottom: 0;">
+                                    <table class="data-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Файл задания</th>
+                                                <th>Решение ученика</th>
+                                                <th>Оценка / Обратная связь</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="dash-archive-hw-container">
+                                            <tr><td colspan="3" class="placeholder-text">Загрузка...</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -437,10 +452,9 @@
                             <div class="card" style="margin-bottom: 24px;">
                                 <div class="form-row" style="align-items: flex-end;">
                                     <div class="form-group" style="margin-bottom: 0;">
-                                        <label>Выберите курс</label>
-                                        <select id="admin-course-id" class="form-select">
-                                            <option value="">-- Выберите курс --</option>
-                                        </select>
+                                        <label>Выберите или введите курс</label>
+                                        <input type="text" id="admin-course-id" list="admin-course-list" class="form-input" placeholder="Выберите из списка или введите новый" autocomplete="off">
+                                        <datalist id="admin-course-list"></datalist>
                                     </div>
                                     <button id="admin-load-course" class="btn-primary">Загрузить данные</button>
                                     <button id="admin-create-course-ui" class="btn-secondary" style="margin-left: 12px;">Создать новый курс</button>
@@ -754,7 +768,7 @@
 
         // КОНСТАНТА ДЛЯ ОТПРАВКИ ФАЙЛОВ В GOOGLE DRIVE
         // Выполните инструкции ниже, чтобы получить URL и вставить его сюда
-        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbz7hUIukrWtA9UMgZ4MLasmfStAtJhQkzseGJFMQi1LvufeGSLrkTAFcoHSMFe4E0arbQ/exec";
+        const GAS_WEB_APP_URL = "ВАШ_URL_СКРИПТА";
 
         function switchView(viewId, element) {
             document.querySelectorAll('#student-view .nav-item').forEach(el => el.classList.remove('active'));
@@ -1378,22 +1392,20 @@
             async function fetchCourses() {
                 try {
                     const coursesSnap = await getDocs(collection(db, 'courses'));
-                    const adminCourseSelect = document.getElementById('admin-course-id');
+                    courseList.innerHTML = '';
                     const newStudentCourseSelect = document.getElementById('admin-new-student-course');
                     const changeStudentCourseSelect = document.getElementById('admin-change-student-course');
                     
-                    const currentSelection = adminCourseSelect.value;
                     let optionsHtml = '<option value="">-- Выберите курс --</option>';
                     
                     coursesSnap.forEach(courseDoc => {
+                        const option = document.createElement('option'); option.value = courseDoc.id;
+                        courseList.appendChild(option);
                         optionsHtml += `<option value="${courseDoc.id}">${courseDoc.id}</option>`;
                     });
                     
-                    adminCourseSelect.innerHTML = optionsHtml;
                     newStudentCourseSelect.innerHTML = optionsHtml;
                     changeStudentCourseSelect.innerHTML = optionsHtml;
-
-                    if (currentSelection) adminCourseSelect.value = currentSelection;
                 } catch (error) { console.error("Ошибка при получении списка курсов:", error); }
             }
             fetchCourses();
@@ -1409,16 +1421,7 @@
                 if (!newId) return;
 
                 document.getElementById('course-create-modal').classList.remove('active');
-                
-                const adminCourseSelect = document.getElementById('admin-course-id');
-                let optionExists = Array.from(adminCourseSelect.options).some(opt => opt.value === newId);
-                if (!optionExists) {
-                    const newOpt = document.createElement('option');
-                    newOpt.value = newId;
-                    newOpt.textContent = newId;
-                    adminCourseSelect.appendChild(newOpt);
-                }
-                adminCourseSelect.value = newId;
+                document.getElementById('admin-course-id').value = newId;
                 
                 courseForm.querySelectorAll('input:not(.theory-link-url, .hw-link-title, .hw-link-url, .ref-link-title, .ref-link-url, .test-title, .test-url, .test-limit, .test-questions, .cp-title, .cp-url)').forEach(input => input.value = '');
                 theoryLinksContainer.innerHTML = ''; hwLinksContainer.innerHTML = ''; refLinksContainer.innerHTML = ''; testsLinksContainer.innerHTML = ''; document.getElementById('admin-course-checkpoints-container').innerHTML = '';
@@ -1587,6 +1590,13 @@
                     };
                 });
             }
+
+            HTMLElement.prototype.querySelectorContains = function(selector, text) {
+                const elements = this.querySelectorAll(selector);
+                return Array.prototype.find.call(elements, function(element) {
+                    return RegExp(text).test(element.textContent);
+                });
+            };
 
             function renderAdminArchiveLists() {
                 const detailsT = document.getElementById('details-arch-topics');
