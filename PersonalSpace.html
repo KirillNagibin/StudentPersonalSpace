@@ -129,6 +129,9 @@
         .login-card { background-color: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 40px; width: 100%; max-width: 400px; display: flex; flex-direction: column; gap: 20px; box-sizing: border-box; }
         .login-card h2 { margin: 0; border: none; padding: 0; text-align: center; }
         .login-input { width: 100%; padding: 14px; border-radius: 6px; border: 1px solid var(--border); background-color: var(--bg-main); color: var(--text-main); font-family: 'Inter', sans-serif; }
+        .password-wrapper { position: relative; width: 100%; }
+        .password-toggle-btn { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 4px; display: flex; align-items: center; justify-content: center; transition: color 0.2s; }
+        .password-toggle-btn:hover { color: var(--text-main); }
         .login-btn { width: 100%; padding: 14px; border-radius: 6px; border: none; font-weight: 600; background-color: var(--accent); color: #fff; cursor: pointer; transition: opacity 0.2s; }
         .login-btn:hover { opacity: 0.9; }
         .error-message { color: var(--error); font-size: 0.9rem; text-align: center; min-height: 20px; }
@@ -177,6 +180,9 @@
         .hw-dropzone:hover, .hw-dropzone.dragover { border-color: var(--accent); background-color: rgba(76, 175, 80, 0.05); }
         .file-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background: var(--bg-hover); border-radius: 6px; border: 1px solid var(--border); font-size: 0.9rem; }
         .file-item-remove { color: var(--error); cursor: pointer; background: none; border: none; padding: 4px; }
+        
+        .copy-btn { background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 4px; border-radius: 4px; display: inline-flex; align-items: center; justify-content: center; transition: all 0.2s; margin-left: 8px;}
+        .copy-btn:hover { background-color: var(--bg-hover); color: var(--text-main); }
 
         @media (hover: hover) {
             .nav-item:hover { color: var(--text-main); background-color: var(--bg-hover); }
@@ -214,7 +220,10 @@
             <h2>Вход в систему</h2>
             <div id="login-error" class="error-message"></div>
             <input type="text" id="login-input" class="login-input" placeholder="Логин (например: ivan_ivanov)" autocapitalize="none" autocomplete="off" autocorrect="off" spellcheck="false">
-            <input type="password" id="password-input" class="login-input" placeholder="Пароль">
+            <div class="password-wrapper">
+                <input type="password" id="password-input" class="login-input" placeholder="Пароль" style="padding-right: 40px;">
+                <button type="button" class="password-toggle-btn" id="toggle-password-btn" tabindex="-1"><i data-lucide="eye" style="width: 20px; height: 20px;"></i></button>
+            </div>
             <button id="login-btn" class="login-btn">Войти</button>
         </div>
     </div>
@@ -685,7 +694,10 @@
                                 <div class="card" style="padding: 0; overflow: hidden;">
                                     <div class="card-header" style="padding: 24px 24px 0 24px; margin-bottom: 16px; flex-direction: column; align-items: flex-start; gap: 8px;">
                                         <span style="color: var(--text-main); font-size: 1.1rem;">Древо навыков</span>
-                                        <span id="admin-skilltree-link-display" style="font-size: 0.85rem; color: var(--accent); font-family: monospace; word-break: break-all;"></span>
+                                        <div style="display: flex; align-items: center; justify-content: flex-start; width: 100%;">
+                                            <span id="admin-skilltree-link-display" style="font-size: 0.85rem; color: var(--accent); font-family: monospace; word-break: break-all;"></span>
+                                            <button id="btn-copy-skilltree" class="copy-btn" title="Копировать URL" style="display: none;"><i data-lucide="copy" style="width: 16px; height: 16px;"></i></button>
+                                        </div>
                                     </div>
                                     <div class="embed-container" style="height: 500px; border-top: 1px solid var(--border);">
                                         <iframe id="admin-skilltree-frame" src=""></iframe>
@@ -838,6 +850,8 @@
         const appScreen = document.getElementById('app-screen');
         const loginBtn = document.getElementById('login-btn');
         const errorMsg = document.getElementById('login-error');
+        const togglePwdBtn = document.getElementById('toggle-password-btn');
+        const pwdInput = document.getElementById('password-input');
         
         let unsubCourse = null;
         let unsubProgress = null;
@@ -846,6 +860,23 @@
         let currentProgressData = null;
         let currentUserUid = null;
         let currentUserName = null;
+        
+        let hasUnsavedAdminChanges = false;
+
+        window.addEventListener('beforeunload', (e) => {
+            if (studentFilesQueue.length > 0 || hasUnsavedAdminChanges) {
+                e.preventDefault();
+                e.returnValue = '';
+            }
+        });
+
+        /* Логика пароля */
+        togglePwdBtn.addEventListener('click', () => {
+            const type = pwdInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            pwdInput.setAttribute('type', type);
+            togglePwdBtn.innerHTML = type === 'password' ? '<i data-lucide="eye" style="width: 20px; height: 20px;"></i>' : '<i data-lucide="eye-off" style="width: 20px; height: 20px;"></i>';
+            if (window.lucide) window.lucide.createIcons();
+        });
 
         /* Логика формы отправки ДЗ (Ученик) */
         let studentFilesQueue = [];
@@ -966,7 +997,7 @@
             const hwContainer = document.getElementById('dash-archive-hw-container');
             if (!topicsContainer || !checkContainer || !hwContainer) return;
 
-            const topics = currentProgressData?.archive_topics || [];
+            const topics = currentProgressData?.archive_topics?.slice().reverse() || [];
             topicsContainer.innerHTML = '';
             if (topics.length === 0) { topicsContainer.innerHTML = '<tr><td colspan="3" class="placeholder-text">Нет данных</td></tr>'; }
             else {
@@ -979,7 +1010,8 @@
                     topicsContainer.innerHTML += `<tr><td>${t.title || '-'}</td><td>${matUrl}</td><td style="white-space: pre-wrap; line-height: 1.4;">${t.notes || '-'}</td></tr>`;
                 });
             }
-            const checks = currentCourseData?.checkpoints_list || [];
+            
+            const checks = currentCourseData?.checkpoints_list?.slice().reverse() || [];
             const checkResults = currentProgressData?.checkpoints_results || {};
             checkContainer.innerHTML = '';
             if (checks.length === 0) { checkContainer.innerHTML = '<tr><td colspan="5" class="placeholder-text">Нет данных</td></tr>'; }
@@ -1006,7 +1038,7 @@
                 });
             }
 
-            const hws = currentProgressData?.archive_hw || [];
+            const hws = currentProgressData?.archive_hw?.slice().reverse() || [];
             hwContainer.innerHTML = '';
             if (hws.length === 0) { hwContainer.innerHTML = '<tr><td colspan="3" class="placeholder-text">Нет данных</td></tr>'; }
             else {
@@ -1542,6 +1574,15 @@
             const persHwContainer = document.getElementById('admin-personal-hw-container');
             const persRefContainer = document.getElementById('admin-personal-ref-container');
 
+            function markUnsaved() { hasUnsavedAdminChanges = true; }
+
+            // Добавляем отслеживание изменений в инпутах
+            document.getElementById('admin-student-editor').addEventListener('input', (e) => {
+                if(e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') {
+                    markUnsaved();
+                }
+            });
+
             let adminArchiveState = { topics: [], hw: [], pending_hw: [] };
             let adminArchiveEditState = { topic: -1, hw: -1 };
             let adminSelectedCourseData = null;
@@ -1555,7 +1596,13 @@
                     return;
                 }
 
-                adminArchiveState.pending_hw.forEach((phw, i) => {
+                // Используем копию массива для реверса, чтобы не менять оригинальные индексы для удаления
+                const reversedPending = adminArchiveState.pending_hw.map((item, index) => ({ item, index })).reverse();
+
+                reversedPending.forEach((obj) => {
+                    const phw = obj.item;
+                    const originalIndex = obj.index;
+                    
                     const row = document.createElement('div');
                     row.style.cssText = 'display: flex; justify-content: space-between; align-items: center; padding: 12px; background: rgba(76, 175, 80, 0.05); border-radius: 6px; border: 1px solid var(--accent);';
                     
@@ -1569,7 +1616,7 @@
                             <div style="margin-top: 8px;">${urlsHtml}</div>
                         </div>
                         <div style="display: flex; gap: 8px;">
-                            <button class="btn-primary evaluate-phw-btn" data-index="${i}" style="padding: 6px 12px; font-size: 0.85rem;">Оценить</button>
+                            <button class="btn-primary evaluate-phw-btn" data-index="${originalIndex}" style="padding: 6px 12px; font-size: 0.85rem;">Оценить</button>
                         </div>
                     `;
                     list.appendChild(row);
@@ -1612,7 +1659,12 @@
                 const tList = document.getElementById('admin-arch-topics-list');
                 detailsT.style.display = adminArchiveState.topics.length > 0 ? 'block' : 'none';
                 tList.innerHTML = '';
-                adminArchiveState.topics.forEach((t, i) => {
+                
+                const reversedTopics = adminArchiveState.topics.map((item, index) => ({ item, index })).reverse();
+                
+                reversedTopics.forEach((obj) => {
+                    const t = obj.item;
+                    const originalIndex = obj.index;
                     const row = document.createElement('div');
                     row.style.cssText = 'display: flex; justify-content: space-between; align-items: center; padding: 12px; background: var(--bg-hover); border-radius: 6px; border: 1px solid var(--border);';
                     row.innerHTML = `
@@ -1622,8 +1674,8 @@
                             <div style="color: var(--text-muted); margin-top: 4px; white-space: pre-wrap; line-height: 1.4;">Заметки: ${t.notes || '—'}</div>
                         </div>
                         <div style="display: flex; gap: 8px;">
-                            <button class="btn-secondary edit-t-btn" data-index="${i}" style="padding: 6px 12px; font-size: 0.85rem;">Изменить</button>
-                            <button class="btn-secondary del-t-btn" data-index="${i}" style="padding: 6px 12px; font-size: 0.85rem; color: var(--error); border-color: var(--border);">Удалить</button>
+                            <button class="btn-secondary edit-t-btn" data-index="${originalIndex}" style="padding: 6px 12px; font-size: 0.85rem;">Изменить</button>
+                            <button class="btn-secondary del-t-btn" data-index="${originalIndex}" style="padding: 6px 12px; font-size: 0.85rem; color: var(--error); border-color: var(--border);">Удалить</button>
                         </div>
                     `;
                     tList.appendChild(row);
@@ -1632,6 +1684,7 @@
                 tList.querySelectorAll('.del-t-btn').forEach(btn => btn.onclick = (e) => {
                     adminArchiveState.topics.splice(e.target.dataset.index, 1);
                     adminArchiveEditState.topic = -1;
+                    markUnsaved();
                     document.getElementById('btn-add-arch-topic').innerText = 'Добавить';
                     document.getElementById('arch-t-title-input').value = '';
                     document.getElementById('arch-t-url-input').value = '';
@@ -1652,7 +1705,12 @@
                 const hList = document.getElementById('admin-arch-hw-list');
                 detailsH.style.display = adminArchiveState.hw.length > 0 ? 'block' : 'none';
                 hList.innerHTML = '';
-                adminArchiveState.hw.forEach((h, i) => {
+                
+                const reversedHw = adminArchiveState.hw.map((item, index) => ({ item, index })).reverse();
+                
+                reversedHw.forEach((obj) => {
+                    const h = obj.item;
+                    const originalIndex = obj.index;
                     const row = document.createElement('div');
                     row.style.cssText = 'display: flex; justify-content: space-between; align-items: center; padding: 12px; background: var(--bg-hover); border-radius: 6px; border: 1px solid var(--border);';
                     row.innerHTML = `
@@ -1661,8 +1719,8 @@
                             <div style="color: var(--text-muted); margin-top: 4px; white-space: pre-wrap; line-height: 1.4;">Оценка: ${h.feedback || '—'}</div>
                         </div>
                         <div style="display: flex; gap: 8px;">
-                            <button class="btn-secondary edit-h-btn" data-index="${i}" style="padding: 6px 12px; font-size: 0.85rem;">Изменить</button>
-                            <button class="btn-secondary del-h-btn" data-index="${i}" style="padding: 6px 12px; font-size: 0.85rem; color: var(--error); border-color: var(--border);">Удалить</button>
+                            <button class="btn-secondary edit-h-btn" data-index="${originalIndex}" style="padding: 6px 12px; font-size: 0.85rem;">Изменить</button>
+                            <button class="btn-secondary del-h-btn" data-index="${originalIndex}" style="padding: 6px 12px; font-size: 0.85rem; color: var(--error); border-color: var(--border);">Удалить</button>
                         </div>
                     `;
                     hList.appendChild(row);
@@ -1671,6 +1729,7 @@
                 hList.querySelectorAll('.del-h-btn').forEach(btn => btn.onclick = (e) => {
                     adminArchiveState.hw.splice(e.target.dataset.index, 1);
                     adminArchiveEditState.hw = -1;
+                    markUnsaved();
                     document.getElementById('btn-add-arch-hw').innerText = 'Добавить';
                     document.getElementById('arch-h-title-input').value = '';
                     document.getElementById('arch-h-hwurl-input').value = '';
@@ -1716,6 +1775,7 @@
                 document.getElementById('arch-t-title-input').value = '';
                 document.getElementById('arch-t-url-input').value = '';
                 document.getElementById('arch-t-notes-input').value = '';
+                markUnsaved();
                 renderAdminArchiveLists();
             };
 
@@ -1756,6 +1816,7 @@
                 document.getElementById('arch-h-hwurl-input').value = '';
                 document.getElementById('arch-h-solurl-input').value = '';
                 document.getElementById('arch-h-feedback-input').value = '';
+                markUnsaved();
                 renderAdminArchiveLists();
             };
 
@@ -1895,6 +1956,7 @@
                 adminArchiveEditState = { topic: -1, hw: -1 };
                 document.getElementById('btn-add-arch-topic').innerText = 'Добавить';
                 document.getElementById('btn-add-arch-hw').innerText = 'Добавить';
+                hasUnsavedAdminChanges = false;
 
                 const selectedOption = e.target.options[e.target.selectedIndex];
                 const courseId = selectedOption.dataset.course;
@@ -1918,16 +1980,41 @@
                 const treeUrl = courseData?.skill_tree_url || '';
                 const iframe = document.getElementById('admin-skilltree-frame');
                 const linkDisplay = document.getElementById('admin-skilltree-link-display');
+                const copyBtn = document.getElementById('btn-copy-skilltree');
                 
                 if (treeUrl) {
                     const finalUrl = `${treeUrl}?student=${selectedStudentUid}&admin=true`;
                     iframe.src = finalUrl;
                     linkDisplay.textContent = `URL: ${finalUrl}`;
                     iframe.parentElement.style.display = 'block';
+                    copyBtn.style.display = 'inline-flex';
+                    copyBtn.onclick = () => {
+                        try {
+                            navigator.clipboard.writeText(finalUrl);
+                            const oldHtml = copyBtn.innerHTML;
+                            copyBtn.innerHTML = '<i data-lucide="check" style="width: 16px; height: 16px; color: var(--accent);"></i>';
+                            if (window.lucide) window.lucide.createIcons();
+                            setTimeout(() => { copyBtn.innerHTML = oldHtml; if (window.lucide) window.lucide.createIcons(); }, 2000);
+                        } catch (err) {
+                            // Fallback
+                            const textArea = document.createElement("textarea");
+                            textArea.value = finalUrl;
+                            document.body.appendChild(textArea);
+                            textArea.select();
+                            document.execCommand("copy");
+                            document.body.removeChild(textArea);
+                            
+                            const oldHtml = copyBtn.innerHTML;
+                            copyBtn.innerHTML = '<i data-lucide="check" style="width: 16px; height: 16px; color: var(--accent);"></i>';
+                            if (window.lucide) window.lucide.createIcons();
+                            setTimeout(() => { copyBtn.innerHTML = oldHtml; if (window.lucide) window.lucide.createIcons(); }, 2000);
+                        }
+                    };
                 } else {
                     iframe.src = '';
                     linkDisplay.textContent = 'Древо навыков не назначено для курса';
                     iframe.parentElement.style.display = 'none';
+                    copyBtn.style.display = 'none';
                 }
 
                 const adminTestsContainerList = document.getElementById('admin-student-tests-container');
@@ -1975,6 +2062,7 @@
                                         tests_results: { [btn.dataset.testid]: deleteField() }
                                     }, { merge: true });
                                     btn.parentElement.innerHTML = '<span style="color: var(--text-muted); font-size: 0.9rem;">Сброшено. Обновите профиль.</span>';
+                                    markUnsaved(); // Косвенное изменение
                                 } catch (err) { console.error(err); }
                             } else {
                                 btn.dataset.confirm = 'true';
@@ -2096,6 +2184,7 @@
                     console.error(error);
                     progressStatus.textContent = "Ошибка при сохранении.";
                 } finally {
+                    hasUnsavedAdminChanges = false;
                     saveProgressBtn.disabled = false; saveProgressBtn.textContent = "Сохранить прогресс";
                 }
             };
