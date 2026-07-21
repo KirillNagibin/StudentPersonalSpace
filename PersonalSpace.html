@@ -90,7 +90,6 @@
 
         .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 32px; }
         
-        /* Специфичный грид для визуального билдера карточек */
         .fc-builder-grid { grid-template-columns: 1fr 2.5fr; align-items: start; height: calc(100vh - 200px); margin-bottom: 0; }
         .fc-panel { height: 100%; display: flex; flex-direction: column; overflow: hidden; padding: 0; }
 
@@ -264,7 +263,7 @@
     <div id="fc-import-modal" class="test-overlay" style="justify-content: center; align-items: center; background-color: rgba(0,0,0,0.8);">
         <div class="card" style="width: 100%; max-width: 600px; background-color: var(--bg-card); z-index: 10001;">
             <h2 style="margin-top: 0; border: none; padding-bottom: 0;">Импорт карточек (JSON)</h2>
-            <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 8px;">Вставьте сгенерированный массив карточек. <br>Формат: <code>[{"q": "Вопрос 1", "a": "Ответ 1"}, {"q": "Вопрос 2", "a": "Ответ 2"}]</code></p>
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 8px;">Вставьте сгенерированный массив карточек. <br>Формат: <code>[{"q": "Вопрос 1", "a": "Ответ 1"}]</code></p>
             <div id="fc-import-status" style="color: var(--error); font-size: 0.9rem; margin-top: 8px; font-weight: 500;"></div>
             <textarea id="fc-import-textarea" class="form-input" rows="10" style="font-family: monospace; resize: vertical; margin-top: 12px;" placeholder='[
   {
@@ -275,6 +274,28 @@
             <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 20px;">
                 <button class="btn-secondary" onclick="document.getElementById('fc-import-modal').classList.remove('active')">Отмена</button>
                 <button id="confirm-fc-import" class="btn-primary">Импортировать</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модалка: Создание новой темы карточек (ЗАМЕНА PROMPT) -->
+    <div id="fc-topic-create-modal" class="test-overlay" style="justify-content: center; align-items: center; background-color: rgba(0,0,0,0.8);">
+        <div class="card" style="width: 100%; max-width: 400px; background-color: var(--bg-card); z-index: 10001;">
+            <h2 style="margin-top: 0; border: none; padding-bottom: 0;">Новая тема карточек</h2>
+            <div id="fc-topic-error" style="color: var(--error); font-size: 0.9rem; margin-top: 8px; font-weight: 500;"></div>
+            
+            <div class="form-group" style="margin-top: 20px;">
+                <label>ID темы (латиницей, без пробелов)</label>
+                <input type="text" id="new-fc-topic-id" class="form-input" placeholder="например: optics">
+            </div>
+            <div class="form-group">
+                <label>Название темы (для учеников)</label>
+                <input type="text" id="new-fc-topic-title" class="form-input" placeholder="например: Оптика">
+            </div>
+            
+            <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 24px;">
+                <button class="btn-secondary" onclick="document.getElementById('fc-topic-create-modal').classList.remove('active')">Отмена</button>
+                <button id="confirm-create-fc-topic" class="btn-primary">Создать</button>
             </div>
         </div>
     </div>
@@ -563,7 +584,6 @@
                                         <input type="text" id="admin-skill-tree-url" class="form-input" placeholder="https://...">
                                     </div>
                                     
-                                    <!-- ОБНОВЛЕННЫЙ БЛОК ВЫБОРА КАРТОЧЕК -->
                                     <div class="form-group" style="margin-bottom: 0;">
                                         <label>Доступные темы карточек (Глобальная база)</label>
                                         <div id="admin-course-fc-checkboxes" style="display: flex; flex-direction: column; gap: 8px; max-height: 250px; overflow-y: auto; background: var(--bg-main); padding: 16px; border: 1px solid var(--border); border-radius: 6px; margin-top: 8px;">
@@ -1541,7 +1561,6 @@
                     let optionsHtml = '<option value="">-- Выберите курс --</option>';
                     
                     coursesSnap.forEach(courseDoc => {
-                        // Игнорируем технические документы
                         if (courseDoc.id !== '_global_flashcards_') {
                             optionsHtml += `<option value="${courseDoc.id}">${courseDoc.id}</option>`;
                         }
@@ -1577,13 +1596,11 @@
                 }
                 adminCourseSelect.value = newId;
                 
-                // Программно вызываем событие change для авто-загрузки интерфейса
                 adminCourseSelect.dispatchEvent(new Event('change'));
                 
                 statusMsg.textContent = "Курс готов к заполнению. Нажмите 'Сохранить изменения' для сохранения.";
             };
             
-            // ФУНКЦИЯ ДЛЯ РЕНДЕРА ЧЕКБОКСОВ КАРТОЧЕК
             function renderCourseFcCheckboxes(selectedStr = '') {
                 const container = document.getElementById('admin-course-fc-checkboxes');
                 if (!container) return;
@@ -1704,7 +1721,6 @@
                     if (title) checkpointsList.push({ id, title, hw_url: url, status });
                 });
 
-                // Сбор данных чекбоксов
                 let allowed_fc = '';
                 const checkAll = document.getElementById('fc-check-all');
                 if (checkAll && checkAll.checked) {
@@ -2335,9 +2351,6 @@
                 }
             };
             
-            // ==========================================
-            // ВИЗУАЛЬНЫЙ КОНСТРУКТОР КАРТОЧЕК (NATIVE UI)
-            // ==========================================
             let adminFcState = {};
             let activeFcTopic = null;
 
@@ -2348,11 +2361,20 @@
             const saveFcBtn = document.getElementById('admin-fc-save-db');
             const fcStatus = document.getElementById('admin-fc-status');
             const currentTopicTitle = document.getElementById('admin-fc-current-topic-title');
+            
+            // Elements for Import
             const importBtn = document.getElementById('admin-fc-import-json');
             const importModal = document.getElementById('fc-import-modal');
             const confirmImportBtn = document.getElementById('confirm-fc-import');
             const importTextarea = document.getElementById('fc-import-textarea');
             const importStatus = document.getElementById('fc-import-status');
+
+            // Elements for Native Topic Creation
+            const topicCreateModal = document.getElementById('fc-topic-create-modal');
+            const topicIdInput = document.getElementById('new-fc-topic-id');
+            const topicTitleInput = document.getElementById('new-fc-topic-title');
+            const confirmTopicCreateBtn = document.getElementById('confirm-create-fc-topic');
+            const topicErrorMsg = document.getElementById('fc-topic-error');
 
             async function loadGlobalFlashcardsAdmin() {
                 try {
@@ -2367,7 +2389,6 @@
                     adminFcState = {};
                 }
                 renderFcTopics();
-                // Также обновим чекбоксы в редакторе курсов, если он уже открыт
                 renderCourseFcCheckboxes(document.getElementById('admin-course-id').value ? '' : '*'); 
             }
 
@@ -2396,13 +2417,27 @@
                         renderFcCards();
                     };
                     
-                    div.querySelector('.del-topic-btn').onclick = () => {
-                        if(confirm(`Удалить тему "${topic.title}" со всеми карточками?`)) {
+                    div.querySelector('.del-topic-btn').onclick = (e) => {
+                        const btn = e.target.closest('.del-topic-btn');
+                        if (btn.dataset.confirm === 'true') {
                             delete adminFcState[key];
                             if(activeFcTopic === key) activeFcTopic = null;
                             markUnsaved();
                             renderFcTopics();
                             renderFcCards();
+                        } else {
+                            btn.dataset.confirm = 'true';
+                            const oldHtml = btn.innerHTML;
+                            btn.innerHTML = '<span style="font-size: 0.75rem; font-weight: 600; padding: 0 4px;">Точно?</span>';
+                            btn.style.backgroundColor = 'var(--error)';
+                            btn.style.color = '#fff';
+                            setTimeout(() => {
+                                btn.dataset.confirm = 'false';
+                                btn.innerHTML = oldHtml;
+                                btn.style.backgroundColor = '';
+                                btn.style.color = 'var(--error)';
+                                if (window.lucide) window.lucide.createIcons({root: btn});
+                            }, 3000);
                         }
                     };
                     topicsListEl.appendChild(div);
@@ -2465,21 +2500,43 @@
                 });
             }
 
+            // Нативное модальное окно создания темы
             addTopicBtn.onclick = () => {
-                const key = prompt("Введите ID темы (латиницей, без пробелов, напр. 'optics'):");
-                if(!key) return;
-                const cleanKey = key.trim().toLowerCase().replace(/[^a-z0-9_]/g, '');
-                if(!cleanKey) { alert('Недопустимый ID'); return; }
-                if(adminFcState[cleanKey]) { alert('Тема с таким ID уже существует!'); return; }
-                
-                const title = prompt("Введите красивое название темы (напр. 'Оптика'):");
-                if(!title) return;
+                topicIdInput.value = '';
+                topicTitleInput.value = '';
+                topicErrorMsg.textContent = '';
+                topicCreateModal.classList.add('active');
+                topicIdInput.focus();
+            };
 
-                adminFcState[cleanKey] = { title: title.trim(), cards: [] };
+            confirmTopicCreateBtn.onclick = () => {
+                const key = topicIdInput.value.trim();
+                const title = topicTitleInput.value.trim();
+                
+                topicErrorMsg.textContent = '';
+                
+                if (!key || !title) {
+                    topicErrorMsg.textContent = 'Заполните оба поля';
+                    return;
+                }
+                
+                const cleanKey = key.toLowerCase().replace(/[^a-z0-9_]/g, '');
+                if (!cleanKey) {
+                    topicErrorMsg.textContent = 'Недопустимый ID. Используйте только латинские буквы и цифры.';
+                    return;
+                }
+                if (adminFcState[cleanKey]) {
+                    topicErrorMsg.textContent = 'Тема с таким ID уже существует!';
+                    return;
+                }
+                
+                adminFcState[cleanKey] = { title: title, cards: [] };
                 activeFcTopic = cleanKey;
                 markUnsaved();
                 renderFcTopics();
                 renderFcCards();
+                
+                topicCreateModal.classList.remove('active');
             };
 
             addCardBtn.onclick = () => {
@@ -2489,12 +2546,9 @@
                 markUnsaved();
                 renderFcCards();
                 renderFcTopics(); 
-                
-                // Прокрутка вниз к новой карточке
                 setTimeout(() => cardsListEl.scrollTop = cardsListEl.scrollHeight, 50);
             };
 
-            // ЛОГИКА МАССОВОГО ИМПОРТА JSON
             if(importBtn) {
                 importBtn.onclick = () => {
                     if(!activeFcTopic) return;
@@ -2528,7 +2582,6 @@
                             return;
                         }
 
-                        // Уведомление об успехе через статус в админке
                         fcStatus.textContent = `Импортировано ${addedCount} карточек!`;
                         fcStatus.style.color = "var(--success)";
                         setTimeout(() => { fcStatus.textContent = ""; fcStatus.style.color = ""; }, 4000);
@@ -2551,7 +2604,6 @@
                 if (window.lucide) window.lucide.createIcons({root: saveFcBtn});
 
                 try {
-                    // Конвертируем наш красивый UI-стейт обратно в JSON
                     const formatted = JSON.stringify(adminFcState, null, 4);
                     await setDoc(doc(db, 'courses', '_global_flashcards_'), { json_data: formatted }, { merge: true });
                     
@@ -2569,7 +2621,6 @@
                 }
             };
 
-            // Запускаем подгрузку карточек при старте админки
             loadGlobalFlashcardsAdmin();
         }
     </script>
