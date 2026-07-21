@@ -89,6 +89,11 @@
         h2 { font-size: 1.4rem; font-weight: 600; margin: 40px 0 20px 0; border-bottom: 1px solid var(--border); padding-bottom: 12px; }
 
         .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 32px; }
+        
+        /* Специфичный грид для визуального билдера карточек */
+        .fc-builder-grid { grid-template-columns: 1fr 2.5fr; align-items: start; height: calc(100vh - 200px); margin-bottom: 0; }
+        .fc-panel { height: 100%; display: flex; flex-direction: column; overflow: hidden; padding: 0; }
+
         .card { background-color: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 24px; transition: border-color 0.2s; }
         .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; color: var(--text-muted); font-size: 0.95rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px;}
         .card-title { font-size: 1.3rem; font-weight: 600; color: var(--text-main); margin-bottom: 12px;}
@@ -124,7 +129,7 @@
         
         .pdf-link { color: var(--accent); text-decoration: none; display: inline-flex; align-items: center; justify-content: flex-start; gap: 8px; font-weight: 500;}
 
-        .placeholder-text { text-align: center !important; font-size: 0.95rem; line-height: 1.5; padding: 20px; }
+        .placeholder-text { text-align: center !important; font-size: 0.95rem; line-height: 1.5; padding: 20px; color: var(--text-muted); }
 
         .login-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100vw; min-height: 100vh; min-height: 100dvh; background-color: var(--bg-main); z-index: 1000; padding: 20px; }
         .login-card { background-color: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 40px; width: 100%; max-width: 400px; display: flex; flex-direction: column; gap: 20px; box-sizing: border-box; }
@@ -150,8 +155,8 @@
         .form-input, .form-select { width: 100%; padding: 12px; border-radius: 6px; border: 1px solid var(--border); background-color: var(--bg-main); color: var(--text-main); font-family: 'Inter', sans-serif; }
         .form-row { display: flex; gap: 20px; }
         .form-row > .form-group { flex: 1; }
-        .btn-primary { padding: 12px 24px; border-radius: 6px; border: none; background-color: var(--accent); color: #fff; font-weight: 600; cursor: pointer; transition: opacity 0.2s; }
-        .btn-secondary { padding: 12px 24px; border-radius: 6px; border: 1px solid var(--border); background-color: transparent; color: var(--text-main); font-weight: 600; cursor: pointer; transition: background-color 0.2s; }
+        .btn-primary { padding: 12px 24px; border-radius: 6px; border: none; background-color: var(--accent); color: #fff; font-weight: 600; cursor: pointer; transition: opacity 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 8px;}
+        .btn-secondary { padding: 12px 24px; border-radius: 6px; border: 1px solid var(--border); background-color: transparent; color: var(--text-main); font-weight: 600; cursor: pointer; transition: background-color 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 8px;}
         .btn-primary:hover, .btn-secondary:hover { opacity: 0.9; }
         .btn-secondary:hover { background-color: var(--bg-hover); }
 
@@ -206,6 +211,9 @@
 
             .view[data-layout="content"] { padding: 24px 16px; }
             .grid-2 { grid-template-columns: 1fr; gap: 16px; margin-bottom: 24px; }
+            .fc-builder-grid { grid-template-columns: 1fr; height: auto; }
+            .fc-panel { height: 400px !important; margin-bottom: 24px; }
+
             .horizontal-card { flex-direction: column; align-items: flex-start; gap: 16px; padding: 20px; }
             h1 { font-size: 1.8rem; margin-bottom: 24px; }
             h2 { font-size: 1.25rem; margin: 32px 0 16px 0; }
@@ -431,6 +439,7 @@
             </div>
         </div>
 
+        <!-- АДМИНИСТРАТОР -->
         <div id="admin-view" class="role-view">
             <header class="mobile-header">
                 <div style="font-weight: 600; font-size: 1.2rem;">Управление | Кабинет</div>
@@ -535,7 +544,7 @@
                                     <div class="form-group" style="margin-bottom: 0;">
                                         <label>Доступные темы карточек (allowed_flashcards)</label>
                                         <input type="text" id="admin-course-flashcards" class="form-input" placeholder="например: kinematics, dynamics (или оставьте пустым для доступа ко всем)">
-                                        <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 6px;">Укажите ключи тем (ID) через запятую. Темы должны существовать в Глобальной базе карточек.</p>
+                                        <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 6px;">Укажите ID тем через запятую. Если оставить пустым или *, будут доступны все темы из Глобальной базы.</p>
                                     </div>
                                 </div>
 
@@ -573,22 +582,37 @@
                         </div>
 
                         <div id="admin-section-flashcards" class="admin-section">
-                            <h1>Глобальная База Карточек</h1>
-                            <div class="card" style="display: flex; flex-direction: column; gap: 16px; height: calc(100vh - 200px);">
-                                <p style="color: var(--text-muted); font-size: 0.95rem; margin: 0;">
-                                    Здесь хранится единый набор карточек для всех курсов. Используйте формат JSON.
-                                    Привязка тем к курсу осуществляется во вкладке "Управление курсами".
-                                </p>
+                            <h1>Глобальная База Карточек (Визуальный редактор)</h1>
+                            <div class="grid-2 fc-builder-grid">
                                 
-                                <textarea id="admin-fc-json" class="form-input" style="flex: 1; font-family: monospace; font-size: 0.9rem; resize: none; background: #111; color: #fff; padding: 16px; line-height: 1.5; white-space: pre;" placeholder="{ ... JSON Data ... }"></textarea>
-                                
-                                <div style="display: flex; justify-content: space-between; align-items: center;">
-                                    <span id="admin-fc-status" style="font-size: 0.9rem; font-weight: 500;"></span>
-                                    <div style="display: flex; gap: 12px;">
-                                        <button id="admin-fc-format" class="btn-secondary">Форматировать JSON</button>
-                                        <button id="admin-fc-save" class="btn-primary">Сохранить в базу</button>
+                                <!-- Колонка: Список Тем -->
+                                <div class="card fc-panel">
+                                    <div style="padding: 16px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+                                        <h3 style="margin: 0; font-size: 1.1rem;">Темы</h3>
+                                        <button id="admin-fc-add-topic" class="btn-secondary" style="padding: 6px 10px; font-size: 0.85rem;"><i data-lucide="plus" style="width: 14px; height: 14px;"></i> Тема</button>
+                                    </div>
+                                    <div id="admin-fc-topics-list" style="overflow-y: auto; flex: 1;">
+                                        <div class="placeholder-text">Загрузка тем...</div>
                                     </div>
                                 </div>
+
+                                <!-- Колонка: Список Карточек в теме -->
+                                <div class="card fc-panel">
+                                    <div style="padding: 16px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+                                        <h3 style="margin: 0; font-size: 1.1rem; color: var(--accent);" id="admin-fc-current-topic-title">Выберите тему</h3>
+                                        <button id="admin-fc-add-card" class="btn-secondary" style="padding: 6px 10px; font-size: 0.85rem; display: none;"><i data-lucide="plus" style="width: 14px; height: 14px;"></i> Карточка</button>
+                                    </div>
+                                    
+                                    <div id="admin-fc-cards-list" style="overflow-y: auto; flex: 1; padding: 20px; display: flex; flex-direction: column; gap: 20px;">
+                                        <div class="placeholder-text">Выберите тему слева, чтобы увидеть или добавить карточки</div>
+                                    </div>
+                                    
+                                    <div style="padding: 16px; border-top: 1px solid var(--border); text-align: right; background: var(--bg-card);">
+                                        <span id="admin-fc-status" style="margin-right: 16px; font-size: 0.9rem; font-weight: 500;"></span>
+                                        <button id="admin-fc-save-db" class="btn-primary"><i data-lucide="save" style="width: 16px; height: 16px;"></i> Сохранить изменения в базу</button>
+                                    </div>
+                                </div>
+
                             </div>
                         </div>
 
@@ -889,7 +913,7 @@
             if (window.lucide) window.lucide.createIcons({ root: togglePwdBtn });
         });
 
-        // Setup Logout functionality safely
+        // Setup Logout functionality
         document.querySelectorAll('.logout-btn').forEach(btn => {
             btn.addEventListener('click', async () => {
                 try {
@@ -2245,60 +2269,181 @@
                 }
             };
             
-            const fcJsonTextarea = document.getElementById('admin-fc-json');
-            const fcFormatBtn = document.getElementById('admin-fc-format');
-            const fcSaveBtn = document.getElementById('admin-fc-save');
+            // ==========================================
+            // ВИЗУАЛЬНЫЙ КОНСТРУКТОР КАРТОЧЕК (NATIVE UI)
+            // ==========================================
+            let adminFcState = {};
+            let activeFcTopic = null;
+
+            const topicsListEl = document.getElementById('admin-fc-topics-list');
+            const cardsListEl = document.getElementById('admin-fc-cards-list');
+            const addTopicBtn = document.getElementById('admin-fc-add-topic');
+            const addCardBtn = document.getElementById('admin-fc-add-card');
+            const saveFcBtn = document.getElementById('admin-fc-save-db');
             const fcStatus = document.getElementById('admin-fc-status');
+            const currentTopicTitle = document.getElementById('admin-fc-current-topic-title');
 
             async function loadGlobalFlashcardsAdmin() {
                 try {
                     const docSnap = await getDoc(doc(db, 'courses', '_global_flashcards_'));
                     if (docSnap.exists()) {
-                        fcJsonTextarea.value = docSnap.data().json_data || '{}';
-                        formatJson();
+                        adminFcState = JSON.parse(docSnap.data().json_data || '{}');
                     } else {
-                        fcJsonTextarea.value = '{\n  "kinematics": {\n    "title": "Кинематика",\n    "cards": []\n  }\n}';
+                        adminFcState = {};
                     }
                 } catch (e) {
-                    fcJsonTextarea.value = 'Ошибка загрузки: ' + e.message;
+                    console.error('Ошибка загрузки карточек:', e);
+                    adminFcState = {};
                 }
+                renderFcTopics();
             }
 
-            function formatJson() {
-                try {
-                    const obj = JSON.parse(fcJsonTextarea.value);
-                    fcJsonTextarea.value = JSON.stringify(obj, null, 4);
-                    fcStatus.textContent = "JSON валиден и отформатирован.";
-                    fcStatus.style.color = "var(--success)";
-                } catch (e) {
-                    fcStatus.textContent = "Ошибка: Неверный формат JSON. " + e.message;
-                    fcStatus.style.color = "var(--error)";
+            function renderFcTopics() {
+                topicsListEl.innerHTML = '';
+                const keys = Object.keys(adminFcState);
+                if(keys.length === 0) {
+                    topicsListEl.innerHTML = '<div class="placeholder-text">Нет созданных тем</div>';
+                    return;
                 }
-            }
-
-            fcFormatBtn.onclick = formatJson;
-
-            fcSaveBtn.onclick = async () => {
-                fcSaveBtn.disabled = true;
-                fcSaveBtn.textContent = "Сохранение...";
-                try {
-                    const obj = JSON.parse(fcJsonTextarea.value);
-                    const formatted = JSON.stringify(obj, null, 4);
-                    fcJsonTextarea.value = formatted;
+                keys.forEach(key => {
+                    const topic = adminFcState[key];
+                    const div = document.createElement('div');
+                    div.style.cssText = `padding: 12px 16px; border-bottom: 1px solid var(--border); cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: background 0.2s; background: ${activeFcTopic === key ? 'var(--bg-hover)' : 'transparent'}; border-left: ${activeFcTopic === key ? '3px solid var(--accent)' : '3px solid transparent'}`;
+                    div.innerHTML = `
+                        <div>
+                            <div style="font-weight: 500; color: var(--text-main);">${topic.title}</div>
+                            <div style="font-size: 0.8rem; color: var(--text-muted);">ID: ${key} | Карточек: ${topic.cards ? topic.cards.length : 0}</div>
+                        </div>
+                        <button class="btn-secondary del-topic-btn" data-key="${key}" style="padding: 4px; color: var(--error); border: none;" title="Удалить тему"><i data-lucide="trash-2" style="width: 16px;"></i></button>
+                    `;
+                    div.onclick = (e) => {
+                        if(e.target.closest('.del-topic-btn')) return;
+                        activeFcTopic = key;
+                        renderFcTopics();
+                        renderFcCards();
+                    };
                     
+                    div.querySelector('.del-topic-btn').onclick = () => {
+                        if(confirm(`Удалить тему "${topic.title}" со всеми карточками?`)) {
+                            delete adminFcState[key];
+                            if(activeFcTopic === key) activeFcTopic = null;
+                            markUnsaved();
+                            renderFcTopics();
+                            renderFcCards();
+                        }
+                    };
+                    topicsListEl.appendChild(div);
+                });
+                if (window.lucide) window.lucide.createIcons({root: topicsListEl});
+            }
+
+            function renderFcCards() {
+                cardsListEl.innerHTML = '';
+                if(!activeFcTopic) {
+                    currentTopicTitle.textContent = 'Выберите тему';
+                    addCardBtn.style.display = 'none';
+                    cardsListEl.innerHTML = '<div class="placeholder-text">Выберите тему слева, чтобы увидеть или добавить карточки</div>';
+                    return;
+                }
+
+                const topic = adminFcState[activeFcTopic];
+                currentTopicTitle.textContent = topic.title;
+                addCardBtn.style.display = 'inline-flex';
+
+                if(!topic.cards || topic.cards.length === 0) {
+                    cardsListEl.innerHTML = '<div class="placeholder-text">В этой теме пока нет карточек</div>';
+                    return;
+                }
+
+                topic.cards.forEach((card, index) => {
+                    const cardDiv = document.createElement('div');
+                    cardDiv.style.cssText = 'background: var(--bg-main); border: 1px solid var(--border); border-radius: 6px; padding: 16px; position: relative;';
+                    cardDiv.innerHTML = `
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                            <span style="font-weight: 600; color: var(--accent); font-size: 0.9rem;">Карточка #${index + 1}</span>
+                            <button class="btn-secondary del-card-btn" data-index="${index}" style="padding: 4px 8px; font-size: 0.8rem; color: var(--error); border-color: var(--border);">Удалить</button>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 12px;">
+                            <label style="font-size: 0.85rem;">Вопрос (лицевая сторона)</label>
+                            <textarea class="form-input fc-q-input" rows="2" style="resize: vertical; font-family: monospace;">${card.q}</textarea>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label style="font-size: 0.85rem;">Ответ (обратная сторона)</label>
+                            <textarea class="form-input fc-a-input" rows="2" style="resize: vertical; font-family: monospace;">${card.a}</textarea>
+                        </div>
+                    `;
+                    
+                    const qInput = cardDiv.querySelector('.fc-q-input');
+                    const aInput = cardDiv.querySelector('.fc-a-input');
+                    
+                    qInput.oninput = (e) => { topic.cards[index].q = e.target.value; markUnsaved(); };
+                    aInput.oninput = (e) => { topic.cards[index].a = e.target.value; markUnsaved(); };
+                    
+                    cardDiv.querySelector('.del-card-btn').onclick = () => {
+                        topic.cards.splice(index, 1);
+                        markUnsaved();
+                        renderFcCards();
+                        renderFcTopics(); 
+                    };
+
+                    cardsListEl.appendChild(cardDiv);
+                });
+            }
+
+            addTopicBtn.onclick = () => {
+                const key = prompt("Введите ID темы (латиницей, без пробелов, напр. 'optics'):");
+                if(!key) return;
+                const cleanKey = key.trim().toLowerCase().replace(/[^a-z0-9_]/g, '');
+                if(!cleanKey) { alert('Недопустимый ID'); return; }
+                if(adminFcState[cleanKey]) { alert('Тема с таким ID уже существует!'); return; }
+                
+                const title = prompt("Введите красивое название темы (напр. 'Оптика'):");
+                if(!title) return;
+
+                adminFcState[cleanKey] = { title: title.trim(), cards: [] };
+                activeFcTopic = cleanKey;
+                markUnsaved();
+                renderFcTopics();
+                renderFcCards();
+            };
+
+            addCardBtn.onclick = () => {
+                if(!activeFcTopic) return;
+                if(!adminFcState[activeFcTopic].cards) adminFcState[activeFcTopic].cards = [];
+                adminFcState[activeFcTopic].cards.push({ q: "", a: "" });
+                markUnsaved();
+                renderFcCards();
+                renderFcTopics(); 
+                
+                // Прокрутка вниз к новой карточке
+                setTimeout(() => cardsListEl.scrollTop = cardsListEl.scrollHeight, 50);
+            };
+
+            saveFcBtn.onclick = async () => {
+                saveFcBtn.disabled = true;
+                saveFcBtn.innerHTML = '<i data-lucide="loader" style="width: 16px; height: 16px;"></i> Сохранение...';
+                if (window.lucide) window.lucide.createIcons({root: saveFcBtn});
+
+                try {
+                    // Конвертируем наш красивый UI-стейт обратно в JSON
+                    const formatted = JSON.stringify(adminFcState, null, 4);
                     await setDoc(doc(db, 'courses', '_global_flashcards_'), { json_data: formatted }, { merge: true });
-                    fcStatus.textContent = "База карточек успешно сохранена!";
+                    
+                    fcStatus.textContent = "Успешно сохранено!";
                     fcStatus.style.color = "var(--accent)";
+                    hasUnsavedAdminChanges = false;
                     setTimeout(() => fcStatus.textContent = "", 3000);
                 } catch (e) {
-                    fcStatus.textContent = "Невозможно сохранить: Ошибка парсинга JSON.";
+                    fcStatus.textContent = "Ошибка при сохранении: " + e.message;
                     fcStatus.style.color = "var(--error)";
                 } finally {
-                    fcSaveBtn.disabled = false;
-                    fcSaveBtn.textContent = "Сохранить в базу";
+                    saveFcBtn.disabled = false;
+                    saveFcBtn.innerHTML = '<i data-lucide="save" style="width: 16px; height: 16px;"></i> Сохранить изменения в базу';
+                    if (window.lucide) window.lucide.createIcons({root: saveFcBtn});
                 }
             };
 
+            // Запускаем подгрузку карточек при старте админки
             loadGlobalFlashcardsAdmin();
         }
     </script>
