@@ -236,6 +236,7 @@
         </div>
     </div>
 
+    <!-- Общий оверлей (фрейм) для тестов и внешних страниц -->
     <div id="test-overlay" class="test-overlay">
         <div class="test-overlay-header">
             <div style="font-weight: 600; font-size: 1.1rem;"><i data-lucide="clipboard-check" style="width: 20px; vertical-align: middle; margin-right: 8px;"></i>Тестирование</div>
@@ -244,6 +245,7 @@
         <iframe id="test-overlay-iframe" class="test-overlay-iframe" src=""></iframe>
     </div>
 
+    <!-- Модалка: Создание нового курса -->
     <div id="course-create-modal" class="test-overlay" style="justify-content: center; align-items: center; background-color: rgba(0,0,0,0.8);">
         <div class="card" style="width: 100%; max-width: 400px; background-color: var(--bg-card); z-index: 10001;">
             <h2 style="margin-top: 0; border: none; padding-bottom: 0;">Создать новый курс</h2>
@@ -254,6 +256,25 @@
             <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 24px;">
                 <button class="btn-secondary" onclick="document.getElementById('course-create-modal').classList.remove('active')">Отмена</button>
                 <button id="confirm-create-course" class="btn-primary">Создать</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модалка: Массовый импорт JSON для карточек -->
+    <div id="fc-import-modal" class="test-overlay" style="justify-content: center; align-items: center; background-color: rgba(0,0,0,0.8);">
+        <div class="card" style="width: 100%; max-width: 600px; background-color: var(--bg-card); z-index: 10001;">
+            <h2 style="margin-top: 0; border: none; padding-bottom: 0;">Импорт карточек (JSON)</h2>
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 8px;">Вставьте сгенерированный массив карточек. <br>Формат: <code>[{"q": "Вопрос 1", "a": "Ответ 1"}, {"q": "Вопрос 2", "a": "Ответ 2"}]</code></p>
+            <div id="fc-import-status" style="color: var(--error); font-size: 0.9rem; margin-top: 8px; font-weight: 500;"></div>
+            <textarea id="fc-import-textarea" class="form-input" rows="10" style="font-family: monospace; resize: vertical; margin-top: 12px;" placeholder='[
+  {
+    "q": "Сила трения",
+    "a": "$F = \\mu N$"
+  }
+]'></textarea>
+            <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 20px;">
+                <button class="btn-secondary" onclick="document.getElementById('fc-import-modal').classList.remove('active')">Отмена</button>
+                <button id="confirm-fc-import" class="btn-primary">Импортировать</button>
             </div>
         </div>
     </div>
@@ -464,6 +485,7 @@
                 <main class="main-content content-mode">
                     <div class="content-container" style="padding: 48px; overflow-y: auto; height: 100%;">
                         
+                        <!-- УПРАВЛЕНИЕ КУРСАМИ -->
                         <div id="admin-section-courses" class="admin-section active">
                             <h1>Управление курсами</h1>
                             <div class="card" style="margin-bottom: 24px;">
@@ -474,7 +496,6 @@
                                             <option value="">-- Выберите курс --</option>
                                         </select>
                                     </div>
-                                    <button id="admin-load-course" class="btn-primary" style="display: none;">Загрузить данные</button>
                                     <button id="admin-create-course-ui" class="btn-secondary" style="margin-left: 12px;">Создать новый курс</button>
                                 </div>
                             </div>
@@ -541,10 +562,13 @@
                                         <label>URL графа Древа Навыков (skill_tree_url)</label>
                                         <input type="text" id="admin-skill-tree-url" class="form-input" placeholder="https://...">
                                     </div>
+                                    
+                                    <!-- ОБНОВЛЕННЫЙ БЛОК ВЫБОРА КАРТОЧЕК -->
                                     <div class="form-group" style="margin-bottom: 0;">
-                                        <label>Доступные темы карточек (allowed_flashcards)</label>
-                                        <input type="text" id="admin-course-flashcards" class="form-input" placeholder="например: kinematics, dynamics (или оставьте пустым для доступа ко всем)">
-                                        <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 6px;">Укажите ID тем через запятую. Если оставить пустым или *, будут доступны все темы из Глобальной базы.</p>
+                                        <label>Доступные темы карточек (Глобальная база)</label>
+                                        <div id="admin-course-fc-checkboxes" style="display: flex; flex-direction: column; gap: 8px; max-height: 250px; overflow-y: auto; background: var(--bg-main); padding: 16px; border: 1px solid var(--border); border-radius: 6px; margin-top: 8px;">
+                                            <span style="color: var(--text-muted); font-size: 0.9rem;">Загрузка тем...</span>
+                                        </div>
                                     </div>
                                 </div>
 
@@ -576,16 +600,16 @@
                                     </div>
                                 </div>
 
-                                <button id="admin-save-course" class="btn-primary" style="margin-top: 24px;">Сохранить изменения</button>
+                                <button id="admin-save-course" class="btn-primary" style="margin-top: 24px;">Сохранить изменения курса</button>
                                 <span id="admin-save-status" style="margin-left: 16px; color: var(--accent); font-size: 0.9rem;"></span>
                             </div>
                         </div>
 
+                        <!-- БАЗА КАРТОЧЕК -->
                         <div id="admin-section-flashcards" class="admin-section">
-                            <h1>Глобальная База Карточек (Визуальный редактор)</h1>
+                            <h1>Глобальная База Карточек</h1>
                             <div class="grid-2 fc-builder-grid">
                                 
-                                <!-- Колонка: Список Тем -->
                                 <div class="card fc-panel">
                                     <div style="padding: 16px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
                                         <h3 style="margin: 0; font-size: 1.1rem;">Темы</h3>
@@ -596,11 +620,13 @@
                                     </div>
                                 </div>
 
-                                <!-- Колонка: Список Карточек в теме -->
                                 <div class="card fc-panel">
                                     <div style="padding: 16px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
                                         <h3 style="margin: 0; font-size: 1.1rem; color: var(--accent);" id="admin-fc-current-topic-title">Выберите тему</h3>
-                                        <button id="admin-fc-add-card" class="btn-secondary" style="padding: 6px 10px; font-size: 0.85rem; display: none;"><i data-lucide="plus" style="width: 14px; height: 14px;"></i> Карточка</button>
+                                        <div style="display: flex; gap: 8px;">
+                                            <button id="admin-fc-import-json" class="btn-secondary" style="padding: 6px 10px; font-size: 0.85rem; display: none; border-color: var(--accent); color: var(--accent);"><i data-lucide="file-json" style="width: 14px; height: 14px;"></i> Импорт JSON</button>
+                                            <button id="admin-fc-add-card" class="btn-secondary" style="padding: 6px 10px; font-size: 0.85rem; display: none;"><i data-lucide="plus" style="width: 14px; height: 14px;"></i> Карточка</button>
+                                        </div>
                                     </div>
                                     
                                     <div id="admin-fc-cards-list" style="overflow-y: auto; flex: 1; padding: 20px; display: flex; flex-direction: column; gap: 20px;">
@@ -609,13 +635,14 @@
                                     
                                     <div style="padding: 16px; border-top: 1px solid var(--border); text-align: right; background: var(--bg-card);">
                                         <span id="admin-fc-status" style="margin-right: 16px; font-size: 0.9rem; font-weight: 500;"></span>
-                                        <button id="admin-fc-save-db" class="btn-primary"><i data-lucide="save" style="width: 16px; height: 16px;"></i> Сохранить изменения в базу</button>
+                                        <button id="admin-fc-save-db" class="btn-primary"><i data-lucide="save" style="width: 16px; height: 16px;"></i> Сохранить базу</button>
                                     </div>
                                 </div>
 
                             </div>
                         </div>
 
+                        <!-- УЧЕНИКИ -->
                         <div id="admin-section-students" class="admin-section">
                             <h1>Ученики</h1>
 
@@ -905,7 +932,6 @@
             }
         });
 
-        // Toggle Password Visibility
         togglePwdBtn.addEventListener('click', () => {
             const type = pwdInput.getAttribute('type') === 'password' ? 'text' : 'password';
             pwdInput.setAttribute('type', type);
@@ -913,7 +939,6 @@
             if (window.lucide) window.lucide.createIcons({ root: togglePwdBtn });
         });
 
-        // Setup Logout functionality
         document.querySelectorAll('.logout-btn').forEach(btn => {
             btn.addEventListener('click', async () => {
                 try {
@@ -1404,7 +1429,6 @@
 
         function setupAdminLogic() {
             const adminCourseSelect = document.getElementById('admin-course-id');
-            const loadBtn = document.getElementById('admin-load-course');
             const saveBtn = document.getElementById('admin-save-course');
             const courseForm = document.getElementById('admin-course-form');
             const statusMsg = document.getElementById('admin-save-status');
@@ -1556,9 +1580,45 @@
                 // Программно вызываем событие change для авто-загрузки интерфейса
                 adminCourseSelect.dispatchEvent(new Event('change'));
                 
-                const statusMsg = document.getElementById('admin-save-status');
                 statusMsg.textContent = "Курс готов к заполнению. Нажмите 'Сохранить изменения' для сохранения.";
             };
+            
+            // ФУНКЦИЯ ДЛЯ РЕНДЕРА ЧЕКБОКСОВ КАРТОЧЕК
+            function renderCourseFcCheckboxes(selectedStr = '') {
+                const container = document.getElementById('admin-course-fc-checkboxes');
+                if (!container) return;
+                
+                if (Object.keys(adminFcState).length === 0) {
+                    container.innerHTML = '<span style="color: var(--text-muted); font-size: 0.9rem;">Глобальная база пуста. Сначала создайте темы в Базе карточек.</span>';
+                    return;
+                }
+                
+                const isAll = (selectedStr.trim() === '*' || selectedStr.trim() === '');
+                const selectedArr = selectedStr.split(',').map(s => s.trim().toLowerCase());
+                
+                let html = `<label class="option-label" style="margin-bottom: 8px; background: rgba(255,255,255,0.05);"><input type="checkbox" id="fc-check-all" value="*" ${isAll ? 'checked' : ''}><span style="font-weight: bold; margin-left: 8px;">Доступ ко всем темам (*)</span></label>`;
+                
+                Object.keys(adminFcState).forEach(key => {
+                    const title = adminFcState[key].title;
+                    const isChecked = isAll || selectedArr.includes(key);
+                    html += `<label class="option-label fc-topic-checkbox-label" style="margin-bottom: 4px; opacity: ${isAll ? '0.5' : '1'}; pointer-events: ${isAll ? 'none' : 'auto'};"><input type="checkbox" class="fc-topic-checkbox" value="${key}" ${isChecked ? 'checked' : ''} style="margin-right: 12px;">${title} <code style="margin-left: 8px; font-size: 0.8rem; color: var(--text-muted);">(${key})</code></label>`;
+                });
+                
+                container.innerHTML = html;
+                
+                const checkAllBtn = document.getElementById('fc-check-all');
+                const otherChecks = document.querySelectorAll('.fc-topic-checkbox-label');
+                if(checkAllBtn) {
+                    checkAllBtn.addEventListener('change', (e) => {
+                        const checked = e.target.checked;
+                        otherChecks.forEach(lbl => {
+                            lbl.style.opacity = checked ? '0.5' : '1';
+                            lbl.style.pointerEvents = checked ? 'none' : 'auto';
+                            lbl.querySelector('input').checked = checked;
+                        });
+                    });
+                }
+            }
 
             async function loadCourseData() {
                 const courseId = adminCourseSelect.value.trim();
@@ -1568,7 +1628,6 @@
                     return;
                 }
 
-                loadBtn.textContent = "Загрузка...";
                 try {
                     const docSnap = await getDoc(doc(db, 'courses', courseId));
                     theoryLinksContainer.innerHTML = ''; hwLinksContainer.innerHTML = ''; refLinksContainer.innerHTML = ''; testsLinksContainer.innerHTML = '';
@@ -1579,7 +1638,8 @@
                         document.getElementById('admin-topic-title').value = data.topic_title || '';
                         document.getElementById('admin-hw-deadline').value = data.hw_deadline || '';
                         document.getElementById('admin-skill-tree-url').value = data.skill_tree_url || '';
-                        document.getElementById('admin-course-flashcards').value = data.allowed_flashcards || '';
+                        
+                        renderCourseFcCheckboxes(data.allowed_flashcards || '');
                         
                         if (data.theory_links && Array.isArray(data.theory_links) && data.theory_links.length > 0) { data.theory_links.forEach(link => { typeof link === 'string' ? createTheoryLinkRow('', link) : createTheoryLinkRow(link.title, link.url); }); } else { createTheoryLinkRow(); }
                         if (data.hw_links && Array.isArray(data.hw_links) && data.hw_links.length > 0) { data.hw_links.forEach(link => createHwLinkRow(link.title, link.url)); } else { createHwLinkRow(); }
@@ -1595,30 +1655,25 @@
                             data.checkpoints_list.forEach(cp => createCourseCheckpointRow(cp.id, cp.title, cp.hw_url, cp.status));
                         }
                     } else {
-                        // Очистка формы для нового курса
                         courseForm.querySelectorAll('input:not(.theory-link-url, .hw-link-title, .hw-link-url, .ref-link-title, .ref-link-url, .test-title, .test-url, .test-limit, .test-questions, .cp-title, .cp-url)').forEach(input => input.value = '');
                         createTheoryLinkRow(); createHwLinkRow(); createRefLinkRow();
+                        renderCourseFcCheckboxes('');
                     }
                     
-                    // Гарантированно активируем форму
                     courseForm.style.opacity = '1'; 
                     courseForm.style.pointerEvents = 'auto';
                 } catch (error) { 
                     console.error("Ошибка чтения курса:", error); 
-                } finally { 
-                    loadBtn.textContent = "Загрузить данные"; 
                 }
             }
 
-            // Автоматическая загрузка курса при выборе из выпадающего списка
             adminCourseSelect.addEventListener('change', loadCourseData);
-            loadBtn.addEventListener('click', loadCourseData);
 
             saveBtn.onclick = async () => {
                 const courseId = document.getElementById('admin-course-id').value.trim();
                 if (!courseId) return;
 
-                saveBtn.disabled = true; saveBtn.textContent = "Сохранение..."; statusMsg.textContent = "";
+                saveBtn.disabled = true; saveBtn.innerHTML = "Сохранение..."; statusMsg.textContent = "";
 
                 const getLinks = (selector, titleCls, urlCls) => {
                     const arr = [];
@@ -1649,11 +1704,22 @@
                     if (title) checkpointsList.push({ id, title, hw_url: url, status });
                 });
 
+                // Сбор данных чекбоксов
+                let allowed_fc = '';
+                const checkAll = document.getElementById('fc-check-all');
+                if (checkAll && checkAll.checked) {
+                    allowed_fc = '*';
+                } else {
+                    const checkedBoxes = document.querySelectorAll('.fc-topic-checkbox:checked');
+                    const vals = Array.from(checkedBoxes).map(cb => cb.value);
+                    allowed_fc = vals.join(', ');
+                }
+
                 const courseData = {
                     topic_title: document.getElementById('admin-topic-title').value,
                     hw_deadline: document.getElementById('admin-hw-deadline').value,
                     skill_tree_url: document.getElementById('admin-skill-tree-url').value.trim(),
-                    allowed_flashcards: document.getElementById('admin-course-flashcards').value.trim(),
+                    allowed_flashcards: allowed_fc,
                     theory_links: getLinks('.theory-link-row', '.theory-link-title', '.theory-link-url'),
                     hw_links: getLinks('.hw-link-row', '.hw-link-title', '.hw-link-url'),
                     reference_links: getLinks('.ref-link-row', '.ref-link-title', '.ref-link-url'),
@@ -1665,7 +1731,7 @@
                     await setDoc(doc(db, 'courses', courseId), courseData, { merge: true });
                     statusMsg.textContent = "Успешно сохранено!"; fetchCourses(); 
                     setTimeout(() => statusMsg.textContent = "", 3000);
-                } catch (error) { statusMsg.textContent = "Ошибка при сохранении."; } finally { saveBtn.disabled = false; saveBtn.textContent = "Сохранить изменения"; }
+                } catch (error) { statusMsg.textContent = "Ошибка при сохранении."; } finally { saveBtn.disabled = false; saveBtn.innerHTML = "Сохранить изменения курса"; }
             };
 
             const studentSelector = document.getElementById('admin-student-selector');
@@ -2282,6 +2348,11 @@
             const saveFcBtn = document.getElementById('admin-fc-save-db');
             const fcStatus = document.getElementById('admin-fc-status');
             const currentTopicTitle = document.getElementById('admin-fc-current-topic-title');
+            const importBtn = document.getElementById('admin-fc-import-json');
+            const importModal = document.getElementById('fc-import-modal');
+            const confirmImportBtn = document.getElementById('confirm-fc-import');
+            const importTextarea = document.getElementById('fc-import-textarea');
+            const importStatus = document.getElementById('fc-import-status');
 
             async function loadGlobalFlashcardsAdmin() {
                 try {
@@ -2296,6 +2367,8 @@
                     adminFcState = {};
                 }
                 renderFcTopics();
+                // Также обновим чекбоксы в редакторе курсов, если он уже открыт
+                renderCourseFcCheckboxes(document.getElementById('admin-course-id').value ? '' : '*'); 
             }
 
             function renderFcTopics() {
@@ -2342,6 +2415,7 @@
                 if(!activeFcTopic) {
                     currentTopicTitle.textContent = 'Выберите тему';
                     addCardBtn.style.display = 'none';
+                    importBtn.style.display = 'none';
                     cardsListEl.innerHTML = '<div class="placeholder-text">Выберите тему слева, чтобы увидеть или добавить карточки</div>';
                     return;
                 }
@@ -2349,6 +2423,7 @@
                 const topic = adminFcState[activeFcTopic];
                 currentTopicTitle.textContent = topic.title;
                 addCardBtn.style.display = 'inline-flex';
+                importBtn.style.display = 'inline-flex';
 
                 if(!topic.cards || topic.cards.length === 0) {
                     cardsListEl.innerHTML = '<div class="placeholder-text">В этой теме пока нет карточек</div>';
@@ -2419,6 +2494,57 @@
                 setTimeout(() => cardsListEl.scrollTop = cardsListEl.scrollHeight, 50);
             };
 
+            // ЛОГИКА МАССОВОГО ИМПОРТА JSON
+            if(importBtn) {
+                importBtn.onclick = () => {
+                    if(!activeFcTopic) return;
+                    importTextarea.value = '';
+                    importStatus.textContent = '';
+                    importModal.classList.add('active');
+                };
+            }
+
+            if(confirmImportBtn) {
+                confirmImportBtn.onclick = () => {
+                    importStatus.textContent = '';
+                    try {
+                        const val = importTextarea.value.trim();
+                        if(!val) { importStatus.textContent = "Вставьте JSON код"; return; }
+                        
+                        const parsed = JSON.parse(val);
+                        if(!Array.isArray(parsed)) throw new Error("Код должен быть массивом [...]");
+                        
+                        let addedCount = 0;
+                        parsed.forEach(item => {
+                            if(item.q !== undefined && item.a !== undefined) {
+                                if(!adminFcState[activeFcTopic].cards) adminFcState[activeFcTopic].cards = [];
+                                adminFcState[activeFcTopic].cards.push({q: item.q, a: item.a});
+                                addedCount++;
+                            }
+                        });
+                        
+                        if(addedCount === 0) {
+                            importStatus.textContent = "Не найдено пар 'q' и 'a'. Проверьте формат.";
+                            return;
+                        }
+
+                        // Уведомление об успехе через статус в админке
+                        fcStatus.textContent = `Импортировано ${addedCount} карточек!`;
+                        fcStatus.style.color = "var(--success)";
+                        setTimeout(() => { fcStatus.textContent = ""; fcStatus.style.color = ""; }, 4000);
+
+                        importModal.classList.remove('active');
+                        markUnsaved();
+                        renderFcCards();
+                        renderFcTopics();
+                        
+                        setTimeout(() => cardsListEl.scrollTop = cardsListEl.scrollHeight, 50);
+                    } catch(e) {
+                        importStatus.textContent = "Ошибка: " + e.message;
+                    }
+                };
+            }
+
             saveFcBtn.onclick = async () => {
                 saveFcBtn.disabled = true;
                 saveFcBtn.innerHTML = '<i data-lucide="loader" style="width: 16px; height: 16px;"></i> Сохранение...';
@@ -2438,7 +2564,7 @@
                     fcStatus.style.color = "var(--error)";
                 } finally {
                     saveFcBtn.disabled = false;
-                    saveFcBtn.innerHTML = '<i data-lucide="save" style="width: 16px; height: 16px;"></i> Сохранить изменения в базу';
+                    saveFcBtn.innerHTML = '<i data-lucide="save" style="width: 16px; height: 16px;"></i> Сохранить базу';
                     if (window.lucide) window.lucide.createIcons({root: saveFcBtn});
                 }
             };
