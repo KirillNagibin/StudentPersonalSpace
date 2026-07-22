@@ -334,6 +334,20 @@
                         <div class="content-container">
                             <h1>Привет, <span id="dash-greeting-name">ученик</span> 👋</h1>
                             
+                            <!-- НОВЫЙ БЛОК: Шкала прогресса курса -->
+                            <div id="course-progress-container" style="display: none; margin-bottom: 32px; background-color: var(--bg-card); padding: 20px; border-radius: 10px; border: 1px solid var(--border);">
+                                <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 12px;">
+                                    <div>
+                                        <div style="font-weight: 600; font-size: 1.1rem; color: var(--text-main);">Прогресс курса</div>
+                                        <div id="course-progress-dates" style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;">Загрузка...</div>
+                                    </div>
+                                    <div id="course-progress-percent" style="font-size: 1.5rem; font-weight: 700; color: var(--accent);">0%</div>
+                                </div>
+                                <div style="width: 100%; height: 8px; background-color: var(--bg-main); border-radius: 4px; overflow: hidden; border: 1px solid var(--border);">
+                                    <div id="course-progress-fill" style="width: 0%; height: 100%; background: linear-gradient(90deg, #1a2d1a, var(--accent)); transition: width 1s ease-out; box-shadow: 0 0 10px rgba(76, 175, 80, 0.5);"></div>
+                                </div>
+                            </div>
+
                             <div class="grid-2">
                                 <div class="card">
                                     <div class="card-header"><span>Будущее занятие</span><i data-lucide="book-open"></i></div>
@@ -531,7 +545,26 @@
                             <div class="card" id="admin-course-form" style="opacity: 0.5; pointer-events: none; transition: opacity 0.3s; padding: 24px;">
                                 <h2>Редактирование контента</h2>
                                 
+                                <!-- НОВЫЙ АККОРДЕОН: Сроки проведения курса -->
                                 <div class="accordion-header open" onclick="toggleAccordion(this)">
+                                    <span>Сроки проведения курса</span>
+                                    <i data-lucide="chevron-down" class="accordion-icon"></i>
+                                </div>
+                                <div class="accordion-content active">
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label>Дата начала курса (start_date)</label>
+                                            <input type="date" id="admin-course-start" class="form-input">
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Дата окончания курса (end_date)</label>
+                                            <input type="date" id="admin-course-end" class="form-input">
+                                        </div>
+                                    </div>
+                                    <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0;">На основе этих дат у учеников будет отрисовываться шкала прогресса.</p>
+                                </div>
+
+                                <div class="accordion-header" onclick="toggleAccordion(this)">
                                     <span>Теория и будущее занятие</span>
                                     <i data-lucide="chevron-down" class="accordion-icon"></i>
                                 </div>
@@ -1406,6 +1439,33 @@
                                             }
                                         }
 
+                                        // ЛОГИКА ШКАЛЫ ПРОГРЕССА
+                                        const progContainer = document.getElementById('course-progress-container');
+                                        if (currentCourseData.start_date && currentCourseData.end_date) {
+                                            const startDate = new Date(currentCourseData.start_date);
+                                            const endDate = new Date(currentCourseData.end_date);
+                                            const now = new Date();
+
+                                            if (!isNaN(startDate) && !isNaN(endDate) && endDate > startDate) {
+                                                let percent = 0;
+                                                if (now >= endDate) { percent = 100; } 
+                                                else if (now <= startDate) { percent = 0; } 
+                                                else { percent = Math.round(((now - startDate) / (endDate - startDate)) * 100); }
+
+                                                document.getElementById('course-progress-fill').style.width = `${percent}%`;
+                                                document.getElementById('course-progress-percent').textContent = `${percent}%`;
+                                                
+                                                const options = { day: 'numeric', month: 'short', year: 'numeric' };
+                                                const startStr = startDate.toLocaleDateString('ru-RU', options);
+                                                const endStr = endDate.toLocaleDateString('ru-RU', options);
+                                                document.getElementById('course-progress-dates').textContent = `${startStr} — ${endStr}`;
+                                                
+                                                progContainer.style.display = 'block';
+                                            } else { progContainer.style.display = 'none'; }
+                                        } else {
+                                            progContainer.style.display = 'none';
+                                        }
+
                                         document.getElementById('dash-topic-title').textContent = currentCourseData.topic_title || '';
                                         document.getElementById('dash-hw-deadline').textContent = currentCourseData.hw_deadline ? `Дедлайн: ${currentCourseData.hw_deadline}` : '';
 
@@ -1675,6 +1735,8 @@
 
                     if (docSnap.exists()) {
                         const data = docSnap.data();
+                        document.getElementById('admin-course-start').value = data.start_date || '';
+                        document.getElementById('admin-course-end').value = data.end_date || '';
                         document.getElementById('admin-topic-title').value = data.topic_title || '';
                         document.getElementById('admin-hw-deadline').value = data.hw_deadline || '';
                         document.getElementById('admin-skill-tree-url').value = data.skill_tree_url || '';
@@ -1756,6 +1818,8 @@
                 }
 
                 const courseData = {
+                    start_date: document.getElementById('admin-course-start').value,
+                    end_date: document.getElementById('admin-course-end').value,
                     topic_title: document.getElementById('admin-topic-title').value,
                     hw_deadline: document.getElementById('admin-hw-deadline').value,
                     skill_tree_url: document.getElementById('admin-skill-tree-url').value.trim(),
