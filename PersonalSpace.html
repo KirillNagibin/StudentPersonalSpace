@@ -15,7 +15,7 @@
             --bg-card: #1e1e1e;
             --bg-hover: rgba(255, 255, 255, 0.05);
             --border: #333333;
-            --accent: #3B82F6;
+            --accent: #4CAF50;
             --text-main: #ffffff;
             --text-muted: #888888;
             --error: #EF4444;
@@ -310,7 +310,7 @@
 
             <aside class="sidebar" id="sidebar">
                 <div class="user-profile">
-                    <div class="avatar">ИИ</div>
+                    <div class="avatar" id="student-profile-avatar">УЧ</div>
                     <div>
                         <div style="font-weight: 600; font-size: 1.1rem;" id="profile-name">Ученик</div>
                         <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;" id="profile-course">...</div>
@@ -494,7 +494,7 @@
                     
                     <div id="view-flashcards" class="view" data-layout="embed">
                         <div class="embed-container" style="background-color: var(--bg-main);">
-                            <iframe id="student-fc-iframe" src="Flashcards.html" style="width: 100%; height: 100%; border: none; display: block;"></iframe>
+                            <iframe id="student-fc-iframe" src="flashcards_app.html" style="width: 100%; height: 100%; border: none; display: block;"></iframe>
                         </div>
                     </div>
 
@@ -510,7 +510,7 @@
             </header>
             <aside class="sidebar" id="admin-sidebar">
                 <div class="user-profile">
-                    <div class="avatar" style="background-color: var(--error);">АДМ</div>
+                    <div class="avatar" id="admin-profile-avatar" style="background-color: var(--error);">АД</div>
                     <div>
                         <div style="font-weight: 600; font-size: 1.1rem;" id="admin-profile-name">Преподаватель</div>
                         <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;">Панель управления</div>
@@ -1406,16 +1406,29 @@
                         const role = userData.role || 'student';
                         const courseId = userData.course_id || '';
                         
+                        // ДИНАМИЧЕСКИЕ ИНИЦИАЛЫ ДЛЯ АВАТАРКИ
+                        let initials = "УЧ";
+                        if (currentUserName) {
+                            const nameParts = currentUserName.trim().split(/\s+/);
+                            if (nameParts.length > 1) {
+                                initials = (nameParts[0][0] + nameParts[1][0]).toUpperCase();
+                            } else if (nameParts.length === 1 && nameParts[0].length > 0) {
+                                initials = nameParts[0].substring(0, 2).toUpperCase();
+                            }
+                        }
+                        
                         if (role === 'admin') {
                             document.getElementById('student-view').classList.remove('active');
                             document.getElementById('admin-view').classList.add('active');
                             document.getElementById('admin-profile-name').textContent = currentUserName;
+                            document.getElementById('admin-profile-avatar').textContent = initials;
                             setupAdminLogic();
                         } else {
                             document.getElementById('admin-view').classList.remove('active');
                             document.getElementById('student-view').classList.add('active');
                             
                             document.getElementById('profile-name').textContent = currentUserName;
+                            document.getElementById('student-profile-avatar').textContent = initials;
                             document.getElementById('profile-course').textContent = courseId;
                             document.getElementById('dash-greeting-name').textContent = currentUserName.split(' ')[0];
                             
@@ -1696,7 +1709,7 @@
                 const isAll = (selectedStr.trim() === '*' || selectedStr.trim() === '');
                 const selectedArr = selectedStr.split(',').map(s => s.trim().toLowerCase());
                 
-                let html = `<label class="option-label" style="margin-bottom: 8px; background: rgba(255,255,255,0.05);"><input type="checkbox" id="fc-check-all" value="*" ${isAll ? 'checked' : ''}><span style="font-weight: bold; margin-left: 8px;">Доступ ко всем темам (*)</span></label>`;
+                let html = `<label class="option-label" style="margin-bottom: 8px; background: rgba(255,255,255,0.05);"><input type="checkbox" id="fc-check-all" value="*" ${isAll ? 'checked' : ''}><span style="font-weight: bold; margin-left: 8px;">Доступ ко всем темы (*)</span></label>`;
                 
                 Object.keys(adminFcState).forEach(key => {
                     const title = adminFcState[key].title;
