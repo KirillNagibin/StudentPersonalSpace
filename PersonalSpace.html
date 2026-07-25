@@ -323,7 +323,7 @@
                     <div class="nav-item" onclick="switchView('skilltree', this)"><i data-lucide="git-merge"></i> Древо навыков</div>
                     <div class="nav-item" onclick="switchView('tests', this)"><i data-lucide="clipboard-check"></i> Тесты</div>
                     <div class="nav-item" onclick="switchView('archive', this)"><i data-lucide="folder-archive"></i> Архив и ДЗ</div>
-                    <div class="nav-item" onclick="switchView('', this)"><i data-lucide="layers"></i> Карточки</div>
+                    <div class="nav-item" onclick="switchView('flashcards', this)"><i data-lucide="layers"></i> Карточки</div>
                 </nav>
             </aside>
 
@@ -334,7 +334,6 @@
                         <div class="content-container">
                             <h1>Привет, <span id="dash-greeting-name">ученик</span> 👋</h1>
                             
-                            <!-- НОВЫЙ БЛОК: Шкала прогресса курса -->
                             <div id="course-progress-container" style="display: none; margin-bottom: 32px; background-color: var(--bg-card); padding: 20px; border-radius: 10px; border: 1px solid var(--border);">
                                 <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 12px;">
                                     <div>
@@ -372,7 +371,6 @@
                                 </div>
                             </div>
 
-                            <!-- НОВЫЙ БЛОК: Ссылка на онлайн-урок -->
                             <div class="card" style="margin-bottom: 32px; border-color: var(--accent); background: linear-gradient(145deg, var(--bg-card) 0%, rgba(76, 175, 80, 0.05) 100%);">
                                 <div class="card-header"><span style="color: var(--accent); font-weight: 600;">Подключение к онлайн-уроку</span><i data-lucide="video" style="color: var(--accent);"></i></div>
                                 <div id="dash-lesson-link-container" style="margin-top: 16px; display: flex; align-items: center; justify-content: center;">
@@ -492,7 +490,7 @@
                         </div>
                     </div>
                     
-                    <div id="view-" class="view" data-layout="embed">
+                    <div id="view-flashcards" class="view" data-layout="embed">
                         <div class="embed-container" style="background-color: var(--bg-main);">
                             <iframe id="student-fc-iframe" src="Flashcards.html" style="width: 100%; height: 100%; border: none; display: block;"></iframe>
                         </div>
@@ -545,7 +543,6 @@
                             <div class="card" id="admin-course-form" style="opacity: 0.5; pointer-events: none; transition: opacity 0.3s; padding: 24px;">
                                 <h2>Редактирование контента</h2>
                                 
-                                <!-- НОВЫЙ АККОРДЕОН: Сроки проведения курса -->
                                 <div class="accordion-header open" onclick="toggleAccordion(this)">
                                     <span>Сроки проведения курса</span>
                                     <i data-lucide="chevron-down" class="accordion-icon"></i>
@@ -574,7 +571,6 @@
                                         <input type="text" id="admin-topic-title" class="form-input">
                                     </div>
                                     
-                                    <!-- НОВОЕ ПОЛЕ: Ссылка на урок -->
                                     <div class="form-group">
                                         <label>Ссылка на трансляцию/урок (lesson_link)</label>
                                         <input type="text" id="admin-lesson-link" class="form-input" placeholder="Например: ссылка на Zoom или Google Meet">
@@ -1406,7 +1402,6 @@
                         const role = userData.role || 'student';
                         const courseId = userData.course_id || '';
                         
-                        // ДИНАМИЧЕСКИЕ ИНИЦИАЛЫ ДЛЯ АВАТАРКИ
                         let initials = "УЧ";
                         if (currentUserName) {
                             const nameParts = currentUserName.trim().split(/\s+/);
@@ -1452,7 +1447,6 @@
                                             }
                                         }
 
-                                        // ЛОГИКА ШКАЛЫ ПРОГРЕССА
                                         const progContainer = document.getElementById('course-progress-container');
                                         if (currentCourseData.start_date && currentCourseData.end_date) {
                                             const startDate = new Date(currentCourseData.start_date);
@@ -1485,7 +1479,6 @@
                                         updateDashboardLinks();
                                         renderTests();
 
-                                        // Подгрузка и фильтрация Карточек (Flashcards) для Студента
                                         const fcIframe = document.getElementById('student-fc-iframe');
                                         if (fcIframe) {
                                             getDoc(doc(db, 'courses', '_global_flashcards_')).then(fcSnap => {
@@ -1863,7 +1856,7 @@
             const persRefContainer = document.getElementById('admin-personal-ref-container');
 
             let adminArchiveState = { topics: [], hw: [], pending_hw: [] };
-            let adminArchiveEditState = { topic: -1, hw: -1 };
+            let adminArchiveEditState = { topic: -1, hw: -1, pendingHw: -1 };
             let adminSelectedCourseData = null;
             let adminSelectedProgressData = null;
 
@@ -1882,7 +1875,7 @@
                     const originalIndex = obj.index;
                     
                     const row = document.createElement('div');
-                    row.style.cssText = 'display: flex; justify-content: space-between; align-items: center; padding: 12px; background: rgba(76, 175, 80, 0.05); border-radius: 6px; border: 1px solid var(--accent);';
+                    row.style.cssText = 'display: flex; justify-content: space-between; align-items: center; padding: 12px; background: rgba(76, 175, 80, 0.05); border-radius: 6px; border: 1px solid var(--accent); margin-bottom: 8px;';
                     
                     const urlsHtml = phw.file_urls.map((u, j) => `<a href="${u}" class="pdf-link" target="_blank" style="font-size: 0.85rem; margin-right: 12px;">Файл ${j+1}</a>`).join('');
                     const dateStr = new Date(phw.timestamp).toLocaleString('ru-RU');
@@ -1895,6 +1888,7 @@
                         </div>
                         <div style="display: flex; gap: 8px;">
                             <button class="btn-primary evaluate-phw-btn" data-index="${originalIndex}" style="padding: 6px 12px; font-size: 0.85rem;">Оценить</button>
+                            <button class="btn-secondary delete-phw-btn" data-index="${originalIndex}" style="padding: 6px 12px; font-size: 0.85rem; color: var(--error); border-color: var(--error);">Удалить</button>
                         </div>
                     `;
                     list.appendChild(row);
@@ -1905,6 +1899,8 @@
                         e.preventDefault();
                         const idx = parseInt(btn.dataset.index);
                         const item = adminArchiveState.pending_hw[idx];
+                        
+                        adminArchiveEditState.pendingHw = idx; // Запоминаем точный индекс!
                         
                         document.getElementById('arch-h-title-input').value = `ДЗ: ${item.topic}`;
                         document.getElementById('arch-h-solurl-input').value = item.file_urls.join('\n');
@@ -1921,6 +1917,32 @@
                         }
                         
                         document.getElementById('arch-h-feedback-input').focus();
+                    };
+                });
+                
+                list.querySelectorAll('.delete-phw-btn').forEach(btn => {
+                    btn.onclick = (e) => {
+                        e.preventDefault();
+                        const idx = parseInt(btn.dataset.index);
+                        if (btn.dataset.confirm === 'true') {
+                            adminArchiveState.pending_hw.splice(idx, 1);
+                            markUnsaved();
+                            renderAdminPendingHwList();
+                        } else {
+                            btn.dataset.confirm = 'true';
+                            const oldText = btn.innerText;
+                            btn.innerText = 'Точно?';
+                            btn.style.backgroundColor = 'var(--error)';
+                            btn.style.color = '#fff';
+                            setTimeout(() => {
+                                if (btn && btn.parentElement) {
+                                    btn.dataset.confirm = 'false';
+                                    btn.innerText = oldText;
+                                    btn.style.backgroundColor = 'transparent';
+                                    btn.style.color = 'var(--error)';
+                                }
+                            }, 3000);
+                        }
                     };
                 });
             }
@@ -2074,7 +2096,13 @@
                     adminArchiveState.hw.push({ hw_title: title, hw_url: hwUrl, student_hw_url: solUrl, feedback });
                 }
 
-                if (solUrl) {
+                // Исправленная логика удаления из "Ожидающих"
+                if (adminArchiveEditState.pendingHw > -1) {
+                    adminArchiveState.pending_hw.splice(adminArchiveEditState.pendingHw, 1);
+                    adminArchiveEditState.pendingHw = -1; // Сбрасываем индекс
+                    renderAdminPendingHwList();
+                } else if (solUrl) {
+                    // Страховочный поиск по ссылке на всякий случай
                     const solUrlClean = solUrl.replace(/\s/g, '');
                     const pendingIdx = adminArchiveState.pending_hw.findIndex(p => p.file_urls.join('').replace(/\s/g, '') === solUrlClean);
                     if (pendingIdx > -1) {
@@ -2218,7 +2246,7 @@
                 selectedStudentUid = e.target.value;
                 if (!selectedStudentUid) { studentEditor.style.display = 'none'; return; }
 
-                adminArchiveEditState = { topic: -1, hw: -1 };
+                adminArchiveEditState = { topic: -1, hw: -1, pendingHw: -1 };
                 document.getElementById('btn-add-arch-topic').innerText = 'Добавить';
                 document.getElementById('btn-add-arch-hw').innerText = 'Добавить';
                 hasUnsavedAdminChanges = false;
@@ -2602,7 +2630,6 @@
                 });
             }
 
-            // Нативное модальное окно создания темы
             addTopicBtn.onclick = () => {
                 topicIdInput.value = '';
                 topicTitleInput.value = '';
