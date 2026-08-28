@@ -757,31 +757,65 @@
                                     </div>
                                 </div>
 
-                                <div class="card" style="border-color: var(--accent); background: linear-gradient(145deg, var(--bg-card) 0%, rgba(76, 175, 80, 0.03) 100%);">
-                                    <div class="card-header" style="margin-bottom: 16px; flex-direction: column; align-items: flex-start; gap: 8px;">
-                                        <span style="color: var(--accent); font-size: 1.1rem; font-weight: 600;"><i data-lucide="user" style="width: 18px; margin-right: 8px; vertical-align: middle;"></i>Управление индивидуальным занятием</span>
-                                        <span style="color: var(--text-muted); font-size: 0.85rem; text-transform: none; letter-spacing: normal;">Заполните эти поля, чтобы переопределить настройки группы/курса персонально для этого ученика.</span>
+                                <div class="card" style="padding: 0; border-color: var(--accent); background: linear-gradient(145deg, var(--bg-card) 0%, rgba(76, 175, 80, 0.03) 100%); overflow: hidden;">
+                                    <div class="accordion-header open" onclick="toggleAccordion(this)" style="margin-top: 0; border: none; background: transparent; padding: 24px; align-items: flex-start;">
+                                        <div style="display: flex; flex-direction: column; align-items: flex-start; gap: 8px;">
+                                            <span style="color: var(--accent); font-size: 1.1rem; font-weight: 600;"><i data-lucide="user" style="width: 18px; margin-right: 8px; vertical-align: middle;"></i>Управление индивидуальным занятием</span>
+                                            <span style="color: var(--text-muted); font-size: 0.85rem; text-transform: none; letter-spacing: normal; font-weight: 400;">Заполните эти поля, чтобы переопределить настройки группы/курса персонально для этого ученика.</span>
+                                        </div>
+                                        <i data-lucide="chevron-down" class="accordion-icon" style="color: var(--accent); margin-top: 4px;"></i>
                                     </div>
-                                    
-                                    <div class="form-row" style="margin-bottom: 16px;">
-                                        <div class="form-group" style="flex: 2; margin-bottom: 0;">
-                                            <label>Персональная тема будущего занятия</label>
-                                            <input type="text" id="admin-pers-topic" class="form-input" placeholder="Переопределяет тему базового курса">
+                                    <div class="accordion-content active" style="border: none; padding: 0 24px 24px 24px; background: transparent;">
+                                        
+                                        <div class="form-row" style="margin-bottom: 16px;">
+                                            <div class="form-group" style="flex: 2; margin-bottom: 0;">
+                                                <label>Персональная тема будущего занятия</label>
+                                                <input type="text" id="admin-pers-topic" class="form-input" placeholder="Переопределяет тему базового курса">
+                                            </div>
+                                            <div class="form-group" style="flex: 1; margin-bottom: 0;">
+                                                <label>Дедлайн ДЗ</label>
+                                                <input type="text" id="admin-pers-deadline" class="form-input" placeholder="Например: 12 мая до 20:00">
+                                            </div>
                                         </div>
-                                        <div class="form-group" style="flex: 1; margin-bottom: 0;">
-                                            <label>Дедлайн ДЗ</label>
-                                            <input type="text" id="admin-pers-deadline" class="form-input" placeholder="Например: 12 мая до 20:00">
+                                        <div class="form-row" style="margin-bottom: 24px;">
+                                            <div class="form-group" style="flex: 1; margin-bottom: 0;">
+                                                <label>Персональная ссылка на трансляцию/урок</label>
+                                                <input type="text" id="admin-pers-link" class="form-input" placeholder="Ссылка на Zoom, Google Meet и т.д.">
+                                            </div>
+                                            <div class="form-group" style="flex: 1; margin-bottom: 0;">
+                                                <label>URL графа Древа Навыков (Индивидуальный)</label>
+                                                <input type="text" id="admin-pers-skilltree" class="form-input" placeholder="Оставьте пустым, чтобы брать из курса">
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div class="form-row">
-                                        <div class="form-group" style="flex: 1; margin-bottom: 0;">
-                                            <label>Персональная ссылка на трансляцию/урок</label>
-                                            <input type="text" id="admin-pers-link" class="form-input" placeholder="Ссылка на Zoom, Google Meet и т.д.">
+
+                                        <div style="border-top: 1px solid var(--accent); opacity: 0.8; margin-bottom: 24px;"></div>
+
+                                        <h4 style="margin: 0 0 16px 0; color: var(--text-main); font-size: 1rem;">Файлы и материалы для занятия</h4>
+                                        
+                                        <div class="form-group">
+                                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                                                <label style="margin: 0;">Персональная Теория (theory_links)</label>
+                                                <button id="admin-add-personal-theory" class="btn-secondary" style="padding: 6px 12px; font-size: 0.85rem;">+ Добавить теорию</button>
+                                            </div>
+                                            <div id="admin-personal-theory-container" style="display: flex; flex-direction: column; gap: 12px;"></div>
                                         </div>
-                                        <div class="form-group" style="flex: 1; margin-bottom: 0;">
-                                            <label>URL графа Древа Навыков (Индивидуальный)</label>
-                                            <input type="text" id="admin-pers-skilltree" class="form-input" placeholder="Оставьте пустым, чтобы брать из курса">
+
+                                        <div class="form-group">
+                                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                                                <label style="margin: 0;">Персональное ДЗ (hw_links)</label>
+                                                <button id="admin-add-personal-hw" class="btn-secondary" style="padding: 6px 12px; font-size: 0.85rem;">+ Добавить файл ДЗ</button>
+                                            </div>
+                                            <div id="admin-personal-hw-container" style="display: flex; flex-direction: column; gap: 12px;"></div>
                                         </div>
+
+                                        <div class="form-group" style="margin-bottom: 0;">
+                                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                                                <label style="margin: 0;">Персональные Справочники (reference_links)</label>
+                                                <button id="admin-add-personal-ref" class="btn-secondary" style="padding: 6px 12px; font-size: 0.85rem;">+ Добавить справочник</button>
+                                            </div>
+                                            <div id="admin-personal-ref-container" style="display: flex; flex-direction: column; gap: 12px;"></div>
+                                        </div>
+
                                     </div>
                                 </div>
 
@@ -859,51 +893,6 @@
                                     </div>
                                     <div class="embed-container" style="height: 500px; border-top: 1px solid var(--border);">
                                         <iframe id="admin-skilltree-frame" src=""></iframe>
-                                    </div>
-                                </div>
-
-                                <div class="card">
-                                    <div class="card-header" style="margin-bottom: 0;">
-                                        <span style="color: var(--text-main); font-size: 1.1rem;">Индивидуальные материалы</span>
-                                    </div>
-                                    
-                                    <div class="accordion-header" onclick="toggleAccordion(this)">
-                                        <span>Персональная Теория</span>
-                                        <i data-lucide="chevron-down" class="accordion-icon"></i>
-                                    </div>
-                                    <div class="accordion-content">
-                                        <div class="form-group" style="margin-bottom: 0;">
-                                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                                                <button id="admin-add-personal-theory" class="btn-secondary" style="padding: 6px 12px; font-size: 0.85rem;">+ Добавить теорию</button>
-                                            </div>
-                                            <div id="admin-personal-theory-container" style="display: flex; flex-direction: column; gap: 12px;"></div>
-                                        </div>
-                                    </div>
-
-                                    <div class="accordion-header" onclick="toggleAccordion(this)">
-                                        <span>Персональное ДЗ</span>
-                                        <i data-lucide="chevron-down" class="accordion-icon"></i>
-                                    </div>
-                                    <div class="accordion-content">
-                                        <div class="form-group" style="margin-bottom: 0;">
-                                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                                                <button id="admin-add-personal-hw" class="btn-secondary" style="padding: 6px 12px; font-size: 0.85rem;">+ Добавить файл ДЗ</button>
-                                            </div>
-                                            <div id="admin-personal-hw-container" style="display: flex; flex-direction: column; gap: 12px;"></div>
-                                        </div>
-                                    </div>
-
-                                    <div class="accordion-header" onclick="toggleAccordion(this)">
-                                        <span>Персональные Справочники</span>
-                                        <i data-lucide="chevron-down" class="accordion-icon"></i>
-                                    </div>
-                                    <div class="accordion-content">
-                                        <div class="form-group" style="margin-bottom: 0;">
-                                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                                                <button id="admin-add-personal-ref" class="btn-secondary" style="padding: 6px 12px; font-size: 0.85rem;">+ Добавить справочник</button>
-                                            </div>
-                                            <div id="admin-personal-ref-container" style="display: flex; flex-direction: column; gap: 12px;"></div>
-                                        </div>
                                     </div>
                                 </div>
 
