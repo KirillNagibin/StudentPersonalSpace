@@ -1617,23 +1617,6 @@
         }
 
         function setupAdminLogic() {
-            // Вкладки разделов (Курсы / Ученики / Карточки)
-            document.getElementById('tab-btn-courses').onclick = (e) => {
-                window.triggerAdminAutoSave();
-                e.target.style.backgroundColor = 'var(--bg-hover)';
-                document.getElementById('tab-btn-students').style.backgroundColor = 'transparent';
-                document.getElementById('admin-courses-tab').classList.remove('hidden');
-                document.getElementById('admin-students-tab').classList.add('hidden');
-            };
-            
-            document.getElementById('tab-btn-students').onclick = (e) => {
-                window.triggerAdminAutoSave();
-                e.target.style.backgroundColor = 'var(--bg-hover)';
-                document.getElementById('tab-btn-courses').style.backgroundColor = 'transparent';
-                document.getElementById('admin-students-tab').classList.remove('hidden');
-                document.getElementById('admin-courses-tab').classList.add('hidden');
-            };
-
             // Триггеры автосохранения
             window.triggerAdminAutoSave = async () => {
                 if (!hasUnsavedAdminChanges) return;
