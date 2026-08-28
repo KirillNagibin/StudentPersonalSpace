@@ -749,7 +749,6 @@
                             
                             <div id="admin-student-editor" style="display: none; flex-direction: column; gap: 24px;">
                                 
-                                <!-- ТАБЫ ПРЕДМЕТОВ (ВОССТАНОВЛЕНО) -->
                                 <div style="display: flex; gap: 16px; margin-bottom: 8px; border-bottom: 1px solid var(--border); padding-bottom: 16px;">
                                     <button class="btn-secondary admin-subject-tab active" data-subject="physics" style="background-color: var(--bg-hover);"><i data-lucide="atom" style="width:18px; margin-right:8px;"></i>Физика</button>
                                     <button class="btn-secondary admin-subject-tab" data-subject="math"><i data-lucide="calculator" style="width:18px; margin-right:8px;"></i>Математика</button>
@@ -763,7 +762,13 @@
                                                 <option value="">-- Выберите новый курс --</option>
                                             </select>
                                         </div>
-                                        <button id="btn-change-student-course" class="btn-secondary" style="height: 100%;">Изменить курс</button>
+                                        <div class="form-group" style="margin-bottom: 0; flex: 1; display: flex; align-items: center; padding-bottom: 12px;">
+                                            <label style="display:flex; align-items:center; gap:8px; cursor:pointer; color: var(--text-main); margin: 0;">
+                                                <input type="checkbox" id="admin-change-student-ind" style="width: 16px; height: 16px; accent-color: var(--accent);">
+                                                <span style="font-weight: 500; font-size: 0.9rem;">Индивидуально</span>
+                                            </label>
+                                        </div>
+                                        <button id="btn-change-student-course" class="btn-secondary" style="height: 100%;">Применить</button>
                                         <span id="change-course-status" style="margin-left: 12px; font-size: 0.9rem; color: var(--accent);"></span>
                                     </div>
                                 </div>
@@ -2273,12 +2278,18 @@
 
             async function fetchStudentsForAdmin() {
                 try {
-                    const q = query(collection(db, "users"), where("role", "==", "student"));
+                    // Изменено: Убран строгий фильтр where("role", "==", "student"), чтобы исключить 
+                    // исчезновение учеников из-за опечаток, регистра или случайного удаления поля role
+                    const q = query(collection(db, "users"));
                     const querySnapshot = await getDocs(q);
+                    
                     const currentSelection = studentSelector.value;
                     studentSelector.innerHTML = '<option value="">-- Выберите ученика --</option>';
+                    
                     querySnapshot.forEach((docSnap) => {
                         const data = docSnap.data();
+                        if (data.role === 'admin') return; // Просто пропускаем администраторов
+
                         const option = document.createElement('option');
                         option.value = docSnap.id;
                         
@@ -2293,8 +2304,12 @@
                         option.textContent = `${data.name || 'Без имени'} (${cDisplay})${isIndText}`;
                         studentSelector.appendChild(option);
                     });
+                    
                     if (currentSelection) studentSelector.value = currentSelection;
-                } catch (error) { console.error("Ошибка загрузки учеников:", error); }
+                } catch (error) { 
+                    console.error("Ошибка загрузки учеников:", error); 
+                    studentSelector.innerHTML = '<option value="">-- Ошибка загрузки данных --</option>';
+                }
             }
             fetchStudentsForAdmin();
 
