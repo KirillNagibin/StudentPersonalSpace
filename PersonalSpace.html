@@ -2412,8 +2412,8 @@
 
                 document.getElementById('admin-subject-label').textContent = adminCurrentSubject === 'physics' ? 'Физика' : 'Математика';
 
-                const selectedOption = e.target.options[e.target.selectedIndex];
-                const courseId = selectedOption.dataset.course;
+                let courseId = '';
+                if (adminCurrentSubject === 'physics') {
                     courseId = adminRawUserData.physics_course_id || adminRawUserData.course_id || '';
                 } else {
                     courseId = adminRawUserData.math_course_id || '';
