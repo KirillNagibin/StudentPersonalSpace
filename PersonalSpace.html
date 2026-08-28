@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Личный кабинет</title>
+    <title>Личный кабинет | Физика</title>
     
     <script src="https://unpkg.com/lucide@latest"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -303,7 +303,7 @@
         
         <div id="student-view" class="role-view">
             <header class="mobile-header">
-                <div style="font-weight: 600; font-size: 1.2rem;">Физика | Кабинет</div>
+                <div style="font-weight: 600; font-size: 1.2rem;">Личный Кабинет</div>
                 <button class="hamburger-btn" onclick="toggleSidebar('sidebar')"><i data-lucide="menu"></i></button>
             </header>
 
@@ -717,20 +717,20 @@
                                     <div class="form-row">
                                         <div class="form-group"><input type="text" id="admin-new-student-name" class="form-input" placeholder="ФИО"></div>
                                         <div class="form-group">
-                                            <select id="admin-new-student-physics-course" class="form-select">
-                                                <option value="">-- Курс Физики --</option>
+                                            <select id="admin-new-student-physics" class="form-select">
+                                                <option value="">-- Выберите курс Физики --</option>
                                             </select>
                                         </div>
                                         <div class="form-group">
-                                            <select id="admin-new-student-math-course" class="form-select">
-                                                <option value="">-- Курс Математики --</option>
+                                            <select id="admin-new-student-math" class="form-select">
+                                                <option value="">-- Выберите курс Математики --</option>
                                             </select>
                                         </div>
                                     </div>
                                     <div class="form-group" style="margin-top: 8px;">
                                         <label style="display:flex; align-items:center; gap:8px; cursor:pointer; color: var(--text-main);">
                                             <input type="checkbox" id="admin-new-student-ind" style="width: 16px; height: 16px; accent-color: var(--accent);">
-                                            <span style="font-weight: 500;">Индивидуальное обучение (Свои темы и расписание)</span>
+                                            <span style="font-weight: 500;">Индивидуальное обучение</span>
                                         </label>
                                     </div>
                                     <button id="btn-create-student" class="btn-primary">Создать ученика</button>
@@ -749,20 +749,27 @@
                             
                             <div id="admin-student-editor" style="display: none; flex-direction: column; gap: 24px;">
                                 
-                                <div style="display: flex; gap: 12px; margin-bottom: -8px;">
-                                    <button id="admin-tab-physics" class="btn-primary" style="flex: 1; border-radius: 8px 8px 0 0; background-color: var(--accent); color: #fff;">Физика</button>
-                                    <button id="admin-tab-math" class="btn-secondary" style="flex: 1; border-radius: 8px 8px 0 0; border-bottom: none;">Математика</button>
+                                <!-- ТАБЫ ПРЕДМЕТОВ -->
+                                <div style="display: flex; gap: 16px; margin-bottom: 8px; border-bottom: 1px solid var(--border); padding-bottom: 16px;">
+                                    <button class="btn-secondary admin-subject-tab active" data-subject="physics" style="background-color: var(--bg-hover);"><i data-lucide="atom" style="width:18px; margin-right:8px;"></i>Физика</button>
+                                    <button class="btn-secondary admin-subject-tab" data-subject="math"><i data-lucide="calculator" style="width:18px; margin-right:8px;"></i>Математика</button>
                                 </div>
 
-                                <div class="card" style="border-top-left-radius: 0;">
+                                <div class="card">
                                     <div class="form-row" style="align-items: flex-end;">
                                         <div class="form-group" style="margin-bottom: 0; flex: 2;">
-                                            <label style="color: var(--text-muted); font-size: 0.85rem;">Текущий курс (<span id="current-subject-label">Физика</span>): <span id="current-student-course-display" style="color: var(--text-main); font-weight: 500;"></span></label>
+                                            <label style="color: var(--text-muted); font-size: 0.85rem;">Текущий курс (<span id="admin-subject-label">Физика</span>): <span id="current-student-course-display" style="color: var(--text-main); font-weight: 500;"></span></label>
                                             <select id="admin-change-student-course" class="form-select" style="margin-top: 8px;">
                                                 <option value="">-- Выберите новый курс --</option>
                                             </select>
                                         </div>
-                                        <button id="btn-change-student-course" class="btn-secondary" style="height: 100%;">Изменить курс</button>
+                                        <div class="form-group" style="margin-bottom: 0; margin-left: 16px; flex: 1;">
+                                            <label style="display:flex; align-items:center; gap:8px; cursor:pointer; color: var(--text-main); margin-bottom: 10px;">
+                                                <input type="checkbox" id="admin-change-student-ind" style="width: 16px; height: 16px; accent-color: var(--accent);">
+                                                <span style="font-weight: 500;">Индивидуально</span>
+                                            </label>
+                                        </div>
+                                        <button id="btn-change-student-course" class="btn-secondary" style="height: 100%;">Применить</button>
                                         <span id="change-course-status" style="margin-left: 12px; font-size: 0.9rem; color: var(--accent);"></span>
                                     </div>
                                 </div>
@@ -954,7 +961,7 @@
         function toggleSidebar(sidebarId) { document.getElementById(sidebarId).classList.toggle('open'); }
 
         function switchAdminView(viewId, element) {
-            if (window.triggerAdminAutoSave) window.triggerAdminAutoSave(); // Автосохранение перед сменой вкладки
+            if (window.triggerAdminAutoSave) window.triggerAdminAutoSave();
 
             document.querySelectorAll('#admin-view .nav-item').forEach(el => el.classList.remove('active'));
             element.classList.add('active');
@@ -1017,6 +1024,10 @@
         let currentUserName = null;
         
         let hasUnsavedAdminChanges = false;
+        
+        // Multi-subject state in admin
+        let adminCurrentSubject = 'physics';
+        let adminRawUserData = {};
 
         window.addEventListener('visibilitychange', () => {
             if (document.visibilityState === 'hidden' && hasUnsavedAdminChanges && window.triggerAdminAutoSave) {
@@ -1278,6 +1289,7 @@
                 if (currentUserUid && data.testId && data.score) {
                     try {
                         const studentRef = doc(db, 'students_progress', currentUserUid);
+                        // Для студенческой стороны временно сохраняем в корень (будет обновлено в некст этапе)
                         await setDoc(studentRef, {
                             tests_results: {
                                 [data.testId]: data.score
@@ -1445,7 +1457,8 @@
                         const userData = userSnap.data();
                         currentUserName = userData.name || user.email.split('@')[0];
                         const role = userData.role || 'student';
-                        const courseId = userData.course_id || '';
+                        // Обратная совместимость для стороны ученика
+                        const courseId = userData.physics_course_id || userData.course_id || '';
                         
                         let initials = "УЧ";
                         if (currentUserName) {
@@ -1483,7 +1496,9 @@
 
                             unsubProgress = onSnapshot(doc(db, 'students_progress', user.uid), (docSnap) => {
                                 if (docSnap.exists()) {
-                                    currentProgressData = docSnap.data();
+                                    const rawData = docSnap.data();
+                                    // Обратная совместимость: берем физику или старый корень
+                                    currentProgressData = rawData.physics || rawData; 
                                     updateStudentDashboardUI(user);
                                     renderArchive();
                                 }
@@ -1604,7 +1619,6 @@
 
             function markUnsaved() { hasUnsavedAdminChanges = true; }
 
-            // Глобальная функция для триггера автосохранения
             window.triggerAdminAutoSave = async () => {
                 if (!hasUnsavedAdminChanges) return;
                 
@@ -1633,6 +1647,21 @@
             document.getElementById('admin-course-form').addEventListener('input', (e) => {
                 if(e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') {
                     markUnsaved();
+                }
+            });
+
+            document.querySelectorAll('.admin-subject-tab').forEach(btn => {
+                btn.onclick = async (e) => {
+                    if (hasUnsavedAdminChanges) await window.triggerAdminAutoSave();
+                    document.querySelectorAll('.admin-subject-tab').forEach(b => {
+                        b.classList.remove('active');
+                        b.style.backgroundColor = 'transparent';
+                    });
+                    const target = e.target.closest('.admin-subject-tab');
+                    target.classList.add('active');
+                    target.style.backgroundColor = 'var(--bg-hover)';
+                    adminCurrentSubject = target.dataset.subject;
+                    if(selectedStudentUid) renderAdminStudentEditor();
                 }
             });
 
@@ -1724,8 +1753,8 @@
             async function fetchCourses() {
                 try {
                     const coursesSnap = await getDocs(collection(db, 'courses'));
-                    const newStudentPhysicsCourseSelect = document.getElementById('admin-new-student-physics-course');
-                    const newStudentMathCourseSelect = document.getElementById('admin-new-student-math-course');
+                    const newStudentPhysicsSelect = document.getElementById('admin-new-student-physics');
+                    const newStudentMathSelect = document.getElementById('admin-new-student-math');
                     const changeStudentCourseSelect = document.getElementById('admin-change-student-course');
                     
                     const currentSelection = adminCourseSelect.value;
@@ -1738,8 +1767,8 @@
                     });
                     
                     adminCourseSelect.innerHTML = optionsHtml;
-                    if(newStudentPhysicsCourseSelect) newStudentPhysicsCourseSelect.innerHTML = '<option value="">-- Курс Физики --</option>' + optionsHtml;
-                    if(newStudentMathCourseSelect) newStudentMathCourseSelect.innerHTML = '<option value="">-- Курс Математики --</option>' + optionsHtml;
+                    newStudentPhysicsSelect.innerHTML = optionsHtml;
+                    newStudentMathSelect.innerHTML = optionsHtml;
                     changeStudentCourseSelect.innerHTML = optionsHtml;
 
                     if (currentSelection) adminCourseSelect.value = currentSelection;
@@ -1950,183 +1979,6 @@
             let adminArchiveState = { topics: [], hw: [], pending_hw: [] };
             let adminArchiveEditState = { topic: -1, hw: -1, pendingHw: -1 };
             let adminSelectedCourseData = null;
-            
-            // Глобальные переменные для переключения предметов
-            let adminCurrentSubject = 'physics';
-            let adminRawUserData = null;
-            let adminRawProgressData = null;
-
-            document.getElementById('admin-tab-physics').onclick = () => switchAdminStudentSubject('physics');
-            document.getElementById('admin-tab-math').onclick = () => switchAdminStudentSubject('math');
-
-            async function switchAdminStudentSubject(subject) {
-                if (hasUnsavedAdminChanges) {
-                    await window.triggerAdminAutoSave(); // Автосохранение перед сменой предмета
-                }
-
-                adminCurrentSubject = subject;
-                
-                // Обновляем UI вкладок
-                const tabPhys = document.getElementById('admin-tab-physics');
-                const tabMath = document.getElementById('admin-tab-math');
-                if (subject === 'physics') {
-                    tabPhys.className = 'btn-primary'; tabPhys.style.backgroundColor = 'var(--accent)'; tabPhys.style.color = '#fff'; tabPhys.style.borderBottom = 'none';
-                    tabMath.className = 'btn-secondary'; tabMath.style.backgroundColor = 'transparent'; tabMath.style.color = 'var(--text-main)'; tabMath.style.borderBottom = '1px solid var(--border)';
-                    document.getElementById('current-subject-label').textContent = 'Физика';
-                } else {
-                    tabMath.className = 'btn-primary'; tabMath.style.backgroundColor = 'var(--accent)'; tabMath.style.color = '#fff'; tabMath.style.borderBottom = 'none';
-                    tabPhys.className = 'btn-secondary'; tabPhys.style.backgroundColor = 'transparent'; tabPhys.style.color = 'var(--text-main)'; tabPhys.style.borderBottom = '1px solid var(--border)';
-                    document.getElementById('current-subject-label').textContent = 'Математика';
-                }
-
-                renderAdminStudentSubjectData();
-            }
-
-            async function renderAdminStudentSubjectData() {
-                if (!selectedStudentUid || !adminRawUserData) return;
-
-                adminArchiveEditState = { topic: -1, hw: -1, pendingHw: -1 };
-                document.getElementById('btn-add-arch-topic').innerText = 'Добавить';
-                document.getElementById('btn-add-arch-hw').innerText = 'Добавить';
-                hasUnsavedAdminChanges = false;
-
-                const courseId = adminCurrentSubject === 'physics' ? adminRawUserData.physics_course_id : adminRawUserData.math_course_id;
-                const isInd = adminRawUserData.is_individual === true;
-                
-                document.getElementById('current-student-course-display').innerHTML = (courseId || 'Не назначен') + (isInd ? ' <span class="tag green" style="font-size: 0.75rem; margin-left: 8px;">Индивидуально</span>' : '');
-                document.getElementById('admin-change-student-course').value = courseId || '';
-
-                let courseData = null;
-                if (courseId) {
-                    const courseSnap = await getDoc(doc(db, 'courses', courseId));
-                    if (courseSnap.exists()) courseData = courseSnap.data();
-                }
-                adminSelectedCourseData = courseData;
-
-                // Извлекаем данные конкретного предмета из общего прогресса
-                const subjectProgressData = adminRawProgressData[adminCurrentSubject] || {};
-
-                // Загрузка персональных настроек урока
-                document.getElementById('admin-pers-topic').value = subjectProgressData.personal_topic_title || '';
-                document.getElementById('admin-pers-deadline').value = subjectProgressData.personal_hw_deadline || '';
-                document.getElementById('admin-pers-link').value = subjectProgressData.personal_lesson_link || '';
-                document.getElementById('admin-pers-skilltree').value = subjectProgressData.personal_skill_tree_url || '';
-
-                const treeUrl = subjectProgressData.personal_skill_tree_url || courseData?.skill_tree_url || '';
-                const iframe = document.getElementById('admin-skilltree-frame');
-                const linkDisplay = document.getElementById('admin-skilltree-link-display');
-                const copyBtn = document.getElementById('btn-copy-skilltree');
-                
-                if (treeUrl) {
-                    const finalUrl = `${treeUrl}?student=${selectedStudentUid}&admin=true`;
-                    iframe.src = finalUrl;
-                    linkDisplay.textContent = `URL: ${finalUrl}`;
-                    iframe.parentElement.style.display = 'block';
-                    copyBtn.style.display = 'inline-flex';
-                } else {
-                    iframe.src = ''; linkDisplay.textContent = 'Древо навыков не назначено для курса';
-                    iframe.parentElement.style.display = 'none'; copyBtn.style.display = 'none';
-                }
-
-                // Тесты
-                const adminTestsContainerList = document.getElementById('admin-student-tests-container');
-                adminTestsContainerList.innerHTML = '';
-                const results = subjectProgressData.tests_results || {};
-                
-                if (courseData && courseData.tests_list && courseData.tests_list.length > 0) {
-                    courseData.tests_list.forEach(test => {
-                        const score = results[test.id];
-                        let displayScore = score ? score : 'Нет результата';
-
-                        const row = document.createElement('div');
-                        row.className = 'form-row'; row.style.alignItems = 'center'; row.style.padding = '12px 0'; row.style.borderBottom = '1px solid var(--border)';
-                        let resetBtnHtml = score ? `<button class="btn-secondary admin-reset-test-btn" data-testid="${test.id}" style="padding: 4px 10px; font-size: 0.8rem; border-color: var(--error); color: var(--error); margin-left: 12px; transition: all 0.2s;">Удалить</button>` : '';
-
-                        row.innerHTML = `
-                            <div style="flex: 2;"><div style="color: var(--text-main); font-weight: 500; font-size: 1rem;">${test.title}</div></div>
-                            <div style="flex: 1; text-align: right; display: flex; justify-content: flex-end; align-items: center;">
-                                <span style="font-weight: 600; font-size: 1.1rem; color: ${score ? 'var(--accent)' : 'var(--text-muted)'};">Результат: ${displayScore}</span>
-                                ${resetBtnHtml}
-                            </div>
-                        `;
-                        adminTestsContainerList.appendChild(row);
-                    });
-                    if (adminTestsContainerList.lastElementChild) { adminTestsContainerList.lastElementChild.style.borderBottom = 'none'; }
-
-                    adminTestsContainerList.querySelectorAll('.admin-reset-test-btn').forEach(btn => {
-                        btn.onclick = async (e) => {
-                            e.preventDefault();
-                            if (btn.dataset.confirm === 'true') {
-                                btn.innerText = '...';
-                                try {
-                                    const updatePayload = {};
-                                    updatePayload[`${adminCurrentSubject}.tests_results.${btn.dataset.testid}`] = deleteField();
-                                    await updateDoc(doc(db, 'students_progress', selectedStudentUid), updatePayload);
-                                    btn.parentElement.innerHTML = '<span style="color: var(--text-muted); font-size: 0.9rem;">Сброшено. Обновите профиль.</span>';
-                                    markUnsaved(); 
-                                } catch (err) { console.error(err); }
-                            } else {
-                                btn.dataset.confirm = 'true'; btn.innerText = 'Точно?'; btn.style.backgroundColor = 'var(--error)'; btn.style.color = '#fff';
-                                setTimeout(() => { if (btn && btn.parentElement) { btn.dataset.confirm = 'false'; btn.innerText = 'Удалить'; btn.style.background = 'transparent'; btn.style.color = 'var(--error)'; } }, 3000);
-                            }
-                        };
-                    });
-                } else {
-                    adminTestsContainerList.innerHTML = '<span style="color: var(--text-muted);">В курсе ученика нет тестов.</span>';
-                }
-
-                persTheoryContainer.innerHTML = ''; persHwContainer.innerHTML = ''; persRefContainer.innerHTML = '';
-
-                if (subjectProgressData.personal_theory_links && Array.isArray(subjectProgressData.personal_theory_links)) {
-                    subjectProgressData.personal_theory_links.forEach(l => createPersonalLinkRow(persTheoryContainer, 'pers-theory-title', 'pers-theory-url', l.title, l.url));
-                }
-                if (subjectProgressData.personal_hw_links && Array.isArray(subjectProgressData.personal_hw_links)) {
-                    subjectProgressData.personal_hw_links.forEach(l => createPersonalLinkRow(persHwContainer, 'pers-hw-title', 'pers-hw-url', l.title, l.url));
-                }
-                if (subjectProgressData.personal_reference_links && Array.isArray(subjectProgressData.personal_reference_links)) {
-                    subjectProgressData.personal_reference_links.forEach(l => createPersonalLinkRow(persRefContainer, 'pers-ref-title', 'pers-ref-url', l.title, l.url));
-                }
-
-                const adminCheckpointsContainer = document.getElementById('admin-student-checkpoints-list');
-                adminCheckpointsContainer.innerHTML = '';
-                if (courseData && courseData.checkpoints_list && courseData.checkpoints_list.length > 0) {
-                    let hasActive = false;
-                    courseData.checkpoints_list.forEach(cp => {
-                        if (cp.status !== 'yellow') return;
-                        hasActive = true;
-                        
-                        const res = subjectProgressData.checkpoints_results?.[cp.id] || { student_hw_url: '', feedback: '' };
-                        const row = document.createElement('div'); row.className = 'form-row cp-result-row';
-                        row.style.marginBottom = '16px'; row.style.borderBottom = '1px solid var(--border)'; row.style.paddingBottom = '16px';
-                        row.innerHTML = `
-                            <input type="hidden" class="cp-id" value="${cp.id}">
-                            <div style="flex: 2; display: flex; flex-direction: column; gap: 8px;">
-                                <div style="color: var(--text-main); font-weight: 500; font-size: 1rem;">${cp.title} <span class="tag ${cp.status}" style="font-size: 0.7rem; margin-left: 8px;">Активно</span></div>
-                                <textarea class="form-input cp-solurl" placeholder="URL решения (через Enter)" rows="2" style="resize: vertical;">${res.student_hw_url || ''}</textarea>
-                            </div>
-                            <div style="flex: 3; display: flex; flex-direction: column;">
-                                <textarea class="form-input cp-feedback" placeholder="Обратная связь" rows="3" style="resize: vertical;">${res.feedback || ''}</textarea>
-                            </div>
-                        `;
-                        adminCheckpointsContainer.appendChild(row);
-                    });
-                    if (!hasActive) { adminCheckpointsContainer.innerHTML = '<span style="color: var(--text-muted);">Нет активных контрольных точек для проверки.</span>'; }
-                } else {
-                    adminCheckpointsContainer.innerHTML = '<span style="color: var(--text-muted);">В курсе нет контрольных точек.</span>';
-                }
-
-                adminArchiveState.topics = subjectProgressData.archive_topics && Array.isArray(subjectProgressData.archive_topics) ? subjectProgressData.archive_topics : [];
-                adminArchiveState.hw = subjectProgressData.archive_hw && Array.isArray(subjectProgressData.archive_hw) ? subjectProgressData.archive_hw : [];
-                
-                // pending_hw общая для обоих предметов
-                adminArchiveState.pending_hw = adminRawProgressData.pending_hw && Array.isArray(adminRawProgressData.pending_hw) ? adminRawProgressData.pending_hw : [];
-                
-                document.getElementById('arch-t-title-input').value = ''; document.getElementById('arch-t-url-input').value = ''; document.getElementById('arch-t-notes-input').value = '';
-                document.getElementById('arch-h-title-input').value = ''; document.getElementById('arch-h-hwurl-input').value = ''; document.getElementById('arch-h-solurl-input').value = ''; document.getElementById('arch-h-feedback-input').value = '';
-                
-                renderAdminPendingHwList();
-                renderAdminArchiveLists();
-            }
 
             function renderAdminPendingHwList() {
                 const list = document.getElementById('admin-pending-hw-list');
@@ -2425,8 +2277,6 @@
             document.getElementById('admin-add-personal-hw').onclick = (e) => { e.preventDefault(); createPersonalLinkRow(persHwContainer, 'pers-hw-title', 'pers-hw-url'); markUnsaved(); };
             document.getElementById('admin-add-personal-ref').onclick = (e) => { e.preventDefault(); createPersonalLinkRow(persRefContainer, 'pers-ref-title', 'pers-ref-url'); markUnsaved(); };
 
-            let selectedStudentUid = null;
-
             async function fetchStudentsForAdmin() {
                 try {
                     const q = query(collection(db, "users"), where("role", "==", "student"));
@@ -2437,13 +2287,15 @@
                         const data = docSnap.data();
                         const option = document.createElement('option');
                         option.value = docSnap.id;
-                        const isIndText = data.is_individual ? ' 👤 Индив.' : '';
                         
                         let courseString = [];
-                        if (data.physics_course_id) courseString.push('Ф: ' + data.physics_course_id);
+                        const physCourse = data.physics_course_id || data.course_id;
+                        
+                        if (physCourse) courseString.push('Ф: ' + physCourse);
                         if (data.math_course_id) courseString.push('М: ' + data.math_course_id);
                         const cDisplay = courseString.length > 0 ? courseString.join(' | ') : 'Без курсов';
 
+                        const isIndText = data.is_individual ? ' 👤 Индив.' : '';
                         option.textContent = `${data.name || 'Без имени'} (${cDisplay})${isIndText}`;
                         studentSelector.appendChild(option);
                     });
@@ -2459,8 +2311,8 @@
                 const loginRaw = document.getElementById('admin-new-student-login').value.trim();
                 const pwd = document.getElementById('admin-new-student-pwd').value;
                 const name = document.getElementById('admin-new-student-name').value.trim();
-                const physCourseId = document.getElementById('admin-new-student-physics-course').value;
-                const mathCourseId = document.getElementById('admin-new-student-math-course').value;
+                const physCourseId = document.getElementById('admin-new-student-physics').value;
+                const mathCourseId = document.getElementById('admin-new-student-math').value;
                 const isInd = document.getElementById('admin-new-student-ind').checked;
 
                 if (!loginRaw || !pwd || !name) { status.textContent = "Заполните все текстовые поля."; status.style.color = "var(--error)"; return; }
@@ -2476,6 +2328,7 @@
                     await setDoc(doc(db, 'users', newUid), { 
                         name: name, 
                         role: 'student', 
+                        course_id: physCourseId,
                         physics_course_id: physCourseId,
                         math_course_id: mathCourseId,
                         is_individual: isInd 
@@ -2486,8 +2339,8 @@
                     document.getElementById('admin-new-student-login').value = '';
                     document.getElementById('admin-new-student-pwd').value = '';
                     document.getElementById('admin-new-student-name').value = '';
-                    document.getElementById('admin-new-student-physics-course').value = '';
-                    document.getElementById('admin-new-student-math-course').value = '';
+                    document.getElementById('admin-new-student-physics').value = '';
+                    document.getElementById('admin-new-student-math').value = '';
                     document.getElementById('admin-new-student-ind').checked = false;
                     fetchStudentsForAdmin();
                 } catch (error) {
@@ -2505,23 +2358,35 @@
                 const btn = e.target;
                 const status = document.getElementById('change-course-status');
                 const newCourseId = document.getElementById('admin-change-student-course').value;
+                const isInd = document.getElementById('admin-change-student-ind').checked;
                 
-                btn.disabled = true; status.textContent = "";
+                btn.disabled = true; status.textContent = "Сохранение..."; status.style.color = "var(--text-muted)";
                 
                 try {
                     const updateField = adminCurrentSubject === 'physics' ? 'physics_course_id' : 'math_course_id';
-                    await updateDoc(doc(db, 'users', selectedStudentUid), { [updateField]: newCourseId });
+                    const payload = { 
+                        [updateField]: newCourseId,
+                        is_individual: isInd 
+                    };
                     
-                    status.textContent = "Курс изменен!"; status.style.color = "var(--accent)";
+                    if (adminCurrentSubject === 'physics') {
+                        payload['course_id'] = newCourseId;
+                    }
+
+                    await updateDoc(doc(db, 'users', selectedStudentUid), payload);
+                    
+                    status.textContent = "Настройки применены!"; status.style.color = "var(--accent)";
+                    adminRawUserData.is_individual = isInd;
+                    adminRawUserData[updateField] = newCourseId;
+                    if(adminCurrentSubject === 'physics') adminRawUserData.course_id = newCourseId;
+                    
                     await fetchStudentsForAdmin(); 
-                    
-                    const event = new Event('change');
-                    studentSelector.dispatchEvent(event);
+                    renderAdminStudentEditor();
                     
                     setTimeout(() => status.textContent = "", 3000);
                 } catch (error) {
                     console.error(error);
-                    status.textContent = "Ошибка при смене курса."; status.style.color = "var(--error)";
+                    status.textContent = "Ошибка при сохранении."; status.style.color = "var(--error)";
                 } finally {
                     btn.disabled = false;
                 }
@@ -2535,23 +2400,221 @@
                 selectedStudentUid = e.target.value;
                 if (!selectedStudentUid) { studentEditor.style.display = 'none'; return; }
 
-                // Загружаем сырые данные один раз при выборе ученика
-                const userSnap = await getDoc(doc(db, 'users', selectedStudentUid));
-                if (userSnap.exists()) adminRawUserData = userSnap.data();
-                else adminRawUserData = {};
+                const userDoc = await getDoc(doc(db, 'users', selectedStudentUid));
+                if (userDoc.exists()) {
+                    adminRawUserData = userDoc.data();
+                } else {
+                    adminRawUserData = {};
+                }
 
-                const progressSnap = await getDoc(doc(db, 'students_progress', selectedStudentUid));
-                if (progressSnap.exists()) adminRawProgressData = progressSnap.data();
-                else adminRawProgressData = { physics: {}, math: {}, pending_hw: [] };
-
-                // Инициализируем объекты предметов, если они отсутствуют
-                if (!adminRawProgressData.physics) adminRawProgressData.physics = {};
-                if (!adminRawProgressData.math) adminRawProgressData.math = {};
-
-                // Рендерим данные текущего выбранного предмета
-                await renderAdminStudentSubjectData();
-                studentEditor.style.display = 'flex';
+                renderAdminStudentEditor();
             };
+
+            async function renderAdminStudentEditor() {
+                adminArchiveEditState = { topic: -1, hw: -1, pendingHw: -1 };
+                document.getElementById('btn-add-arch-topic').innerText = 'Добавить';
+                document.getElementById('btn-add-arch-hw').innerText = 'Добавить';
+                hasUnsavedAdminChanges = false;
+
+                document.getElementById('admin-subject-label').textContent = adminCurrentSubject === 'physics' ? 'Физика' : 'Математика';
+
+                let courseId = '';
+                if (adminCurrentSubject === 'physics') {
+                    courseId = adminRawUserData.physics_course_id || adminRawUserData.course_id || '';
+                } else {
+                    courseId = adminRawUserData.math_course_id || '';
+                }
+
+                const isInd = adminRawUserData.is_individual === true;
+                document.getElementById('admin-change-student-ind').checked = isInd;
+                
+                document.getElementById('current-student-course-display').innerHTML = (courseId || 'Не назначен') + (isInd ? ' <span class="tag green" style="font-size: 0.75rem; margin-left: 8px;">Индивидуально</span>' : '');
+                document.getElementById('admin-change-student-course').value = courseId || '';
+
+                let courseData = null;
+                if (courseId) {
+                    const courseSnap = await getDoc(doc(db, 'courses', courseId));
+                    if (courseSnap.exists()) courseData = courseSnap.data();
+                }
+                adminSelectedCourseData = courseData;
+
+                let progressDataAll = {};
+                const progressSnap = await getDoc(doc(db, 'students_progress', selectedStudentUid));
+                if (progressSnap.exists()) progressDataAll = progressSnap.data();
+
+                const progressData = progressDataAll[adminCurrentSubject] || {};
+
+                document.getElementById('admin-pers-topic').value = progressData.personal_topic_title || '';
+                document.getElementById('admin-pers-deadline').value = progressData.personal_hw_deadline || '';
+                document.getElementById('admin-pers-link').value = progressData.personal_lesson_link || '';
+                document.getElementById('admin-pers-skilltree').value = progressData.personal_skill_tree_url || '';
+
+                const treeUrl = progressData.personal_skill_tree_url || courseData?.skill_tree_url || '';
+                const iframe = document.getElementById('admin-skilltree-frame');
+                const linkDisplay = document.getElementById('admin-skilltree-link-display');
+                const copyBtn = document.getElementById('btn-copy-skilltree');
+                
+                if (treeUrl) {
+                    const finalUrl = `${treeUrl}?student=${selectedStudentUid}&admin=true`;
+                    iframe.src = finalUrl;
+                    linkDisplay.textContent = `URL: ${finalUrl}`;
+                    iframe.parentElement.style.display = 'block';
+                    copyBtn.style.display = 'inline-flex';
+                    
+                    copyBtn.onclick = () => {
+                        try {
+                            navigator.clipboard.writeText(finalUrl);
+                            const oldHtml = copyBtn.innerHTML;
+                            copyBtn.innerHTML = '<i data-lucide="check" style="width: 16px; height: 16px; color: var(--accent);"></i>';
+                            if (window.lucide) window.lucide.createIcons();
+                            setTimeout(() => { copyBtn.innerHTML = oldHtml; if (window.lucide) window.lucide.createIcons(); }, 2000);
+                        } catch (err) {
+                            const textArea = document.createElement("textarea");
+                            textArea.value = finalUrl;
+                            document.body.appendChild(textArea);
+                            textArea.select();
+                            document.execCommand("copy");
+                            document.body.removeChild(textArea);
+                            const oldHtml = copyBtn.innerHTML;
+                            copyBtn.innerHTML = '<i data-lucide="check" style="width: 16px; height: 16px; color: var(--accent);"></i>';
+                            if (window.lucide) window.lucide.createIcons();
+                            setTimeout(() => { copyBtn.innerHTML = oldHtml; if (window.lucide) window.lucide.createIcons(); }, 2000);
+                        }
+                    };
+                } else {
+                    iframe.src = '';
+                    linkDisplay.textContent = 'Древо навыков не назначено';
+                    iframe.parentElement.style.display = 'none';
+                    copyBtn.style.display = 'none';
+                }
+
+                const adminTestsContainerList = document.getElementById('admin-student-tests-container');
+                adminTestsContainerList.innerHTML = '';
+                const results = progressData.tests_results || {};
+                
+                if (courseData && courseData.tests_list && courseData.tests_list.length > 0) {
+                    courseData.tests_list.forEach(test => {
+                        const score = results[test.id];
+                        let displayScore = score ? score : 'Нет результата';
+
+                        const row = document.createElement('div');
+                        row.className = 'form-row';
+                        row.style.alignItems = 'center';
+                        row.style.padding = '12px 0';
+                        row.style.borderBottom = '1px solid var(--border)';
+
+                        let resetBtnHtml = '';
+                        if (score) {
+                            resetBtnHtml = `<button class="btn-secondary admin-reset-test-btn" data-testid="${test.id}" style="padding: 4px 10px; font-size: 0.8rem; border-color: var(--error); color: var(--error); margin-left: 12px; transition: all 0.2s;">Удалить</button>`;
+                        }
+
+                        row.innerHTML = `
+                            <div style="flex: 2;">
+                                <div style="color: var(--text-main); font-weight: 500; font-size: 1rem;">${test.title}</div>
+                            </div>
+                            <div style="flex: 1; text-align: right; display: flex; justify-content: flex-end; align-items: center;">
+                                <span style="font-weight: 600; font-size: 1.1rem; color: ${score ? 'var(--accent)' : 'var(--text-muted)'};">
+                                    Результат: ${displayScore}
+                                </span>
+                                ${resetBtnHtml}
+                            </div>
+                        `;
+                        adminTestsContainerList.appendChild(row);
+                    });
+                    if (adminTestsContainerList.lastElementChild) { adminTestsContainerList.lastElementChild.style.borderBottom = 'none'; }
+
+                    adminTestsContainerList.querySelectorAll('.admin-reset-test-btn').forEach(btn => {
+                        btn.onclick = async (e) => {
+                            e.preventDefault();
+                            if (btn.dataset.confirm === 'true') {
+                                btn.innerText = '...';
+                                try {
+                                    await setDoc(doc(db, 'students_progress', selectedStudentUid), {
+                                        [adminCurrentSubject]: {
+                                            tests_results: { [btn.dataset.testid]: deleteField() }
+                                        }
+                                    }, { merge: true });
+                                    btn.parentElement.innerHTML = '<span style="color: var(--text-muted); font-size: 0.9rem;">Сброшено. Обновите профиль.</span>';
+                                    markUnsaved(); 
+                                } catch (err) { console.error(err); }
+                            } else {
+                                btn.dataset.confirm = 'true';
+                                btn.innerText = 'Точно?';
+                                btn.style.backgroundColor = 'var(--error)';
+                                btn.style.color = '#fff';
+                                setTimeout(() => { 
+                                    if (btn && btn.parentElement) { 
+                                        btn.dataset.confirm = 'false'; btn.innerText = 'Удалить'; btn.style.background = 'transparent'; btn.style.color = 'var(--error)'; 
+                                    }
+                                }, 3000);
+                            }
+                        };
+                    });
+
+                } else {
+                    adminTestsContainerList.innerHTML = '<span style="color: var(--text-muted);">В курсе ученика нет тестов.</span>';
+                }
+                
+                if (window.lucide) window.lucide.createIcons();
+
+                persTheoryContainer.innerHTML = ''; persHwContainer.innerHTML = ''; persRefContainer.innerHTML = '';
+
+                if (progressData.personal_theory_links && Array.isArray(progressData.personal_theory_links)) {
+                    progressData.personal_theory_links.forEach(l => createPersonalLinkRow(persTheoryContainer, 'pers-theory-title', 'pers-theory-url', l.title, l.url));
+                }
+                if (progressData.personal_hw_links && Array.isArray(progressData.personal_hw_links)) {
+                    progressData.personal_hw_links.forEach(l => createPersonalLinkRow(persHwContainer, 'pers-hw-title', 'pers-hw-url', l.title, l.url));
+                }
+                if (progressData.personal_reference_links && Array.isArray(progressData.personal_reference_links)) {
+                    progressData.personal_reference_links.forEach(l => createPersonalLinkRow(persRefContainer, 'pers-ref-title', 'pers-ref-url', l.title, l.url));
+                }
+
+                const adminCheckpointsContainer = document.getElementById('admin-student-checkpoints-list');
+                adminCheckpointsContainer.innerHTML = '';
+                if (courseData && courseData.checkpoints_list && courseData.checkpoints_list.length > 0) {
+                    let hasActive = false;
+                    courseData.checkpoints_list.forEach(cp => {
+                        if (cp.status !== 'yellow') return;
+                        hasActive = true;
+                        
+                        const res = progressData.checkpoints_results?.[cp.id] || { student_hw_url: '', feedback: '' };
+                        const row = document.createElement('div');
+                        row.className = 'form-row cp-result-row';
+                        row.style.marginBottom = '16px';
+                        row.style.borderBottom = '1px solid var(--border)';
+                        row.style.paddingBottom = '16px';
+                        row.innerHTML = `
+                            <input type="hidden" class="cp-id" value="${cp.id}">
+                            <div style="flex: 2; display: flex; flex-direction: column; gap: 8px;">
+                                <div style="color: var(--text-main); font-weight: 500; font-size: 1rem;">${cp.title} <span class="tag ${cp.status}" style="font-size: 0.7rem; margin-left: 8px;">Активно</span></div>
+                                <textarea class="form-input cp-solurl" placeholder="URL решения (через Enter)" rows="2" style="resize: vertical;">${res.student_hw_url || ''}</textarea>
+                            </div>
+                            <div style="flex: 3; display: flex; flex-direction: column;">
+                                <textarea class="form-input cp-feedback" placeholder="Обратная связь" rows="3" style="resize: vertical;">${res.feedback || ''}</textarea>
+                            </div>
+                        `;
+                        adminCheckpointsContainer.appendChild(row);
+                    });
+                    
+                    if (!hasActive) {
+                        adminCheckpointsContainer.innerHTML = '<span style="color: var(--text-muted);">Нет активных контрольных точек.</span>';
+                    }
+                } else {
+                    adminCheckpointsContainer.innerHTML = '<span style="color: var(--text-muted);">В курсе нет контрольных точек.</span>';
+                }
+
+                adminArchiveState.topics = progressData.archive_topics && Array.isArray(progressData.archive_topics) ? progressData.archive_topics : [];
+                adminArchiveState.hw = progressData.archive_hw && Array.isArray(progressData.archive_hw) ? progressData.archive_hw : [];
+                adminArchiveState.pending_hw = progressDataAll.pending_hw && Array.isArray(progressDataAll.pending_hw) ? progressDataAll.pending_hw : [];
+                
+                document.getElementById('arch-t-title-input').value = ''; document.getElementById('arch-t-url-input').value = ''; document.getElementById('arch-t-notes-input').value = '';
+                document.getElementById('arch-h-title-input').value = ''; document.getElementById('arch-h-hwurl-input').value = ''; document.getElementById('arch-h-solurl-input').value = ''; document.getElementById('arch-h-feedback-input').value = '';
+                
+                renderAdminPendingHwList();
+                renderAdminArchiveLists();
+
+                studentEditor.style.display = 'flex';
+            }
 
             saveProgressBtn.onclick = async () => {
                 if (!selectedStudentUid) return;
@@ -2576,49 +2639,29 @@
                     if (url || feedback) cpResults[id] = { student_hw_url: url, feedback: feedback };
                 });
 
-                // Формируем объект данных только для текущего предмета
-                const currentSubjectData = {
-                    personal_topic_title: document.getElementById('admin-pers-topic').value.trim(),
-                    personal_hw_deadline: document.getElementById('admin-pers-deadline').value.trim(),
-                    personal_lesson_link: document.getElementById('admin-pers-link').value.trim(),
-                    personal_skill_tree_url: document.getElementById('admin-pers-skilltree').value.trim(),
-                    personal_theory_links: getPersonalLinks(persTheoryContainer, 'pers-theory-title', 'pers-theory-url'),
-                    personal_hw_links: getPersonalLinks(persHwContainer, 'pers-hw-title', 'pers-hw-url'),
-                    personal_reference_links: getPersonalLinks(persRefContainer, 'pers-ref-title', 'pers-ref-url'),
-                    archive_topics: adminArchiveState.topics,
-                    checkpoints_results: cpResults,
-                    archive_hw: adminArchiveState.hw
+                const progressPayload = {
+                    [adminCurrentSubject]: {
+                        personal_topic_title: document.getElementById('admin-pers-topic').value.trim(),
+                        personal_hw_deadline: document.getElementById('admin-pers-deadline').value.trim(),
+                        personal_lesson_link: document.getElementById('admin-pers-link').value.trim(),
+                        personal_skill_tree_url: document.getElementById('admin-pers-skilltree').value.trim(),
+                        personal_theory_links: getPersonalLinks(persTheoryContainer, 'pers-theory-title', 'pers-theory-url'),
+                        personal_hw_links: getPersonalLinks(persHwContainer, 'pers-hw-title', 'pers-hw-url'),
+                        personal_reference_links: getPersonalLinks(persRefContainer, 'pers-ref-title', 'pers-ref-url'),
+                        archive_topics: adminArchiveState.topics,
+                        checkpoints_results: cpResults,
+                        archive_hw: adminArchiveState.hw,
+                    },
+                    pending_hw: adminArchiveState.pending_hw
                 };
 
-                // Сохраняем эти данные в локальном стейте
-                adminRawProgressData[adminCurrentSubject] = {
-                    ...adminRawProgressData[adminCurrentSubject], // Сохраняем тесты и прочее, что не перезаписываем тут
-                    ...currentSubjectData
-                };
-                adminRawProgressData.pending_hw = adminArchiveState.pending_hw;
-
-                // Отправляем в базу
                 try {
-                    const updatePayload = {};
-                    updatePayload[adminCurrentSubject] = adminRawProgressData[adminCurrentSubject];
-                    updatePayload['pending_hw'] = adminRawProgressData.pending_hw;
-
-                    await updateDoc(doc(db, 'students_progress', selectedStudentUid), updatePayload);
+                    await setDoc(doc(db, 'students_progress', selectedStudentUid), progressPayload, { merge: true });
                     progressStatus.textContent = "Успешно сохранено!";
                     setTimeout(() => progressStatus.textContent = "", 3000);
                 } catch (error) {
-                    // Если документа не существует, updateDoc выдаст ошибку, используем setDoc с merge
-                    try {
-                         await setDoc(doc(db, 'students_progress', selectedStudentUid), {
-                             [adminCurrentSubject]: adminRawProgressData[adminCurrentSubject],
-                             pending_hw: adminRawProgressData.pending_hw
-                         }, { merge: true });
-                         progressStatus.textContent = "Успешно сохранено!";
-                         setTimeout(() => progressStatus.textContent = "", 3000);
-                    } catch(err2) {
-                        console.error(err2);
-                        progressStatus.textContent = "Ошибка при сохранении.";
-                    }
+                    console.error(error);
+                    progressStatus.textContent = "Ошибка при сохранении.";
                 } finally {
                     hasUnsavedAdminChanges = false;
                     saveProgressBtn.disabled = false; saveProgressBtn.textContent = "Сохранить прогресс";
