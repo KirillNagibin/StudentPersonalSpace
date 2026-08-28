@@ -749,7 +749,7 @@
                             
                             <div id="admin-student-editor" style="display: none; flex-direction: column; gap: 24px;">
                                 
-                                <!-- ТАБЫ ПРЕДМЕТОВ -->
+                                <!-- ТАБЫ ПРЕДМЕТОВ (ВОССТАНОВЛЕНО) -->
                                 <div style="display: flex; gap: 16px; margin-bottom: 8px; border-bottom: 1px solid var(--border); padding-bottom: 16px;">
                                     <button class="btn-secondary admin-subject-tab active" data-subject="physics" style="background-color: var(--bg-hover);"><i data-lucide="atom" style="width:18px; margin-right:8px;"></i>Физика</button>
                                     <button class="btn-secondary admin-subject-tab" data-subject="math"><i data-lucide="calculator" style="width:18px; margin-right:8px;"></i>Математика</button>
@@ -763,13 +763,7 @@
                                                 <option value="">-- Выберите новый курс --</option>
                                             </select>
                                         </div>
-                                        <div class="form-group" style="margin-bottom: 0; margin-left: 16px; flex: 1;">
-                                            <label style="display:flex; align-items:center; gap:8px; cursor:pointer; color: var(--text-main); margin-bottom: 10px;">
-                                                <input type="checkbox" id="admin-change-student-ind" style="width: 16px; height: 16px; accent-color: var(--accent);">
-                                                <span style="font-weight: 500;">Индивидуально</span>
-                                            </label>
-                                        </div>
-                                        <button id="btn-change-student-course" class="btn-secondary" style="height: 100%;">Применить</button>
+                                        <button id="btn-change-student-course" class="btn-secondary" style="height: 100%;">Изменить курс</button>
                                         <span id="change-course-status" style="margin-left: 12px; font-size: 0.9rem; color: var(--accent);"></span>
                                     </div>
                                 </div>
@@ -2418,8 +2412,8 @@
 
                 document.getElementById('admin-subject-label').textContent = adminCurrentSubject === 'physics' ? 'Физика' : 'Математика';
 
-                let courseId = '';
-                if (adminCurrentSubject === 'physics') {
+                const selectedOption = e.target.options[e.target.selectedIndex];
+                const courseId = selectedOption.dataset.course;
                     courseId = adminRawUserData.physics_course_id || adminRawUserData.course_id || '';
                 } else {
                     courseId = adminRawUserData.math_course_id || '';
@@ -2436,14 +2430,33 @@
                     const courseSnap = await getDoc(doc(db, 'courses', courseId));
                     if (courseSnap.exists()) courseData = courseSnap.data();
                 }
-                adminSelectedCourseData = courseData;
 
                 let progressDataAll = {};
                 const progressSnap = await getDoc(doc(db, 'students_progress', selectedStudentUid));
-                if (progressSnap.exists()) progressDataAll = progressSnap.data();
+                if (progressSnap.exists()) {
+                    progressDataAll = progressSnap.data();
+                    
+                    // Мост обратной совместимости для "старых" учеников
+                    if (!progressDataAll.physics && !progressDataAll.math) {
+                        progressDataAll.physics = {
+                            personal_topic_title: progressDataAll.personal_topic_title,
+                            personal_hw_deadline: progressDataAll.personal_hw_deadline,
+                            personal_lesson_link: progressDataAll.personal_lesson_link,
+                            personal_skill_tree_url: progressDataAll.personal_skill_tree_url,
+                            personal_theory_links: progressDataAll.personal_theory_links,
+                            personal_hw_links: progressDataAll.personal_hw_links,
+                            personal_reference_links: progressDataAll.personal_reference_links,
+                            archive_topics: progressDataAll.archive_topics,
+                            checkpoints_results: progressDataAll.checkpoints_results,
+                            archive_hw: progressDataAll.archive_hw
+                        };
+                    }
+                }
 
                 const progressData = progressDataAll[adminCurrentSubject] || {};
+                adminSelectedCourseData = courseData;
 
+                // Загрузка персональных настроек урока
                 document.getElementById('admin-pers-topic').value = progressData.personal_topic_title || '';
                 document.getElementById('admin-pers-deadline').value = progressData.personal_hw_deadline || '';
                 document.getElementById('admin-pers-link').value = progressData.personal_lesson_link || '';
@@ -2597,7 +2610,7 @@
                     });
                     
                     if (!hasActive) {
-                        adminCheckpointsContainer.innerHTML = '<span style="color: var(--text-muted);">Нет активных контрольных точек.</span>';
+                        adminCheckpointsContainer.innerHTML = '<span style="color: var(--text-muted);">Нет активных контрольных точек для проверки.</span>';
                     }
                 } else {
                     adminCheckpointsContainer.innerHTML = '<span style="color: var(--text-muted);">В курсе нет контрольных точек.</span>';
@@ -2650,7 +2663,7 @@
                         personal_reference_links: getPersonalLinks(persRefContainer, 'pers-ref-title', 'pers-ref-url'),
                         archive_topics: adminArchiveState.topics,
                         checkpoints_results: cpResults,
-                        archive_hw: adminArchiveState.hw,
+                        archive_hw: adminArchiveState.hw
                     },
                     pending_hw: adminArchiveState.pending_hw
                 };
