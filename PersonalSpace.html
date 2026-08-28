@@ -926,6 +926,8 @@
         function toggleSidebar(sidebarId) { document.getElementById(sidebarId).classList.toggle('open'); }
 
         function switchAdminView(viewId, element) {
+            if (window.triggerAdminAutoSave) window.triggerAdminAutoSave(); // Автосохранение перед сменой вкладки
+
             document.querySelectorAll('#admin-view .nav-item').forEach(el => el.classList.remove('active'));
             element.classList.add('active');
             document.querySelectorAll('.admin-section').forEach(el => el.classList.remove('active'));
@@ -988,8 +990,19 @@
         
         let hasUnsavedAdminChanges = false;
 
+        // Автосохранение при закрытии, обновлении или сворачивании вкладки браузера
+        window.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'hidden' && hasUnsavedAdminChanges && window.triggerAdminAutoSave) {
+                window.triggerAdminAutoSave();
+            }
+        });
+
         window.addEventListener('beforeunload', (e) => {
             if (studentFilesQueue.length > 0 || hasUnsavedAdminChanges) {
+                // Если пользователь всё же закроет, пытаемся сохранить в последнюю секунду
+                if (hasUnsavedAdminChanges && window.triggerAdminAutoSave) {
+                    window.triggerAdminAutoSave();
+                }
                 e.preventDefault();
                 e.returnValue = '';
             }
@@ -1549,6 +1562,26 @@
 
             function markUnsaved() { hasUnsavedAdminChanges = true; }
 
+            // Глобальная функция для триггера автосохранения
+            window.triggerAdminAutoSave = async () => {
+                if (!hasUnsavedAdminChanges) return;
+                
+                const courseActive = document.getElementById('admin-section-courses').classList.contains('active');
+                const studentsActive = document.getElementById('admin-section-students').classList.contains('active');
+                const fcActive = document.getElementById('admin-section-flashcards').classList.contains('active');
+
+                if (courseActive) {
+                    const btn = document.getElementById('admin-save-course');
+                    if (btn && !btn.disabled) await btn.onclick();
+                } else if (studentsActive) {
+                    const btn = document.getElementById('admin-save-progress');
+                    if (btn && !btn.disabled) await btn.onclick();
+                } else if (fcActive) {
+                    const btn = document.getElementById('admin-fc-save-db');
+                    if (btn && !btn.disabled) await btn.onclick();
+                }
+            };
+
             document.getElementById('admin-student-editor').addEventListener('input', (e) => {
                 if(e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') {
                     markUnsaved();
@@ -1776,7 +1809,13 @@
                 }
             }
 
-            adminCourseSelect.addEventListener('change', loadCourseData);
+            adminCourseSelect.addEventListener('change', async () => {
+                // Если мы меняем курс в выпадающем списке, сохраняем предыдущий!
+                if (hasUnsavedAdminChanges) {
+                    await window.triggerAdminAutoSave();
+                }
+                loadCourseData();
+            });
 
             saveBtn.onclick = async () => {
                 const courseId = document.getElementById('admin-course-id').value.trim();
@@ -1842,6 +1881,7 @@
                     await setDoc(doc(db, 'courses', courseId), courseData, { merge: true });
                     statusMsg.textContent = "Успешно сохранено!"; fetchCourses(); 
                     setTimeout(() => statusMsg.textContent = "", 3000);
+                    hasUnsavedAdminChanges = false; // Сбрасываем флаг после успешного сохранения
                 } catch (error) { statusMsg.textContent = "Ошибка при сохранении."; } finally { saveBtn.disabled = false; saveBtn.innerHTML = "Сохранить изменения курса"; }
             };
 
@@ -2243,6 +2283,11 @@
             };
 
             studentSelector.onchange = async (e) => {
+                // Автосохранение предыдущего ученика перед открытием нового
+                if (hasUnsavedAdminChanges) {
+                    await window.triggerAdminAutoSave();
+                }
+
                 selectedStudentUid = e.target.value;
                 if (!selectedStudentUid) { studentEditor.style.display = 'none'; return; }
 
