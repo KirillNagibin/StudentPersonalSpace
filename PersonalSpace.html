@@ -1265,7 +1265,7 @@
         if (hwDropzone) {
             hwDropzone.addEventListener('click', () => hwFileInput.click());
             hwDropzone.addEventListener('dragover', (e) => { e.preventDefault(); hwDropzone.classList.add('dragover'); });
-            hwDropzone.addEventListener('dragleave', () => hwDropzone.classList.remove('dragover');
+            hwDropzone.addEventListener('dragleave', () => hwDropzone.classList.remove('dragover'));
             hwDropzone.addEventListener('drop', (e) => {
                 e.preventDefault(); hwDropzone.classList.remove('dragover');
                 if (e.dataTransfer.files.length) handleFilesSelect(e.dataTransfer.files);
