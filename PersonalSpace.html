@@ -1090,6 +1090,171 @@
             if (e.key === 'Enter') pwdInput.focus();
         });
 
+        // Подписка на изменение состояния авторизации (Обработка успешного входа)
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                currentUserUid = user.uid;
+                loginScreen.style.display = 'none';
+                appScreen.style.display = 'flex';
+                
+                try {
+                    const userDoc = await getDoc(doc(db, 'users', currentUserUid));
+                    if (userDoc.exists()) {
+                        const userData = userDoc.data();
+                        currentUserName = userData.name || 'Пользователь';
+                        const role = userData.role || 'student';
+
+                        if (role === 'admin') {
+                            document.getElementById('admin-view').classList.add('active');
+                            document.getElementById('student-view').classList.remove('active');
+                            document.getElementById('admin-profile-name').textContent = currentUserName;
+                            if (!adminLogicSetup) {
+                                setupAdminLogic();
+                                adminLogicSetup = true;
+                            }
+                        } else {
+                            document.getElementById('student-view').classList.add('active');
+                            document.getElementById('admin-view').classList.remove('active');
+                            document.getElementById('profile-name').textContent = currentUserName;
+                            document.getElementById('dash-greeting-name').textContent = currentUserName;
+                            
+                            const courseId = userData.physics_course_id || userData.course_id || '';
+                            document.getElementById('profile-course').textContent = courseId ? `Курс: ${courseId}` : 'Курс не назначен';
+                            
+                            setupStudentLogic(courseId);
+                        }
+                    } else {
+                        errorMsg.textContent = "Профиль не найден в базе данных";
+                        await signOut(auth);
+                    }
+                } catch (error) {
+                    console.error("Ошибка загрузки профиля:", error);
+                    errorMsg.textContent = "Ошибка загрузки профиля";
+                    await signOut(auth);
+                }
+            } else {
+                currentUserUid = null;
+                currentUserName = null;
+                loginScreen.style.display = 'flex';
+                appScreen.style.display = 'none';
+                loginBtn.disabled = false; loginBtn.textContent = "Войти";
+                pwdInput.value = '';
+                
+                if (unsubCourse) { unsubCourse(); unsubCourse = null; }
+                if (unsubProgress) { unsubProgress(); unsubProgress = null; }
+            }
+        });
+
+        function setupStudentLogic(courseId) {
+            unsubProgress = onSnapshot(doc(db, 'students_progress', currentUserUid), (docSnap) => {
+                if (docSnap.exists()) {
+                    const fullData = docSnap.data();
+                    currentProgressData = fullData.physics || fullData; 
+                } else {
+                    currentProgressData = {};
+                }
+                updateDashboardLinks();
+                renderArchive();
+                renderTests();
+                updateProgressUI();
+            });
+
+            if (courseId) {
+                unsubCourse = onSnapshot(doc(db, 'courses', courseId), (docSnap) => {
+                    if (docSnap.exists()) {
+                        currentCourseData = docSnap.data();
+                    } else {
+                        currentCourseData = {};
+                    }
+                    
+                    const topicTitle = currentProgressData?.personal_topic_title || currentCourseData?.topic_title || 'Тема не задана';
+                    document.getElementById('dash-topic-title').textContent = topicTitle;
+                    
+                    const hwDeadline = currentProgressData?.personal_hw_deadline || currentCourseData?.hw_deadline || 'Не задан';
+                    document.getElementById('dash-hw-deadline').textContent = `Дедлайн: ${hwDeadline}`;
+                    
+                    const treeUrl = currentProgressData?.personal_skill_tree_url || currentCourseData?.skill_tree_url;
+                    const skilltreeFrame = document.getElementById('skilltree-frame');
+                    const skilltreePlaceholder = document.getElementById('skilltree-placeholder');
+                    if (treeUrl) {
+                        const finalUrl = `${treeUrl}?student=${currentUserUid}`;
+                        skilltreeFrame.setAttribute('data-src', finalUrl);
+                        if (document.getElementById('view-skilltree').classList.contains('active')) {
+                            skilltreeFrame.src = finalUrl;
+                        }
+                        skilltreeFrame.style.display = 'block';
+                        skilltreePlaceholder.style.display = 'none';
+                    } else {
+                        skilltreeFrame.style.display = 'none';
+                        skilltreePlaceholder.style.display = 'block';
+                    }
+
+                    fetchGlobalFlashcardsForStudent();
+                    
+                    updateDashboardLinks();
+                    renderArchive();
+                    renderTests();
+                    updateProgressUI();
+                });
+            } else {
+                document.getElementById('dash-topic-title').textContent = 'Курс не назначен';
+            }
+        }
+        
+        async function fetchGlobalFlashcardsForStudent() {
+            try {
+                const fcDoc = await getDoc(doc(db, 'courses', '_global_flashcards_'));
+                if (fcDoc.exists()) {
+                    const allFc = JSON.parse(fcDoc.data().json_data || '{}');
+                    let allowed = currentCourseData?.allowed_flashcards || '';
+                    let resultFc = {};
+                    
+                    if (allowed === '*') {
+                        resultFc = allFc;
+                    } else if (allowed) {
+                        const allowedArr = allowed.split(',').map(s => s.trim().toLowerCase());
+                        allowedArr.forEach(k => { if (allFc[k]) resultFc[k] = allFc[k]; });
+                    }
+                    
+                    const iframe = document.getElementById('student-fc-iframe');
+                    if (iframe && iframe.contentWindow) {
+                        iframe.contentWindow.postMessage({ type: 'LOAD_FLASHCARDS', data: resultFc }, '*');
+                        iframe.onload = () => iframe.contentWindow.postMessage({ type: 'LOAD_FLASHCARDS', data: resultFc }, '*');
+                    }
+                }
+            } catch (e) { console.error("Ошибка загрузки карточек:", e); }
+        }
+
+        function updateProgressUI() {
+            const container = document.getElementById('course-progress-container');
+            if (!currentCourseData || !currentCourseData.start_date || !currentCourseData.end_date) {
+                if(container) container.style.display = 'none';
+                return;
+            }
+            if(container) container.style.display = 'block';
+            
+            const start = new Date(currentCourseData.start_date).getTime();
+            const end = new Date(currentCourseData.end_date).getTime();
+            const now = Date.now();
+            
+            let percent = 0;
+            if (now >= end) percent = 100;
+            else if (now <= start) percent = 0;
+            else percent = ((now - start) / (end - start)) * 100;
+            
+            const fill = document.getElementById('course-progress-fill');
+            const pct = document.getElementById('course-progress-percent');
+            if(fill) fill.style.width = `${percent}%`;
+            if(pct) pct.textContent = `${Math.round(percent)}%`;
+            
+            const fmt = (dStr) => {
+                const d = new Date(dStr);
+                return `${d.getDate().toString().padStart(2, '0')}.${(d.getMonth() + 1).toString().padStart(2, '0')}.${d.getFullYear()}`;
+            };
+            const dates = document.getElementById('course-progress-dates');
+            if(dates) dates.textContent = `${fmt(currentCourseData.start_date)} — ${fmt(currentCourseData.end_date)}`;
+        }
+
         let studentFilesQueue = [];
         const hwDropzone = document.getElementById('hw-dropzone');
         const hwFileInput = document.getElementById('student-hw-files');
