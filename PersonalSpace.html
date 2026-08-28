@@ -1082,6 +1082,14 @@
             }
         });
 
+        // Добавлено срабатывание по клавише Enter
+        pwdInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') loginBtn.click();
+        });
+        document.getElementById('login-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') pwdInput.focus();
+        });
+
         let studentFilesQueue = [];
         const hwDropzone = document.getElementById('hw-dropzone');
         const hwFileInput = document.getElementById('student-hw-files');
@@ -1441,173 +1449,6 @@
                 }
                 container.appendChild(card);
             });
-        }
-
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                currentUserUid = user.uid;
-                loginScreen.style.display = 'none';
-                appScreen.style.display = 'flex'; 
-                loginBtn.disabled = false; loginBtn.textContent = "Войти";
-                
-                try {
-                    const userRef = doc(db, 'users', user.uid);
-                    const userSnap = await getDoc(userRef);
-                    
-                    if (userSnap.exists()) {
-                        const userData = userSnap.data();
-                        currentUserName = userData.name || user.email.split('@')[0];
-                        const role = userData.role || 'student';
-                        // Обратная совместимость для стороны ученика
-                        const courseId = userData.physics_course_id || userData.course_id || '';
-                        
-                        let initials = "УЧ";
-                        if (currentUserName) {
-                            const nameParts = currentUserName.trim().split(/\s+/);
-                            if (nameParts.length > 1) {
-                                initials = (nameParts[0][0] + nameParts[1][0]).toUpperCase();
-                            } else if (nameParts.length === 1 && nameParts[0].length > 0) {
-                                initials = nameParts[0].substring(0, 2).toUpperCase();
-                            }
-                        }
-                        
-                        if (role === 'admin') {
-                            document.getElementById('student-view').classList.remove('active');
-                            document.getElementById('admin-view').classList.add('active');
-                            document.getElementById('admin-profile-name').textContent = currentUserName;
-                            document.getElementById('admin-profile-avatar').textContent = initials;
-                            if (!adminLogicSetup) {
-                                setupAdminLogic();
-                                adminLogicSetup = true;
-                            }
-                        } else {
-                            document.getElementById('admin-view').classList.remove('active');
-                            document.getElementById('student-view').classList.add('active');
-                            
-                            document.getElementById('profile-name').textContent = currentUserName;
-                            document.getElementById('student-profile-avatar').textContent = initials;
-                            document.getElementById('profile-course').textContent = courseId;
-                            document.getElementById('dash-greeting-name').textContent = currentUserName.split(' ')[0];
-                            
-                            if (courseId) {
-                                unsubCourse = onSnapshot(doc(db, 'courses', courseId), (docSnap) => {
-                                    if (docSnap.exists()) {
-                                        currentCourseData = docSnap.data();
-                                        updateStudentDashboardUI(user);
-                                    }
-                                });
-                            }
-
-                            unsubProgress = onSnapshot(doc(db, 'students_progress', user.uid), (docSnap) => {
-                                if (docSnap.exists()) {
-                                    const rawData = docSnap.data();
-                                    // Обратная совместимость: берем физику или старый корень
-                                    currentProgressData = rawData.physics || rawData; 
-                                    updateStudentDashboardUI(user);
-                                    renderArchive();
-                                }
-                            });
-                        }
-                    } else {
-                        document.getElementById('admin-view').classList.remove('active');
-                        document.getElementById('student-view').classList.add('active');
-                    }
-                } catch (error) { console.error("Ошибка базы данных:", error); }
-                if (window.lucide) window.lucide.createIcons();
-            } else {
-                currentUserUid = null;
-                currentUserName = null;
-                appScreen.style.display = 'none';
-                document.getElementById('student-view').classList.remove('active');
-                document.getElementById('admin-view').classList.remove('active');
-                loginScreen.style.display = 'flex';
-                document.getElementById('login-input').value = ""; document.getElementById('password-input').value = "";
-                if (unsubCourse) unsubCourse();
-                if (unsubProgress) unsubProgress();
-                currentCourseData = null; currentProgressData = null;
-            }
-        });
-
-        function updateStudentDashboardUI(user) {
-            const skillTree = document.getElementById('skilltree-frame');
-            const skillTreePlaceholder = document.getElementById('skilltree-placeholder');
-            if (skillTree && skillTreePlaceholder) {
-                const baseSrc = currentProgressData?.personal_skill_tree_url || currentCourseData?.skill_tree_url;
-                if (baseSrc) {
-                    skillTree.src = `${baseSrc}?student=${user.uid}`;
-                    skillTree.style.display = 'block'; skillTreePlaceholder.style.display = 'none';
-                    skillTree.parentElement.style.alignItems = 'stretch'; skillTree.parentElement.style.justifyContent = 'flex-start';
-                } else {
-                    skillTree.src = '';
-                    skillTree.style.display = 'none'; skillTreePlaceholder.style.display = 'block';
-                    skillTree.parentElement.style.alignItems = 'center'; skillTree.parentElement.style.justifyContent = 'center';
-                }
-            }
-
-            const progContainer = document.getElementById('course-progress-container');
-            if (currentCourseData?.start_date && currentCourseData?.end_date) {
-                const startDate = new Date(currentCourseData.start_date);
-                const endDate = new Date(currentCourseData.end_date);
-                const now = new Date();
-
-                if (!isNaN(startDate) && !isNaN(endDate) && endDate > startDate) {
-                    let percent = 0;
-                    if (now >= endDate) { percent = 100; } 
-                    else if (now <= startDate) { percent = 0; } 
-                    else { percent = Math.round(((now - startDate) / (endDate - startDate)) * 100); }
-
-                    document.getElementById('course-progress-fill').style.width = `${percent}%`;
-                    document.getElementById('course-progress-percent').textContent = `${percent}%`;
-                    
-                    const options = { day: 'numeric', month: 'short', year: 'numeric' };
-                    const startStr = startDate.toLocaleDateString('ru-RU', options);
-                    const endStr = endDate.toLocaleDateString('ru-RU', options);
-                    document.getElementById('course-progress-dates').textContent = `${startStr} — ${endStr}`;
-                    
-                    progContainer.style.display = 'block';
-                } else { progContainer.style.display = 'none'; }
-            } else {
-                progContainer.style.display = 'none';
-            }
-
-            const pTopic = currentProgressData?.personal_topic_title;
-            const cTopic = currentCourseData?.topic_title || '';
-            document.getElementById('dash-topic-title').innerHTML = pTopic 
-                ? `${pTopic} <span style="background: rgba(76, 175, 80, 0.1); color: var(--accent); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; margin-left: 8px; vertical-align: middle;">Персонально</span>` 
-                : cTopic;
-
-            const pDeadline = currentProgressData?.personal_hw_deadline;
-            const cDeadline = currentCourseData?.hw_deadline;
-            const finalDeadline = pDeadline || cDeadline;
-            document.getElementById('dash-hw-deadline').textContent = finalDeadline ? `Дедлайн: ${finalDeadline}` : '';
-
-            updateDashboardLinks();
-            renderTests();
-
-            const fcIframe = document.getElementById('student-fc-iframe');
-            if (fcIframe) {
-                getDoc(doc(db, 'courses', '_global_flashcards_')).then(fcSnap => {
-                    if (fcSnap.exists()) {
-                        const globalData = JSON.parse(fcSnap.data().json_data || '{}');
-                        const allowedStr = currentCourseData?.allowed_flashcards || '';
-                        let filteredData = {};
-                        
-                        if (allowedStr.trim() === '*' || allowedStr.trim() === '') {
-                            filteredData = globalData;
-                        } else {
-                            const allowedKeys = allowedStr.split(',').map(k => k.trim().toLowerCase());
-                            for (const key in globalData) {
-                                if (allowedKeys.includes(key.toLowerCase())) {
-                                    filteredData[key] = globalData[key];
-                                }
-                            }
-                        }
-                        
-                        fcIframe.onload = () => { fcIframe.contentWindow.postMessage({ type: 'LOAD_FLASHCARDS', data: filteredData }, '*'); };
-                        fcIframe.contentWindow.postMessage({ type: 'LOAD_FLASHCARDS', data: filteredData }, '*');
-                    }
-                }).catch(e => console.error("Ошибка загрузки базы карточек", e));
-            }
         }
 
         function setupAdminLogic() {
@@ -2409,7 +2250,7 @@
                         // Раскрываем аккордеон Архива, если он закрыт
                         const headers = document.querySelectorAll('.accordion-header span');
                         headers.forEach(h => {
-                            if (h.textContent.includes("Архив и Оценки ученика") && !h.parentElement.classList.contains('open')) {
+                            if (h.textContent.includes("Архив и Контрольные точки") && !h.parentElement.classList.contains('open')) {
                                 h.parentElement.click();
                             }
                         });
