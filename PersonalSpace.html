@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Личный кабинет | Физика</title>
+    <title>Личный кабинет | Ученик</title>
     
     <script src="https://unpkg.com/lucide@latest"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -301,9 +301,11 @@
 
     <div id="app-screen" class="app-screen">
         
+        <!-- Вью Ученика -->
         <div id="student-view" class="role-view">
+            <!-- -->
             <header class="mobile-header">
-                <div style="font-weight: 600; font-size: 1.2rem;">Личный Кабинет</div>
+                <div id="mobile-header-title" style="font-weight: 600; font-size: 1.2rem;">Физика | Кабинет</div>
                 <button class="hamburger-btn" onclick="toggleSidebar('sidebar')"><i data-lucide="menu"></i></button>
             </header>
 
@@ -317,6 +319,13 @@
                     <button class="logout-btn" title="Выйти"><i data-lucide="log-out"></i></button>
                 </div>
 
+                <!-- -->
+                <!-- Переключатель предметов для ученика -->
+                <div style="padding: 0 24px 16px 24px; border-bottom: 1px solid var(--border); margin-bottom: 16px; display: flex; gap: 8px;">
+                    <button class="btn-secondary student-subject-tab active" data-subject="physics" style="flex: 1; padding: 6px; font-size: 0.85rem; background-color: var(--bg-hover);"><i data-lucide="atom" style="width:16px; margin-right:4px;"></i> Физика</button>
+                    <button class="btn-secondary student-subject-tab" data-subject="math" style="flex: 1; padding: 6px; font-size: 0.85rem;"><i data-lucide="calculator" style="width:16px; margin-right:4px;"></i> Математ.</button>
+                </div>
+
                 <nav class="nav-menu">
                     <div class="nav-item active" onclick="switchView('dashboard', this)"><i data-lucide="layout-dashboard"></i> Сводка</div>
                     <div class="nav-item" onclick="switchView('skilltree', this)"><i data-lucide="git-merge"></i> Древо навыков</div>
@@ -326,6 +335,7 @@
                 </nav>
             </aside>
 
+            <!-- -->
             <div class="main-wrapper">
                 <main class="main-content content-mode" id="main-content">
                 
@@ -499,7 +509,9 @@
             </div>
         </div>
 
+        <!-- Вью Администратора -->
         <div id="admin-view" class="role-view">
+            <!-- -->
             <header class="mobile-header">
                 <div style="font-weight: 600; font-size: 1.2rem;">Управление | Кабинет</div>
                 <button class="hamburger-btn" onclick="toggleSidebar('admin-sidebar')"><i data-lucide="menu"></i></button>
@@ -555,7 +567,7 @@
                                             <input type="date" id="admin-course-end" class="form-input">
                                         </div>
                                     </div>
-                                    <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0;">На основе этих dates у учеников будет отрисовываться шкала прогресса.</p>
+                                    <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0;">На основе этих дат у учеников будет отрисовываться шкала прогресса.</p>
                                 </div>
 
                                 <div class="accordion-header" onclick="toggleAccordion(this)">
@@ -665,6 +677,7 @@
                             </div>
                         </div>
 
+                        <!-- -->
                         <div id="admin-section-flashcards" class="admin-section">
                             <h1>Глобальная База Карточек</h1>
                             <div class="grid-2 fc-builder-grid">
@@ -701,6 +714,7 @@
                             </div>
                         </div>
 
+                        <!-- -->
                         <div id="admin-section-students" class="admin-section">
                             <h1>Ученики</h1>
 
@@ -936,8 +950,7 @@
 
     </div>
 
-    <!-- ВРЕМЕННЫЙ СКРИПТ МИГРАЦИИ БАЗЫ ДАННЫХ -->
-    <!-- Как использовать: Войдите как Админ -> Откройте Консоль (F12) -> Введите runDatabaseMigration() -> Нажмите Enter -->
+    <!-- -->
     <script>
         lucide.createIcons();
 
@@ -988,10 +1001,11 @@
         };
     </script>
 
+    <!-- -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.7.1/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.7.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc, updateDoc, onSnapshot, collection, getDocs, query, where, deleteField, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/11.7.1/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, setDoc, updateDoc, onSnapshot, collection, getDocs, query, deleteField, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/11.7.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDaCvmskTUDJIVHY-u8KNVcQLuqkW88VlI",
@@ -1005,64 +1019,6 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-
-        // ==========================================
-        // ВРЕМЕННЫЙ СКРИПТ МИГРАЦИИ БАЗЫ ДАННЫХ
-        // ==========================================
-        window.runDatabaseMigration = async () => {
-            const confirmMigration = confirm("Запустить перенос данных учеников в раздел 'physics'?");
-            if (!confirmMigration) return;
-
-            try {
-                console.log("Начинаем миграцию...");
-                const querySnapshot = await getDocs(collection(db, 'students_progress'));
-                let updatedCount = 0;
-
-                for (const docSnap of querySnapshot.docs) {
-                    const data = docSnap.data();
-                    const studentId = docSnap.id;
-                    
-                    // Проверяем, есть ли старые данные в корне (вне объекта physics)
-                    if (data.archive_hw || data.archive_topics || data.tests_results || data.checkpoints_results) {
-                        console.log(`Обновляем профиль ученика: ${studentId}`);
-                        
-                        // Берем существующий объект physics или создаем новый
-                        const physicsData = data.physics || {};
-                        
-                        // Переносим данные, если их еще нет внутри physics
-                        if (data.archive_hw && !physicsData.archive_hw) physicsData.archive_hw = data.archive_hw;
-                        if (data.archive_topics && !physicsData.archive_topics) physicsData.archive_topics = data.archive_topics;
-                        if (data.tests_results && !physicsData.tests_results) physicsData.tests_results = data.tests_results;
-                        if (data.checkpoints_results && !physicsData.checkpoints_results) physicsData.checkpoints_results = data.checkpoints_results;
-                        
-                        // Опциональный перенос персональных настроек (если они были)
-                        if (data.personal_hw_deadline) physicsData.personal_hw_deadline = data.personal_hw_deadline;
-                        if (data.personal_topic_title) physicsData.personal_topic_title = data.personal_topic_title;
-
-                        // Обновляем документ в базе
-                        await updateDoc(doc(db, 'students_progress', studentId), {
-                            physics: physicsData,
-                            archive_hw: deleteField(),
-                            archive_topics: deleteField(),
-                            tests_results: deleteField(),
-                            checkpoints_results: deleteField(),
-                            personal_hw_deadline: deleteField(),
-                            personal_topic_title: deleteField()
-                        });
-                        
-                        updatedCount++;
-                    }
-                }
-                
-                console.log("Миграция успешно завершена!");
-                alert(`Готово! Обновлено профилей учеников: ${updatedCount}`);
-                
-            } catch (error) {
-                console.error("Ошибка при миграции:", error);
-                alert("Произошла ошибка. Проверьте консоль.");
-            }
-        };
-        // ==========================================
 
         const secondaryApp = initializeApp(firebaseConfig, "SecondaryApp");
         const secondaryAuth = getAuth(secondaryApp);
@@ -1079,14 +1035,18 @@
 
         let currentCourseData = null;
         let currentProgressData = null;
+        let currentProgressDataAll = null;
+        
         let currentUserUid = null;
         let currentUserName = null;
         
         let hasUnsavedAdminChanges = false;
         let adminLogicSetup = false;
         
-        // Multi-subject state in admin
+        // Multi-subject state
         let adminCurrentSubject = 'physics';
+        let studentCurrentSubject = 'physics';
+        let studentRawUserData = {};
         let adminRawUserData = {};
 
         window.addEventListener('visibilitychange', () => {
@@ -1147,7 +1107,7 @@
             if (e.key === 'Enter') pwdInput.focus();
         });
 
-        let studentFilesQueue = [];
+        //        let studentFilesQueue = [];
         const hwDropzone = document.getElementById('hw-dropzone');
         const hwFileInput = document.getElementById('student-hw-files');
         const hwFileList = document.getElementById('hw-file-list');
@@ -1273,6 +1233,59 @@
             });
         }
 
+        //        function loadStudentSubjectData() {
+            if (unsubCourse) { unsubCourse(); unsubCourse = null; }
+            
+            let courseId = '';
+            if (studentCurrentSubject === 'physics') {
+                courseId = studentRawUserData.physics_course_id || studentRawUserData.course_id || '';
+            } else {
+                courseId = studentRawUserData.math_course_id || '';
+            }
+
+            const isInd = studentRawUserData.is_individual === true;
+            document.getElementById('profile-course').innerHTML = (courseId || 'Курс не назначен') + (isInd ? ' <span class="tag green" style="font-size: 0.6rem; vertical-align: middle; margin-left: 6px;">Индив.</span>' : '');
+
+            if (courseId) {
+                unsubCourse = onSnapshot(doc(db, 'courses', courseId), (courseSnap) => {
+                    if (courseSnap.exists()) {
+                        currentCourseData = courseSnap.data();
+                    } else {
+                        currentCourseData = null;
+                    }
+                    updateStudentDashboardUI();
+                    renderArchive();
+                });
+            } else {
+                currentCourseData = null;
+                updateStudentDashboardUI();
+                renderArchive();
+            }
+            
+            if (currentProgressDataAll) {
+                currentProgressData = currentProgressDataAll[studentCurrentSubject] || {};
+                updateStudentDashboardUI();
+                renderArchive();
+            }
+        }
+
+        document.querySelectorAll('.student-subject-tab').forEach(btn => {
+            btn.onclick = (e) => {
+                document.querySelectorAll('.student-subject-tab').forEach(b => {
+                    b.classList.remove('active');
+                    b.style.backgroundColor = 'transparent';
+                });
+                const target = e.target.closest('.student-subject-tab');
+                target.classList.add('active');
+                target.style.backgroundColor = 'var(--bg-hover)';
+                studentCurrentSubject = target.dataset.subject;
+                
+                document.getElementById('mobile-header-title').innerHTML = studentCurrentSubject === 'physics' ? 'Физика | Кабинет' : 'Математика | Кабинет';
+
+                loadStudentSubjectData();
+            };
+        });
+
         function renderArchive() {
             const topicsContainer = document.getElementById('dash-archive-topics-container');
             const checkContainer = document.getElementById('dash-archive-checkpoints-container');
@@ -1356,8 +1369,10 @@
                     try {
                         const studentRef = doc(db, 'students_progress', currentUserUid);
                         await setDoc(studentRef, {
-                            tests_results: {
-                                [data.testId]: data.score
+                            [studentCurrentSubject]: {
+                                tests_results: {
+                                    [data.testId]: data.score
+                                }
                             }
                         }, { merge: true });
                     } catch (e) {
@@ -1507,7 +1522,7 @@
             });
         }
 
-        onAuthStateChanged(auth, async (user) => {
+        //        onAuthStateChanged(auth, async (user) => {
             if (user) {
                 currentUserUid = user.uid;
                 loginScreen.style.display = 'none';
@@ -1522,8 +1537,6 @@
                         const userData = userSnap.data();
                         currentUserName = userData.name || user.email.split('@')[0];
                         const role = userData.role || 'student';
-                        // Обратная совместимость для стороны ученика
-                        const courseId = userData.physics_course_id || userData.course_id || '';
                         
                         let initials = "УЧ";
                         if (currentUserName) {
@@ -1545,29 +1558,28 @@
                                 adminLogicSetup = true;
                             }
                         } else {
+                            studentRawUserData = userData;
+                            
                             document.getElementById('admin-view').classList.remove('active');
                             document.getElementById('student-view').classList.add('active');
                             
                             document.getElementById('profile-name').textContent = currentUserName;
                             document.getElementById('student-profile-avatar').textContent = initials;
-                            document.getElementById('profile-course').textContent = courseId;
                             document.getElementById('dash-greeting-name').textContent = currentUserName.split(' ')[0];
                             
-                            if (courseId) {
-                                unsubCourse = onSnapshot(doc(db, 'courses', courseId), (docSnap) => {
-                                    if (docSnap.exists()) {
-                                        currentCourseData = docSnap.data();
-                                        updateStudentDashboardUI(user);
-                                    }
-                                });
-                            }
+                            loadStudentSubjectData();
 
                             unsubProgress = onSnapshot(doc(db, 'students_progress', user.uid), (docSnap) => {
                                 if (docSnap.exists()) {
                                     const rawData = docSnap.data();
-                                    // Обратная совместимость: берем физику или старый корень
-                                    currentProgressData = rawData.physics || rawData; 
-                                    updateStudentDashboardUI(user);
+                                    // Обратная совместимость для физики
+                                    if (!rawData.physics && !rawData.math) {
+                                        currentProgressDataAll = { physics: rawData, pending_hw: rawData.pending_hw || [] };
+                                    } else {
+                                        currentProgressDataAll = rawData;
+                                    }
+                                    currentProgressData = currentProgressDataAll[studentCurrentSubject] || {};
+                                    updateStudentDashboardUI();
                                     renderArchive();
                                 }
                             });
@@ -1576,9 +1588,7 @@
                         document.getElementById('admin-view').classList.remove('active');
                         document.getElementById('student-view').classList.add('active');
                     }
-                } catch (error) { 
-                    console.error("Ошибка базы данных:", error);
-                }
+                } catch (error) { console.error("Ошибка базы данных:", error); }
                 if (window.lucide) window.lucide.createIcons();
             } else {
                 currentUserUid = null;
@@ -1590,13 +1600,123 @@
                 document.getElementById('login-input').value = ""; document.getElementById('password-input').value = "";
                 if (unsubCourse) unsubCourse();
                 if (unsubProgress) unsubProgress();
-                currentCourseData = null; currentProgressData = null;
+                currentCourseData = null; currentProgressData = null; currentProgressDataAll = null;
             }
         });
 
-        function setupAdminLogic() {
+        function updateStudentDashboardUI() {
+            const skillTree = document.getElementById('skilltree-frame');
+            const skillTreePlaceholder = document.getElementById('skilltree-placeholder');
+            if (skillTree && skillTreePlaceholder) {
+                const baseSrc = currentProgressData?.personal_skill_tree_url || currentCourseData?.skill_tree_url;
+                if (baseSrc) {
+                    skillTree.src = `${baseSrc}?student=${currentUserUid}`;
+                    skillTree.style.display = 'block'; skillTreePlaceholder.style.display = 'none';
+                    skillTree.parentElement.style.alignItems = 'stretch'; skillTree.parentElement.style.justifyContent = 'flex-start';
+                } else {
+                    skillTree.src = '';
+                    skillTree.style.display = 'none'; skillTreePlaceholder.style.display = 'block';
+                    skillTree.parentElement.style.alignItems = 'center'; skillTree.parentElement.style.justifyContent = 'center';
+                }
+            }
+
+            const progContainer = document.getElementById('course-progress-container');
+            if (currentCourseData?.start_date && currentCourseData?.end_date) {
+                const startDate = new Date(currentCourseData.start_date);
+                const endDate = new Date(currentCourseData.end_date);
+                const now = new Date();
+
+                if (!isNaN(startDate) && !isNaN(endDate) && endDate > startDate) {
+                    let percent = 0;
+                    if (now >= endDate) { percent = 100; } 
+                    else if (now <= startDate) { percent = 0; } 
+                    else { percent = Math.round(((now - startDate) / (endDate - startDate)) * 100); }
+
+                    document.getElementById('course-progress-fill').style.width = `${percent}%`;
+                    document.getElementById('course-progress-percent').textContent = `${percent}%`;
+                    
+                    const options = { day: 'numeric', month: 'short', year: 'numeric' };
+                    const startStr = startDate.toLocaleDateString('ru-RU', options);
+                    const endStr = endDate.toLocaleDateString('ru-RU', options);
+                    document.getElementById('course-progress-dates').textContent = `${startStr} — ${endStr}`;
+                    
+                    progContainer.style.display = 'block';
+                } else { progContainer.style.display = 'none'; }
+            } else {
+                progContainer.style.display = 'none';
+            }
+
+            const pTopic = currentProgressData?.personal_topic_title;
+            const cTopic = currentCourseData?.topic_title || '';
+            document.getElementById('dash-topic-title').innerHTML = pTopic 
+                ? `${pTopic} <span style="background: rgba(76, 175, 80, 0.1); color: var(--accent); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; margin-left: 8px; vertical-align: middle;">Персонально</span>` 
+                : cTopic;
+
+            const pDeadline = currentProgressData?.personal_hw_deadline;
+            const cDeadline = currentCourseData?.hw_deadline;
+            const finalDeadline = pDeadline || cDeadline;
+            document.getElementById('dash-hw-deadline').textContent = finalDeadline ? `Дедлайн: ${finalDeadline}` : '';
+
+            updateDashboardLinks();
+            renderTests();
+
+            const fcIframe = document.getElementById('student-fc-iframe');
+            if (fcIframe) {
+                getDoc(doc(db, 'courses', '_global_flashcards_')).then(fcSnap => {
+                    if (fcSnap.exists()) {
+                        const globalData = JSON.parse(fcSnap.data().json_data || '{}');
+                        const allowedStr = currentCourseData?.allowed_flashcards || '';
+                        let filteredData = {};
+                        
+                        if (allowedStr.trim() === '*' || allowedStr.trim() === '') {
+                            filteredData = globalData;
+                        } else {
+                            const allowedKeys = allowedStr.split(',').map(k => k.trim().toLowerCase());
+                            for (const key in globalData) {
+                                if (allowedKeys.includes(key.toLowerCase())) {
+                                    filteredData[key] = globalData[key];
+                                }
+                            }
+                        }
+                        
+                        fcIframe.onload = () => { fcIframe.contentWindow.postMessage({ type: 'LOAD_FLASHCARDS', data: currentCourseData ? filteredData : {} }, '*'); };
+                        fcIframe.contentWindow.postMessage({ type: 'LOAD_FLASHCARDS', data: currentCourseData ? filteredData : {} }, '*');
+                    }
+                }).catch(e => console.error("Ошибка загрузки базы карточек", e));
+            }
+        }
+
+        //        function setupAdminLogic() {
+            const adminCourseSelect = document.getElementById('admin-course-id');
+            const saveBtn = document.getElementById('admin-save-course');
+            const courseForm = document.getElementById('admin-course-form');
+            const statusMsg = document.getElementById('admin-save-status');
             
+            const theoryLinksContainer = document.getElementById('admin-theory-links-container');
+            const hwLinksContainer = document.getElementById('admin-hw-links-container');
+            const refLinksContainer = document.getElementById('admin-ref-links-container');
+            const testsLinksContainer = document.getElementById('admin-tests-links-container');
+
             function markUnsaved() { hasUnsavedAdminChanges = true; }
+
+            window.triggerAdminAutoSave = async () => {
+                if (!hasUnsavedAdminChanges) return;
+                
+                const courseActive = document.getElementById('admin-section-courses').classList.contains('active');
+                const studentsActive = document.getElementById('admin-section-students').classList.contains('active');
+                const fcActive = document.getElementById('admin-section-flashcards').classList.contains('active');
+
+                if (courseActive) {
+                    const btn = document.getElementById('admin-save-course');
+                    if (btn && !btn.disabled) await btn.onclick();
+                } else if (studentsActive) {
+                    const btn = document.getElementById('admin-save-progress');
+                    if (btn && !btn.disabled) await btn.onclick();
+                } else if (fcActive) {
+                    const btn = document.getElementById('admin-fc-save-db');
+                    if (btn && !btn.disabled) await btn.onclick();
+                }
+            };
 
             document.getElementById('admin-student-editor').addEventListener('input', (e) => {
                 if(e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') {
@@ -1631,7 +1751,7 @@
                                  <div class="form-group" style="margin-bottom: 0;"><input type="text" class="form-input theory-link-url" placeholder="Ссылка на PDF теории" value="${url}"></div>
                                  <button class="btn-secondary remove-link-btn" style="padding: 12px; color: var(--error); border-color: #333;" title="удалить">✕</button>`;
                 row.querySelector('.remove-link-btn').onclick = (e) => { e.preventDefault(); row.remove(); markUnsaved(); };
-                document.getElementById('admin-theory-links-container').appendChild(row);
+                theoryLinksContainer.appendChild(row);
             }
 
             function createHwLinkRow(title = '', url = '') {
@@ -1640,7 +1760,7 @@
                                  <div class="form-group" style="margin-bottom: 0;"><input type="text" class="form-input hw-link-url" placeholder="Ссылка на PDF" value="${url}"></div>
                                  <button class="btn-secondary remove-link-btn" style="padding: 12px; color: var(--error); border-color: #333;" title="удалить">✕</button>`;
                 row.querySelector('.remove-link-btn').onclick = (e) => { e.preventDefault(); row.remove(); markUnsaved(); };
-                document.getElementById('admin-hw-links-container').appendChild(row);
+                hwLinksContainer.appendChild(row);
             }
 
             function createRefLinkRow(title = '', url = '') {
@@ -1649,7 +1769,7 @@
                                  <div class="form-group" style="margin-bottom: 0;"><input type="text" class="form-input ref-link-url" placeholder="Ссылка на PDF" value="${url}"></div>
                                  <button class="btn-secondary remove-link-btn" style="padding: 12px; color: var(--error); border-color: #333;" title="удалить">✕</button>`;
                 row.querySelector('.remove-link-btn').onclick = (e) => { e.preventDefault(); row.remove(); markUnsaved(); };
-                document.getElementById('admin-ref-links-container').appendChild(row);
+                refLinksContainer.appendChild(row);
             }
 
             function createTestLinkRow(id = '', title = '', url = '', limit = '', questions = '', status = 'active') {
@@ -1676,7 +1796,7 @@
                     </div>
                 `;
                 row.querySelector('.remove-link-btn').onclick = (e) => { e.preventDefault(); row.remove(); markUnsaved(); };
-                document.getElementById('admin-tests-links-container').appendChild(row);
+                testsLinksContainer.appendChild(row);
             }
 
             function createCourseCheckpointRow(id = '', title = '', url = '', status = 'gray') {
@@ -1710,7 +1830,36 @@
             document.getElementById('admin-add-test-link').onclick = (e) => { e.preventDefault(); createTestLinkRow(); markUnsaved(); };
             document.getElementById('admin-add-course-checkpoint').onclick = (e) => { e.preventDefault(); createCourseCheckpointRow(); markUnsaved(); };
 
-            const adminCourseSelect = document.getElementById('admin-course-id');
+            const studentSelector = document.getElementById('admin-student-selector');
+
+            async function fetchStudentsForAdmin() {
+                try {
+                    const q = query(collection(db, "users"));
+                    const querySnapshot = await getDocs(q);
+                    const currentSelection = studentSelector.value;
+                    studentSelector.innerHTML = '<option value="">-- Выберите ученика --</option>';
+                    
+                    querySnapshot.forEach((docSnap) => {
+                        const data = docSnap.data();
+                        if (data.role === 'admin') return; 
+
+                        const option = document.createElement('option');
+                        option.value = docSnap.id;
+                        
+                        let courseString = [];
+                        const physCourse = data.physics_course_id || data.course_id; 
+                        
+                        if (physCourse) courseString.push('Ф: ' + physCourse);
+                        if (data.math_course_id) courseString.push('М: ' + data.math_course_id);
+                        const cDisplay = courseString.length > 0 ? courseString.join(' | ') : 'Без курсов';
+
+                        const isIndText = data.is_individual ? ' 👤 Индив.' : '';
+                        option.textContent = `${data.name || 'Без имени'} (${cDisplay})${isIndText}`;
+                        studentSelector.appendChild(option);
+                    });
+                    if (currentSelection) studentSelector.value = currentSelection;
+                } catch (error) { console.error("Ошибка загрузки учеников:", error); }
+            }
 
             async function fetchCoursesForSelects() {
                 try {
@@ -1718,24 +1867,21 @@
                     const physSelect = document.getElementById('admin-new-student-physics');
                     const mathSelect = document.getElementById('admin-new-student-math');
                     const changeCourseSelect = document.getElementById('admin-change-student-course');
+                    const courseIdSelect = document.getElementById('admin-course-id');
                     
-                    const currentSelection = adminCourseSelect.value;
                     let optionsHtml = '<option value="">-- Выберите курс --</option>';
-                    
-                    coursesSnap.forEach(courseDoc => {
-                        if (courseDoc.id !== '_global_flashcards_') {
-                            optionsHtml += `<option value="${courseDoc.id}">${courseDoc.id}</option>`;
-                        }
+                    coursesSnap.forEach(c => {
+                        if (c.id !== '_global_flashcards_') optionsHtml += `<option value="${c.id}">${c.id}</option>`;
                     });
                     
-                    adminCourseSelect.innerHTML = optionsHtml;
-                    physSelect.innerHTML = optionsHtml;
-                    mathSelect.innerHTML = optionsHtml;
-                    changeCourseSelect.innerHTML = optionsHtml;
-
-                    if (currentSelection) adminCourseSelect.value = currentSelection;
-                } catch (error) { console.error("Ошибка при получении списка курсов:", error); }
+                    if(physSelect) physSelect.innerHTML = optionsHtml;
+                    if(mathSelect) mathSelect.innerHTML = optionsHtml;
+                    if(changeCourseSelect) changeCourseSelect.innerHTML = optionsHtml;
+                    if(courseIdSelect) courseIdSelect.innerHTML = optionsHtml;
+                } catch (e) { console.error(e); }
             }
+
+            fetchStudentsForAdmin();
             fetchCoursesForSelects();
 
             document.getElementById('admin-create-course-ui').onclick = () => {
@@ -1746,8 +1892,6 @@
 
             document.getElementById('confirm-create-course').onclick = () => {
                 const newId = document.getElementById('new-course-id-input').value.trim();
-                const statusMsg = document.getElementById('admin-save-status');
-
                 if (!newId) return;
 
                 document.getElementById('course-create-modal').classList.remove('active');
@@ -1806,8 +1950,6 @@
                 });
             }
 
-            const courseForm = document.getElementById('admin-course-form');
-
             async function loadCourseData() {
                 const courseId = adminCourseSelect.value.trim();
                 if (!courseId) {
@@ -1818,11 +1960,8 @@
 
                 try {
                     const docSnap = await getDoc(doc(db, 'courses', courseId));
-                    document.getElementById('admin-theory-links-container').innerHTML = ''; 
-                    document.getElementById('admin-hw-links-container').innerHTML = ''; 
-                    document.getElementById('admin-ref-links-container').innerHTML = ''; 
-                    document.getElementById('admin-tests-links-container').innerHTML = '';
-                    document.getElementById('admin-course-checkpoints-container').innerHTML = '';
+                    theoryLinksContainer.innerHTML = ''; hwLinksContainer.innerHTML = ''; refLinksContainer.innerHTML = ''; testsLinksContainer.innerHTML = '';
+                    const cpContainer = document.getElementById('admin-course-checkpoints-container'); cpContainer.innerHTML = '';
 
                     if (docSnap.exists()) {
                         const data = docSnap.data();
@@ -1868,9 +2007,7 @@
                 loadCourseData();
             });
 
-            document.getElementById('admin-save-course').onclick = async () => {
-                const saveBtn = document.getElementById('admin-save-course');
-                const statusMsg = document.getElementById('admin-save-status');
+            saveBtn.onclick = async () => {
                 const courseId = adminCourseSelect.value.trim();
                 if (!courseId) return;
 
@@ -1938,38 +2075,6 @@
                 } catch (error) { statusMsg.textContent = "Ошибка при сохранении."; } finally { saveBtn.disabled = false; saveBtn.innerHTML = "Сохранить изменения курса"; }
             };
 
-            const studentSelector = document.getElementById('admin-student-selector');
-
-            async function fetchStudentsForAdmin() {
-                try {
-                    const querySnapshot = await getDocs(collection(db, "users"));
-                    const currentSelection = studentSelector.value;
-                    studentSelector.innerHTML = '<option value="">-- Выберите ученика --</option>';
-                    
-                    querySnapshot.forEach((docSnap) => {
-                        const data = docSnap.data();
-                        if (data.role === 'admin') return; 
-
-                        const option = document.createElement('option');
-                        option.value = docSnap.id;
-                        
-                        let courseString = [];
-                        const physCourse = data.physics_course_id || data.course_id; 
-                        
-                        if (physCourse) courseString.push('Ф: ' + physCourse);
-                        if (data.math_course_id) courseString.push('М: ' + data.math_course_id);
-                        const cDisplay = courseString.length > 0 ? courseString.join(' | ') : 'Без курсов';
-
-                        const isIndText = data.is_individual ? ' 👤 Индив.' : '';
-                        option.textContent = `${data.name || 'Без имени'} (${cDisplay})${isIndText}`;
-                        studentSelector.appendChild(option);
-                    });
-                    if (currentSelection) studentSelector.value = currentSelection;
-                } catch (error) { console.error("Ошибка загрузки учеников:", error); }
-            }
-
-            fetchStudentsForAdmin();
-
             document.getElementById('btn-create-student').onclick = async (e) => {
                 e.preventDefault();
                 const btn = e.target;
@@ -1982,8 +2087,7 @@
                 const isInd = document.getElementById('admin-new-student-ind').checked;
 
                 if (!loginRaw || !pwd || !name) { status.textContent = "Заполните все текстовые поля."; status.style.color = "var(--error)"; return; }
-                if (pwd.length < 6) { status.textContent = "Пароль должен быть от 6 символов."; status.style.color = "var(--error)"; return; }
-
+                
                 const email = loginRaw.includes('@') ? loginRaw : `${loginRaw.toLowerCase().replace(/\s+/g, '')}@platform.local`;
                 btn.disabled = true; btn.textContent = "Создание..."; status.textContent = "";
 
@@ -1993,7 +2097,7 @@
                     await setDoc(doc(db, 'users', newUid), { 
                         name: name, 
                         role: 'student', 
-                        course_id: physCourseId, // Для старых скриптов ученика
+                        course_id: physCourseId,
                         physics_course_id: physCourseId,
                         math_course_id: mathCourseId,
                         is_individual: isInd 
@@ -2008,15 +2112,13 @@
                 finally { btn.disabled = false; btn.textContent = "Создать ученика"; }
             };
 
-            let selectedStudentUid = null;
-            const studentEditor = document.getElementById('admin-student-editor');
-
             studentSelector.onchange = async (e) => {
                 if (hasUnsavedAdminChanges) await window.triggerAdminAutoSave();
 
                 selectedStudentUid = e.target.value;
+                const editor = document.getElementById('admin-student-editor');
                 
-                if (!selectedStudentUid) { studentEditor.style.display = 'none'; return; }
+                if (!selectedStudentUid) { editor.style.display = 'none'; return; }
                 hasUnsavedAdminChanges = false;
 
                 const userDoc = await getDoc(doc(db, 'users', selectedStudentUid));
@@ -2041,14 +2143,12 @@
                     const updateField = adminCurrentSubject === 'physics' ? 'physics_course_id' : 'math_course_id';
                     const payload = { [updateField]: newCourseId, is_individual: isInd };
                     
-                    // Обратная совместимость для Физики
                     if (adminCurrentSubject === 'physics') payload['course_id'] = newCourseId;
 
                     await updateDoc(doc(db, 'users', selectedStudentUid), payload);
                     
                     status.textContent = "Настройки применены!"; status.style.color = "var(--accent)";
                     
-                    // Обновляем локальный кеш
                     adminRawUserData.is_individual = isInd;
                     adminRawUserData[updateField] = newCourseId;
                     if(adminCurrentSubject === 'physics') adminRawUserData.course_id = newCourseId;
@@ -2070,19 +2170,24 @@
                 row.innerHTML = `<div class="form-group" style="margin-bottom: 0;"><input type="text" class="form-input ${titleCls}" placeholder="Название" value="${titleVal}"></div>
                                  <div class="form-group" style="margin-bottom: 0;"><input type="text" class="form-input ${urlCls}" placeholder="URL" value="${urlVal}"></div>
                                  <button class="btn-secondary remove-link-btn" style="padding: 12px; color: var(--error); border-color: #333;" title="удалить">✕</button>`;
-                row.querySelector('.remove-link-btn').onclick = (e) => { e.preventDefault(); row.remove(); hasUnsavedAdminChanges = true; };
+                row.querySelector('.remove-link-btn').onclick = (e) => { e.preventDefault(); row.remove(); markUnsaved(); };
                 container.appendChild(row);
             }
 
-            document.getElementById('admin-add-personal-theory').onclick = (e) => { e.preventDefault(); createPersonalLinkRow(persTheoryContainer, 'pers-theory-title', 'pers-theory-url'); hasUnsavedAdminChanges = true; };
-            document.getElementById('admin-add-personal-hw').onclick = (e) => { e.preventDefault(); createPersonalLinkRow(persHwContainer, 'pers-hw-title', 'pers-hw-url'); hasUnsavedAdminChanges = true; };
-            document.getElementById('admin-add-personal-ref').onclick = (e) => { e.preventDefault(); createPersonalLinkRow(persRefContainer, 'pers-ref-title', 'pers-ref-url'); hasUnsavedAdminChanges = true; };
+            document.getElementById('admin-add-personal-theory').onclick = (e) => { e.preventDefault(); createPersonalLinkRow(persTheoryContainer, 'pers-theory-title', 'pers-theory-url'); markUnsaved(); };
+            document.getElementById('admin-add-personal-hw').onclick = (e) => { e.preventDefault(); createPersonalLinkRow(persHwContainer, 'pers-hw-title', 'pers-hw-url'); markUnsaved(); };
+            document.getElementById('admin-add-personal-ref').onclick = (e) => { e.preventDefault(); createPersonalLinkRow(persRefContainer, 'pers-ref-title', 'pers-ref-url'); markUnsaved(); };
 
             let adminArchiveState = { topics: [], hw: [], pending_hw: [] };
+            let adminArchiveEditState = { topic: -1, hw: -1, pendingHw: -1 };
             let adminSelectedCourseData = null;
 
             async function renderAdminStudentEditor() {
                 hasUnsavedAdminChanges = false;
+                adminArchiveEditState = { topic: -1, hw: -1, pendingHw: -1 };
+                document.getElementById('btn-add-arch-topic').innerText = 'Добавить';
+                document.getElementById('btn-add-arch-hw').innerText = 'Добавить';
+
                 document.getElementById('admin-subject-label').textContent = adminCurrentSubject === 'physics' ? 'Физика' : 'Математика';
 
                 let courseId = '';
@@ -2108,6 +2213,7 @@
                 const progressSnap = await getDoc(doc(db, 'students_progress', selectedStudentUid));
                 if (progressSnap.exists()) {
                     progressDataAll = progressSnap.data();
+                    
                     if (!progressDataAll.physics && !progressDataAll.math) {
                         progressDataAll.physics = {
                             personal_topic_title: progressDataAll.personal_topic_title,
@@ -2217,8 +2323,8 @@
                                             tests_results: { [btn.dataset.testid]: deleteField() }
                                         }
                                     }, { merge: true });
-                                    btn.parentElement.innerHTML = '<span style="color: var(--text-muted); font-size: 0.9rem;">Сброшено. Обновите профиль.</span>';
-                                    hasUnsavedAdminChanges = true; 
+                                    btn.parentElement.innerHTML = '<span style="color: var(--text-muted); font-size: 0.9rem;">Сброшено.</span>';
+                                    markUnsaved(); 
                                 } catch (err) { console.error(err); }
                             } else {
                                 btn.dataset.confirm = 'true';
@@ -2277,7 +2383,7 @@
                 }
 
                 adminArchiveState.pending_hw = progressDataAll.pending_hw || [];
-                renderPendingHW(adminArchiveState.pending_hw);
+                renderAdminPendingHwList();
 
                 adminArchiveState.topics = progressData.archive_topics || [];
                 adminArchiveState.hw = progressData.archive_hw || [];
@@ -2288,41 +2394,46 @@
                 renderAdminArchiveLists();
                 
                 if (window.lucide) window.lucide.createIcons();
-                studentEditor.style.display = 'flex';
+                document.getElementById('admin-student-editor').style.display = 'flex';
             }
 
-            function renderPendingHW(hwArray) {
+            function renderAdminPendingHwList() {
                 const list = document.getElementById('admin-pending-hw-list');
                 list.innerHTML = '';
-                if (!hwArray || hwArray.length === 0) {
+                if (adminArchiveState.pending_hw.length === 0) {
                     list.innerHTML = '<div style="color: var(--text-muted); font-size: 0.9rem;">Нет новых работ.</div>';
                     return;
                 }
 
-                hwArray.slice().reverse().forEach((hw) => {
-                    const item = document.createElement('div');
-                    item.style.cssText = "display: flex; justify-content: space-between; align-items: center; padding: 12px; background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 8px;";
-                    const d = new Date(hw.timestamp).toLocaleString('ru-RU', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' });
-                    const urlsHtml = (hw.file_urls || []).map((u, j) => `<a href="${u}" class="pdf-link" target="_blank" style="font-size: 0.8rem; margin-right: 12px;">Файл ${j+1}</a>`).join('');
+                const reversedPending = adminArchiveState.pending_hw.map((item, index) => ({ item, index })).reverse();
+
+                reversedPending.forEach((obj) => {
+                    const phw = obj.item;
+                    const originalIndex = obj.index;
                     
-                    item.innerHTML = `
+                    const row = document.createElement('div');
+                    row.style.cssText = "display: flex; justify-content: space-between; align-items: center; padding: 12px; background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 8px;";
+                    const d = new Date(phw.timestamp).toLocaleString('ru-RU', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' });
+                    const urlsHtml = (phw.file_urls || []).map((u, j) => `<a href="${u}" class="pdf-link" target="_blank" style="font-size: 0.8rem; margin-right: 12px;">Файл ${j+1}</a>`).join('');
+                    
+                    row.innerHTML = `
                         <div style="flex:1;">
-                            <div style="font-weight: 500;">Тема: <span style="color: var(--accent);">${hw.topic}</span></div>
+                            <div style="font-weight: 500;">Тема: <span style="color: var(--accent);">${phw.topic}</span></div>
                             <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;">Отправлено: ${d}</div>
                             <div style="margin-top: 8px;">${urlsHtml}</div>
                         </div>
                         <div style="display: flex; gap: 8px;">
-                            <button class="btn-primary btn-eval-pending" data-id="${hw.id}" style="padding: 6px 12px; font-size: 0.85rem;">Оценить</button>
-                            <button class="btn-danger btn-delete-pending" data-id="${hw.id}" style="padding: 6px 12px; font-size: 0.85rem;">Удалить</button>
+                            <button class="btn-primary btn-eval-pending" data-index="${originalIndex}" style="padding: 6px 12px; font-size: 0.85rem;">Оценить</button>
+                            <button class="btn-danger btn-delete-pending" data-index="${originalIndex}" style="padding: 6px 12px; font-size: 0.85rem;">Удалить</button>
                         </div>
                     `;
-                    list.appendChild(item);
+                    list.appendChild(row);
                 });
 
                 list.querySelectorAll('.btn-delete-pending').forEach(btn => {
                     btn.onclick = async (e) => {
                         const id = e.target.dataset.id;
-                        const hwObj = hwArray.find(h => h.id === id);
+                        const hwObj = adminArchiveState.pending_hw.find(h => h.id === id);
                         if (hwObj && selectedStudentUid) {
                             e.target.disabled = true; e.target.textContent = "Удаление...";
                             try {
@@ -2338,8 +2449,10 @@
                 list.querySelectorAll('.btn-eval-pending').forEach(btn => {
                     btn.onclick = (e) => {
                         e.preventDefault();
-                        const id = e.target.dataset.id;
-                        const item = hwArray.find(h => h.id === id);
+                        const idx = parseInt(e.target.dataset.index);
+                        const item = adminArchiveState.pending_hw[idx];
+                        
+                        adminArchiveEditState.pendingHw = idx;
                         
                         document.getElementById('arch-h-title-input').value = `ДЗ: ${item.topic}`;
                         document.getElementById('arch-h-solurl-input').value = (item.file_urls || []).join('\n');
@@ -2352,7 +2465,7 @@
                         });
                         
                         document.getElementById('arch-h-feedback-input').focus();
-                        hasUnsavedAdminChanges = true;
+                        markUnsaved();
                     };
                 });
             }
@@ -2363,17 +2476,22 @@
                 detailsT.style.display = adminArchiveState.topics.length > 0 ? 'block' : 'none';
                 tList.innerHTML = '';
                 
-                adminArchiveState.topics.forEach((t, i) => {
+                const reversedTopics = adminArchiveState.topics.map((item, index) => ({ item, index })).reverse();
+                
+                reversedTopics.forEach((obj) => {
+                    const t = obj.item;
+                    const originalIndex = obj.index;
                     const row = document.createElement('div');
                     row.style.cssText = 'display: flex; justify-content: space-between; align-items: center; padding: 12px; background: var(--bg-hover); border-radius: 6px; border: 1px solid var(--border);';
                     row.innerHTML = `
                         <div style="flex: 1; font-size: 0.9rem;">
                             <strong style="color: var(--text-main); font-size: 1rem;">${t.title}</strong>
+                            <div style="color: var(--text-muted); margin-top: 4px;">URL: ${t.material_url ? 'Да' : 'Нет'}</div>
                             <div style="color: var(--text-muted); margin-top: 4px; white-space: pre-wrap; line-height: 1.4;">Заметки: ${t.notes || '—'}</div>
                         </div>
                         <div style="display: flex; gap: 8px;">
-                            <button class="btn-secondary edit-t-btn" data-index="${i}" style="padding: 6px 12px; font-size: 0.85rem;">Изменить</button>
-                            <button class="btn-danger del-t-btn" data-index="${i}" style="padding: 6px 12px; font-size: 0.85rem;">Удалить</button>
+                            <button class="btn-secondary edit-t-btn" data-index="${originalIndex}" style="padding: 6px 12px; font-size: 0.85rem;">Изменить</button>
+                            <button class="btn-secondary del-t-btn" data-index="${originalIndex}" style="padding: 6px 12px; font-size: 0.85rem; color: var(--error); border-color: var(--border);">Удалить</button>
                         </div>
                     `;
                     tList.appendChild(row);
@@ -2381,7 +2499,12 @@
 
                 tList.querySelectorAll('.del-t-btn').forEach(btn => btn.onclick = (e) => {
                     adminArchiveState.topics.splice(e.target.dataset.index, 1);
-                    hasUnsavedAdminChanges = true;
+                    adminArchiveEditState.topic = -1;
+                    markUnsaved();
+                    document.getElementById('btn-add-arch-topic').innerText = 'Добавить';
+                    document.getElementById('arch-t-title-input').value = '';
+                    document.getElementById('arch-t-url-input').value = '';
+                    document.getElementById('arch-t-notes-input').value = '';
                     renderAdminArchiveLists();
                 });
                 tList.querySelectorAll('.edit-t-btn').forEach(btn => btn.onclick = (e) => {
@@ -2390,9 +2513,8 @@
                     document.getElementById('arch-t-title-input').value = item.title;
                     document.getElementById('arch-t-url-input').value = item.material_url || '';
                     document.getElementById('arch-t-notes-input').value = item.notes || '';
-                    adminArchiveState.topics.splice(idx, 1);
-                    hasUnsavedAdminChanges = true;
-                    renderAdminArchiveLists();
+                    adminArchiveEditState.topic = idx;
+                    document.getElementById('btn-add-arch-topic').innerText = 'Сохранить';
                 });
 
                 const detailsH = document.getElementById('details-arch-hw');
@@ -2400,7 +2522,11 @@
                 detailsH.style.display = adminArchiveState.hw.length > 0 ? 'block' : 'none';
                 hList.innerHTML = '';
                 
-                adminArchiveState.hw.forEach((h, i) => {
+                const reversedHw = adminArchiveState.hw.map((item, index) => ({ item, index })).reverse();
+                
+                reversedHw.forEach((obj) => {
+                    const h = obj.item;
+                    const originalIndex = obj.index;
                     const row = document.createElement('div');
                     row.style.cssText = 'display: flex; justify-content: space-between; align-items: center; padding: 12px; background: var(--bg-hover); border-radius: 6px; border: 1px solid var(--border);';
                     row.innerHTML = `
@@ -2409,8 +2535,8 @@
                             <div style="color: var(--text-muted); margin-top: 4px; white-space: pre-wrap; line-height: 1.4;">Оценка: ${h.feedback || '—'}</div>
                         </div>
                         <div style="display: flex; gap: 8px;">
-                            <button class="btn-secondary edit-h-btn" data-index="${i}" style="padding: 6px 12px; font-size: 0.85rem;">Изменить</button>
-                            <button class="btn-danger del-h-btn" data-index="${i}" style="padding: 6px 12px; font-size: 0.85rem;">Удалить</button>
+                            <button class="btn-secondary edit-h-btn" data-index="${originalIndex}" style="padding: 6px 12px; font-size: 0.85rem;">Изменить</button>
+                            <button class="btn-secondary del-h-btn" data-index="${originalIndex}" style="padding: 6px 12px; font-size: 0.85rem; color: var(--error); border-color: var(--border);">Удалить</button>
                         </div>
                     `;
                     hList.appendChild(row);
@@ -2418,7 +2544,13 @@
 
                 hList.querySelectorAll('.del-h-btn').forEach(btn => btn.onclick = (e) => {
                     adminArchiveState.hw.splice(e.target.dataset.index, 1);
-                    hasUnsavedAdminChanges = true;
+                    adminArchiveEditState.hw = -1;
+                    markUnsaved();
+                    document.getElementById('btn-add-arch-hw').innerText = 'Добавить';
+                    document.getElementById('arch-h-title-input').value = '';
+                    document.getElementById('arch-h-hwurl-input').value = '';
+                    document.getElementById('arch-h-solurl-input').value = '';
+                    document.getElementById('arch-h-feedback-input').value = '';
                     renderAdminArchiveLists();
                 });
                 hList.querySelectorAll('.edit-h-btn').forEach(btn => btn.onclick = (e) => {
@@ -2428,9 +2560,8 @@
                     document.getElementById('arch-h-hwurl-input').value = item.hw_url || '';
                     document.getElementById('arch-h-solurl-input').value = item.student_hw_url || '';
                     document.getElementById('arch-h-feedback-input').value = item.feedback || '';
-                    adminArchiveState.hw.splice(idx, 1);
-                    hasUnsavedAdminChanges = true;
-                    renderAdminArchiveLists();
+                    adminArchiveEditState.hw = idx;
+                    document.getElementById('btn-add-arch-hw').innerText = 'Сохранить';
                 });
             }
 
@@ -2442,20 +2573,40 @@
                 const feedback = document.getElementById('arch-h-feedback-input').value.trim();
                 if (!title) return;
 
-                adminArchiveState.hw.push({ hw_title: title, hw_url: hwUrl, student_hw_url: solUrl, feedback });
-                
-                if (solUrl) {
+                const dupIdx = adminArchiveState.hw.findIndex(h => h.hw_title === title);
+                if (dupIdx > -1 && dupIdx !== adminArchiveEditState.hw) {
+                    const btn = e.target; const oldText = btn.innerText;
+                    btn.innerText = 'Уже существует'; btn.style.backgroundColor = 'var(--error)';
+                    setTimeout(() => { btn.innerText = oldText; btn.style.backgroundColor = ''; }, 2000);
+                    return;
+                }
+
+                if (adminArchiveEditState.hw > -1) {
+                    adminArchiveState.hw[adminArchiveEditState.hw] = { hw_title: title, hw_url: hwUrl, student_hw_url: solUrl, feedback };
+                    adminArchiveEditState.hw = -1;
+                    document.getElementById('btn-add-arch-hw').innerText = 'Добавить';
+                } else {
+                    adminArchiveState.hw.push({ hw_title: title, hw_url: hwUrl, student_hw_url: solUrl, feedback });
+                }
+
+                if (adminArchiveEditState.pendingHw > -1) {
+                    adminArchiveState.pending_hw.splice(adminArchiveEditState.pendingHw, 1);
+                    adminArchiveEditState.pendingHw = -1;
+                    renderAdminPendingHwList();
+                } else if (solUrl) {
                     const solUrlClean = solUrl.replace(/\s/g, '');
                     const pendingIdx = adminArchiveState.pending_hw.findIndex(p => (p.file_urls || []).join('').replace(/\s/g, '') === solUrlClean);
                     if (pendingIdx > -1) {
                         adminArchiveState.pending_hw.splice(pendingIdx, 1);
-                        renderPendingHW(adminArchiveState.pending_hw);
+                        renderAdminPendingHwList();
                     }
                 }
 
-                document.getElementById('arch-h-title-input').value = ''; document.getElementById('arch-h-hwurl-input').value = '';
-                document.getElementById('arch-h-solurl-input').value = ''; document.getElementById('arch-h-feedback-input').value = '';
-                hasUnsavedAdminChanges = true;
+                document.getElementById('arch-h-title-input').value = '';
+                document.getElementById('arch-h-hwurl-input').value = '';
+                document.getElementById('arch-h-solurl-input').value = '';
+                document.getElementById('arch-h-feedback-input').value = '';
+                markUnsaved();
                 renderAdminArchiveLists();
             };
 
@@ -2466,9 +2617,26 @@
                 const notes = document.getElementById('arch-t-notes-input').value.trim();
                 if (!title) return;
 
-                adminArchiveState.topics.push({ title, material_url: url, notes });
-                document.getElementById('arch-t-title-input').value = ''; document.getElementById('arch-t-url-input').value = ''; document.getElementById('arch-t-notes-input').value = '';
-                hasUnsavedAdminChanges = true;
+                const dupIdx = adminArchiveState.topics.findIndex(t => t.title === title);
+                if (dupIdx > -1 && dupIdx !== adminArchiveEditState.topic) {
+                    const btn = e.target; const oldText = btn.innerText;
+                    btn.innerText = 'Уже существует'; btn.style.backgroundColor = 'var(--error)';
+                    setTimeout(() => { btn.innerText = oldText; btn.style.backgroundColor = ''; }, 2000);
+                    return;
+                }
+
+                if (adminArchiveEditState.topic > -1) {
+                    adminArchiveState.topics[adminArchiveEditState.topic] = { title, material_url: url, notes };
+                    adminArchiveEditState.topic = -1;
+                    document.getElementById('btn-add-arch-topic').innerText = 'Добавить';
+                } else {
+                    adminArchiveState.topics.push({ title, material_url: url, notes });
+                }
+
+                document.getElementById('arch-t-title-input').value = '';
+                document.getElementById('arch-t-url-input').value = '';
+                document.getElementById('arch-t-notes-input').value = '';
+                markUnsaved();
                 renderAdminArchiveLists();
             };
 
@@ -2499,13 +2667,12 @@
                 document.getElementById('arch-h-feedback-input').focus();
             };
 
-            const saveProgressBtn = document.getElementById('admin-save-progress');
-            const progressStatus = document.getElementById('admin-progress-status');
-
-            saveProgressBtn.onclick = async () => {
+            document.getElementById('admin-save-progress').onclick = async () => {
+                const btn = document.getElementById('admin-save-progress');
                 if (!selectedStudentUid) return;
-                saveProgressBtn.disabled = true; saveProgressBtn.textContent = "Сохранение...";
-                progressStatus.textContent = "";
+                btn.disabled = true; btn.textContent = "Сохранение...";
+                const status = document.getElementById('admin-progress-status');
+                status.textContent = "";
 
                 const getPersonalLinks = (container, titleCls, urlCls) => {
                     const arr = [];
@@ -2543,13 +2710,13 @@
 
                 try {
                     await setDoc(doc(db, 'students_progress', selectedStudentUid), progressPayload, { merge: true });
-                    progressStatus.textContent = "Успешно сохранено!";
+                    status.textContent = "Успешно сохранено!";
                     hasUnsavedAdminChanges = false;
-                    setTimeout(() => progressStatus.textContent = "", 3000);
+                    setTimeout(() => status.textContent = "", 3000);
                 } catch (error) {
-                    console.error(error); progressStatus.textContent = "Ошибка при сохранении.";
+                    console.error(error); status.textContent = "Ошибка при сохранении.";
                 } finally {
-                    saveProgressBtn.disabled = false; saveProgressBtn.textContent = "Сохранить прогресс";
+                    btn.disabled = false; btn.textContent = "Сохранить прогресс";
                 }
             };
 
