@@ -303,9 +303,8 @@
         
         <!-- Вью Ученика -->
         <div id="student-view" class="role-view">
-            <!-- -->
             <header class="mobile-header">
-                <div id="mobile-header-title" style="font-weight: 600; font-size: 1.2rem;">Физика | Кабинет</div>
+                <div id="mobile-header-title" style="font-weight: 600; font-size: 1.2rem;">Личный Кабинет</div>
                 <button class="hamburger-btn" onclick="toggleSidebar('sidebar')"><i data-lucide="menu"></i></button>
             </header>
 
@@ -319,7 +318,6 @@
                     <button class="logout-btn" title="Выйти"><i data-lucide="log-out"></i></button>
                 </div>
 
-                <!-- -->
                 <!-- Переключатель предметов для ученика -->
                 <div style="padding: 0 24px 16px 24px; border-bottom: 1px solid var(--border); margin-bottom: 16px; display: flex; gap: 8px;">
                     <button class="btn-secondary student-subject-tab active" data-subject="physics" style="flex: 1; padding: 6px; font-size: 0.85rem; background-color: var(--bg-hover);"><i data-lucide="atom" style="width:16px; margin-right:4px;"></i> Физика</button>
@@ -335,7 +333,6 @@
                 </nav>
             </aside>
 
-            <!-- -->
             <div class="main-wrapper">
                 <main class="main-content content-mode" id="main-content">
                 
@@ -409,6 +406,7 @@
                         </div>
                     </div>
 
+                    <!-- Additional Student Views (Skilltree, Tests, Archive, Flashcards) -->
                     <div id="view-skilltree" class="view" data-layout="embed">
                         <div class="embed-container" id="student-skilltree-container" style="align-items: center; justify-content: center;">
                             <div id="skilltree-placeholder" class="placeholder-text" style="color: var(--text-muted);">
@@ -511,7 +509,6 @@
 
         <!-- Вью Администратора -->
         <div id="admin-view" class="role-view">
-            <!-- -->
             <header class="mobile-header">
                 <div style="font-weight: 600; font-size: 1.2rem;">Управление | Кабинет</div>
                 <button class="hamburger-btn" onclick="toggleSidebar('admin-sidebar')"><i data-lucide="menu"></i></button>
@@ -535,6 +532,7 @@
                 <main class="main-content content-mode">
                     <div class="content-container" style="padding: 48px; overflow-y: auto; height: 100%;">
                         
+                        <!-- Admin Section: Courses -->
                         <div id="admin-section-courses" class="admin-section active">
                             <h1>Управление курсами</h1>
                             <div class="card" style="margin-bottom: 24px;">
@@ -677,7 +675,6 @@
                             </div>
                         </div>
 
-                        <!-- -->
                         <div id="admin-section-flashcards" class="admin-section">
                             <h1>Глобальная База Карточек</h1>
                             <div class="grid-2 fc-builder-grid">
@@ -714,7 +711,6 @@
                             </div>
                         </div>
 
-                        <!-- -->
                         <div id="admin-section-students" class="admin-section">
                             <h1>Ученики</h1>
 
@@ -761,6 +757,7 @@
                                 </div>
                             </div>
                             
+                            <!-- Detailed Editor for Selected Student -->
                             <div id="admin-student-editor" style="display: none; flex-direction: column; gap: 24px;">
                                 
                                 <div style="display: flex; gap: 16px; padding-bottom: 16px; border-bottom: 1px solid var(--border);">
@@ -950,7 +947,6 @@
 
     </div>
 
-    <!-- -->
     <script>
         lucide.createIcons();
 
@@ -1001,7 +997,6 @@
         };
     </script>
 
-    <!-- -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.7.1/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.7.1/firebase-auth.js";
@@ -1043,11 +1038,13 @@
         let hasUnsavedAdminChanges = false;
         let adminLogicSetup = false;
         
-        // Multi-subject state
+        // State for switching subjects
         let adminCurrentSubject = 'physics';
         let studentCurrentSubject = 'physics';
         let studentRawUserData = {};
         let adminRawUserData = {};
+
+        let studentFilesQueue = [];
 
         window.addEventListener('visibilitychange', () => {
             if (document.visibilityState === 'hidden' && hasUnsavedAdminChanges && window.triggerAdminAutoSave) {
@@ -1107,7 +1104,6 @@
             if (e.key === 'Enter') pwdInput.focus();
         });
 
-        //        let studentFilesQueue = [];
         const hwDropzone = document.getElementById('hw-dropzone');
         const hwFileInput = document.getElementById('student-hw-files');
         const hwFileList = document.getElementById('hw-file-list');
@@ -1233,7 +1229,7 @@
             });
         }
 
-        //        function loadStudentSubjectData() {
+        function loadStudentSubjectData() {
             if (unsubCourse) { unsubCourse(); unsubCourse = null; }
             
             let courseId = '';
@@ -1522,7 +1518,7 @@
             });
         }
 
-        //        onAuthStateChanged(auth, async (user) => {
+        onAuthStateChanged(auth, async (user) => {
             if (user) {
                 currentUserUid = user.uid;
                 loginScreen.style.display = 'none';
@@ -1686,7 +1682,7 @@
             }
         }
 
-        //        function setupAdminLogic() {
+        function setupAdminLogic() {
             const adminCourseSelect = document.getElementById('admin-course-id');
             const saveBtn = document.getElementById('admin-save-course');
             const courseForm = document.getElementById('admin-course-form');
