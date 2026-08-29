@@ -51,8 +51,7 @@
         }
 
         .user-profile {
-            padding: 0 24px 24px 24px; border-bottom: 1px solid var(--border); margin-bottom: 16px;
-            display: flex; align-items: center; gap: 16px;
+            padding: 0 24px 16px 24px; display: flex; align-items: center; gap: 16px;
         }
 
         .avatar {
@@ -152,8 +151,11 @@
         .form-group { margin-bottom: 20px; }
         .form-group label { display: block; margin-bottom: 8px; color: var(--text-muted); font-size: 0.9rem; }
         .form-input, .form-select { width: 100%; padding: 12px; border-radius: 6px; border: 1px solid var(--border); background-color: var(--bg-main); color: var(--text-main); font-family: 'Inter', sans-serif; }
-        .form-row { display: flex; gap: 20px; }
-        .form-row > .form-group { flex: 1; }
+        
+        /* Исправление адаптивности рядов с формами */
+        .form-row { display: flex; gap: 20px; flex-wrap: wrap; }
+        .form-row > .form-group { flex: 1; min-width: 200px; }
+
         .btn-primary { padding: 12px 24px; border-radius: 6px; border: none; background-color: var(--accent); color: #fff; font-weight: 600; cursor: pointer; transition: opacity 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 8px;}
         .btn-secondary { padding: 12px 24px; border-radius: 6px; border: 1px solid var(--border); background-color: transparent; color: var(--text-main); font-weight: 600; cursor: pointer; transition: background-color 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 8px;}
         .btn-primary:hover, .btn-secondary:hover { opacity: 0.9; }
@@ -197,6 +199,7 @@
             .pdf-link:hover { text-decoration: underline; }
         }
 
+        /* Исправление Mobile-адаптивности */
         @media (max-width: 768px) {
             body { flex-direction: column; }
             .role-view { flex-direction: column; }
@@ -218,6 +221,10 @@
             h2 { font-size: 1.25rem; margin: 32px 0 16px 0; }
             .card-title { font-size: 1.15rem; }
             .content-embed-wrapper { padding: 24px; }
+            
+            /* Предотвращаем сжатие инпутов на телефонах */
+            .form-row { flex-direction: column; gap: 12px; }
+            .form-row > .form-group { width: 100%; }
         }
     </style>
 </head>
@@ -235,7 +242,6 @@
         </div>
     </div>
 
-    <!-- Общий оверлей (фрейм) для тестов и внешних страниц -->
     <div id="test-overlay" class="test-overlay">
         <div class="test-overlay-header">
             <div style="font-weight: 600; font-size: 1.1rem;"><i data-lucide="clipboard-check" style="width: 20px; vertical-align: middle; margin-right: 8px;"></i>Тестирование</div>
@@ -244,7 +250,7 @@
         <iframe id="test-overlay-iframe" class="test-overlay-iframe" src=""></iframe>
     </div>
 
-    <!-- Модалка: Создание нового курса -->
+    <!-- Модалки админки -->
     <div id="course-create-modal" class="test-overlay" style="justify-content: center; align-items: center; background-color: rgba(0,0,0,0.8);">
         <div class="card" style="width: 100%; max-width: 400px; background-color: var(--bg-card); z-index: 10001;">
             <h2 style="margin-top: 0; border: none; padding-bottom: 0;">Создать новый курс</h2>
@@ -259,7 +265,6 @@
         </div>
     </div>
 
-    <!-- Модалка: Массовый импорт JSON для карточек -->
     <div id="fc-import-modal" class="test-overlay" style="justify-content: center; align-items: center; background-color: rgba(0,0,0,0.8);">
         <div class="card" style="width: 100%; max-width: 600px; background-color: var(--bg-card); z-index: 10001;">
             <h2 style="margin-top: 0; border: none; padding-bottom: 0;">Импорт карточек (JSON)</h2>
@@ -301,6 +306,7 @@
 
     <div id="app-screen" class="app-screen">
         
+        <!-- УЧЕНИК -->
         <div id="student-view" class="role-view">
             <header class="mobile-header">
                 <div style="font-weight: 600; font-size: 1.2rem;">Личный Кабинет</div>
@@ -315,6 +321,12 @@
                         <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;" id="profile-course">...</div>
                     </div>
                     <button class="logout-btn" title="Выйти"><i data-lucide="log-out"></i></button>
+                </div>
+
+                <!-- Переключатель предметов для ученика -->
+                <div id="student-subject-switcher" style="padding: 0 24px 16px 24px; display: flex; gap: 8px; border-bottom: 1px solid var(--border); margin-bottom: 8px;">
+                    <button class="btn-secondary student-subject-tab active" data-subject="physics" style="flex: 1; padding: 6px; font-size: 0.85rem; background-color: var(--bg-hover);">Физика</button>
+                    <button class="btn-secondary student-subject-tab" data-subject="math" style="flex: 1; padding: 6px; font-size: 0.85rem;">Математика</button>
                 </div>
 
                 <nav class="nav-menu">
@@ -499,6 +511,7 @@
             </div>
         </div>
 
+        <!-- АДМИНИСТРАТОР -->
         <div id="admin-view" class="role-view">
             <header class="mobile-header">
                 <div style="font-weight: 600; font-size: 1.2rem;">Управление | Кабинет</div>
@@ -730,7 +743,7 @@
                                     <div class="form-group" style="margin-top: 8px;">
                                         <label style="display:flex; align-items:center; gap:8px; cursor:pointer; color: var(--text-main);">
                                             <input type="checkbox" id="admin-new-student-ind" style="width: 16px; height: 16px; accent-color: var(--accent);">
-                                            <span style="font-weight: 500;">Индивидуальное обучение (Свои темы и расписание)</span>
+                                            <span style="font-weight: 500;">Индивидуальное обучение</span>
                                         </label>
                                     </div>
                                     <button id="btn-create-student" class="btn-primary">Создать ученика</button>
@@ -749,13 +762,12 @@
                             
                             <div id="admin-student-editor" style="display: none; flex-direction: column; gap: 24px;">
                                 
-                                <!-- Tabs for subjects -->
+                                <!-- Вкладки предметов для редактора ученика -->
                                 <div style="display: flex; gap: 16px; padding-bottom: 16px; border-bottom: 1px solid var(--border);">
                                     <button class="btn-secondary admin-subject-tab active" data-subject="physics" style="background-color: var(--bg-hover);"><i data-lucide="atom" style="width:18px; margin-right: 8px;"></i> Физика</button>
                                     <button class="btn-secondary admin-subject-tab" data-subject="math"><i data-lucide="calculator" style="width:18px; margin-right: 8px;"></i> Математика</button>
                                 </div>
 
-                                <!-- Course assignment -->
                                 <div class="card" style="margin-bottom: 0;">
                                     <div class="form-row" style="align-items: flex-end;">
                                         <div class="form-group" style="margin-bottom: 0; flex: 2;">
@@ -779,7 +791,7 @@
                                     <div class="accordion-header open" onclick="toggleAccordion(this)" style="margin-top: 0; border: none; background: transparent; padding: 24px; align-items: flex-start;">
                                         <div style="display: flex; flex-direction: column; align-items: flex-start; gap: 8px;">
                                             <span style="color: var(--accent); font-size: 1.1rem; font-weight: 600;"><i data-lucide="user" style="width: 18px; margin-right: 8px; vertical-align: middle;"></i>Управление индивидуальным занятием</span>
-                                            <span style="color: var(--text-muted); font-size: 0.85rem; text-transform: none; letter-spacing: normal; font-weight: 400;">Заполните эти поля, чтобы переопределить настройки группы/курса персонально для этого ученика.</span>
+                                            <span style="color: var(--text-muted); font-size: 0.85rem; text-transform: none; letter-spacing: normal; font-weight: 400;">Заполните эти поля, чтобы переопределить настройки курса для этого ученика.</span>
                                         </div>
                                         <i data-lucide="chevron-down" class="accordion-icon" style="color: var(--accent); margin-top: 4px;"></i>
                                     </div>
@@ -937,10 +949,10 @@
         </div>
 
     </div>
-
     <script>
         lucide.createIcons();
 
+        // Не изменяйте URL бэкенда, это рабочий мост для Google Drive
         const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbz7hUIukrWtA9UMgZ4MLasmfStAtJhQkzseGJFMQi1LvufeGSLrkTAFcoHSMFe4E0arbQ/exec";
 
         function switchView(viewId, element) {
@@ -1024,13 +1036,15 @@
         let currentUserUid = null;
         let currentUserName = null;
         
-        let hasUnsavedAdminChanges = false;
-        let adminLogicSetup = false;
-        
-        // Multi-subject state in admin
+        // Глобальные стейты для предметов
+        let studentCurrentSubject = 'physics';
+        let studentRawDbData = {};
+
         let adminCurrentSubject = 'physics';
         let adminRawUserData = {};
-        let selectedStudentUid = null;
+        
+        let hasUnsavedAdminChanges = false;
+        let adminLogicSetup = false;
 
         window.addEventListener('visibilitychange', () => {
             if (document.visibilityState === 'hidden' && hasUnsavedAdminChanges && window.triggerAdminAutoSave) {
@@ -1216,6 +1230,64 @@
             });
         }
 
+        // Логика ученика - Переключение предметов
+        document.querySelectorAll('.student-subject-tab').forEach(btn => {
+            btn.onclick = (e) => {
+                document.querySelectorAll('.student-subject-tab').forEach(b => {
+                    b.classList.remove('active');
+                    b.style.backgroundColor = 'transparent';
+                });
+                const target = e.target;
+                target.classList.add('active');
+                target.style.backgroundColor = 'var(--bg-hover)';
+                studentCurrentSubject = target.dataset.subject;
+                if (currentUserUid) loadStudentSubjectData();
+            }
+        });
+
+        function loadStudentSubjectData() {
+            if (unsubCourse) { unsubCourse(); unsubCourse = null; }
+            if (unsubProgress) { unsubProgress(); unsubProgress = null; }
+            
+            let courseId = '';
+            if (studentCurrentSubject === 'physics') {
+                courseId = studentRawDbData.physics_course_id || studentRawDbData.course_id || '';
+            } else {
+                courseId = studentRawDbData.math_course_id || '';
+            }
+            
+            document.getElementById('profile-course').textContent = courseId || 'Курс не назначен';
+            
+            if (courseId) {
+                unsubCourse = onSnapshot(doc(db, 'courses', courseId), (docSnap) => {
+                    if (docSnap.exists()) {
+                        currentCourseData = docSnap.data();
+                    } else {
+                        currentCourseData = null;
+                    }
+                    updateStudentDashboardUI();
+                });
+            } else {
+                currentCourseData = null;
+                updateStudentDashboardUI();
+            }
+
+            unsubProgress = onSnapshot(doc(db, 'students_progress', currentUserUid), (docSnap) => {
+                if (docSnap.exists()) {
+                    const rawData = docSnap.data();
+                    if (studentCurrentSubject === 'physics') {
+                        currentProgressData = rawData.physics || rawData; 
+                    } else {
+                        currentProgressData = rawData.math || {};
+                    }
+                } else {
+                    currentProgressData = null;
+                }
+                updateStudentDashboardUI();
+                renderArchive();
+            });
+        }
+
         function renderArchive() {
             const topicsContainer = document.getElementById('dash-archive-topics-container');
             const checkContainer = document.getElementById('dash-archive-checkpoints-container');
@@ -1299,8 +1371,10 @@
                     try {
                         const studentRef = doc(db, 'students_progress', currentUserUid);
                         await setDoc(studentRef, {
-                            tests_results: {
-                                [data.testId]: data.score
+                            [studentCurrentSubject]: {
+                                tests_results: {
+                                    [data.testId]: data.score
+                                }
                             }
                         }, { merge: true });
                     } catch (e) {
@@ -1309,6 +1383,166 @@
                 }
             }
         });
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                currentUserUid = user.uid;
+                loginScreen.style.display = 'none';
+                appScreen.style.display = 'flex'; 
+                loginBtn.disabled = false; loginBtn.textContent = "Войти";
+                
+                try {
+                    const userRef = doc(db, 'users', user.uid);
+                    const userSnap = await getDoc(userRef);
+                    
+                    if (userSnap.exists()) {
+                        const userData = userSnap.data();
+                        currentUserName = userData.name || user.email.split('@')[0];
+                        const role = userData.role || 'student';
+                        
+                        let initials = "УЧ";
+                        if (currentUserName) {
+                            const nameParts = currentUserName.trim().split(/\s+/);
+                            if (nameParts.length > 1) {
+                                initials = (nameParts[0][0] + nameParts[1][0]).toUpperCase();
+                            } else if (nameParts.length === 1 && nameParts[0].length > 0) {
+                                initials = nameParts[0].substring(0, 2).toUpperCase();
+                            }
+                        }
+                        
+                        if (role === 'admin') {
+                            document.getElementById('student-view').classList.remove('active');
+                            document.getElementById('admin-view').classList.add('active');
+                            document.getElementById('admin-profile-name').textContent = currentUserName;
+                            document.getElementById('admin-profile-avatar').textContent = initials;
+                            if (!adminLogicSetup) {
+                                setupAdminLogic();
+                                adminLogicSetup = true;
+                            }
+                        } else {
+                            document.getElementById('admin-view').classList.remove('active');
+                            document.getElementById('student-view').classList.add('active');
+                            
+                            document.getElementById('profile-name').textContent = currentUserName;
+                            document.getElementById('student-profile-avatar').textContent = initials;
+                            document.getElementById('dash-greeting-name').textContent = currentUserName.split(' ')[0];
+                            
+                            studentRawDbData = userData;
+                            
+                            // Умный выбор предмета при загрузке: если физики нет, но есть матем, открываем матем
+                            if (!userData.physics_course_id && !userData.course_id && userData.math_course_id) {
+                                document.querySelectorAll('.student-subject-tab').forEach(b => {
+                                    if(b.dataset.subject === 'math') {
+                                        b.classList.add('active'); b.style.backgroundColor = 'var(--bg-hover)';
+                                        studentCurrentSubject = 'math';
+                                    } else {
+                                        b.classList.remove('active'); b.style.backgroundColor = 'transparent';
+                                    }
+                                });
+                            }
+                            
+                            loadStudentSubjectData();
+                        }
+                    } else {
+                        document.getElementById('admin-view').classList.remove('active');
+                        document.getElementById('student-view').classList.add('active');
+                    }
+                } catch (error) { console.error("Ошибка базы данных:", error); }
+                if (window.lucide) window.lucide.createIcons();
+            } else {
+                currentUserUid = null;
+                currentUserName = null;
+                appScreen.style.display = 'none';
+                document.getElementById('student-view').classList.remove('active');
+                document.getElementById('admin-view').classList.remove('active');
+                loginScreen.style.display = 'flex';
+                document.getElementById('login-input').value = ""; document.getElementById('password-input').value = "";
+                if (unsubCourse) unsubCourse();
+                if (unsubProgress) unsubProgress();
+                currentCourseData = null; currentProgressData = null;
+            }
+        });
+
+        function updateStudentDashboardUI() {
+            const skillTree = document.getElementById('skilltree-frame');
+            const skillTreePlaceholder = document.getElementById('skilltree-placeholder');
+            if (skillTree && skillTreePlaceholder) {
+                const baseSrc = currentProgressData?.personal_skill_tree_url || currentCourseData?.skill_tree_url;
+                if (baseSrc) {
+                    skillTree.src = `${baseSrc}?student=${currentUserUid}`;
+                    skillTree.style.display = 'block'; skillTreePlaceholder.style.display = 'none';
+                    skillTree.parentElement.style.alignItems = 'stretch'; skillTree.parentElement.style.justifyContent = 'flex-start';
+                } else {
+                    skillTree.src = '';
+                    skillTree.style.display = 'none'; skillTreePlaceholder.style.display = 'block';
+                    skillTree.parentElement.style.alignItems = 'center'; skillTree.parentElement.style.justifyContent = 'center';
+                }
+            }
+
+            const progContainer = document.getElementById('course-progress-container');
+            if (currentCourseData?.start_date && currentCourseData?.end_date) {
+                const startDate = new Date(currentCourseData.start_date);
+                const endDate = new Date(currentCourseData.end_date);
+                const now = new Date();
+
+                if (!isNaN(startDate) && !isNaN(endDate) && endDate > startDate) {
+                    let percent = 0;
+                    if (now >= endDate) { percent = 100; } 
+                    else if (now <= startDate) { percent = 0; } 
+                    else { percent = Math.round(((now - startDate) / (endDate - startDate)) * 100); }
+
+                    document.getElementById('course-progress-fill').style.width = `${percent}%`;
+                    document.getElementById('course-progress-percent').textContent = `${percent}%`;
+                    
+                    const options = { day: 'numeric', month: 'short', year: 'numeric' };
+                    const startStr = startDate.toLocaleDateString('ru-RU', options);
+                    const endStr = endDate.toLocaleDateString('ru-RU', options);
+                    document.getElementById('course-progress-dates').textContent = `${startStr} — ${endStr}`;
+                    
+                    progContainer.style.display = 'block';
+                } else { progContainer.style.display = 'none'; }
+            } else {
+                progContainer.style.display = 'none';
+            }
+
+            const pTopic = currentProgressData?.personal_topic_title;
+            const cTopic = currentCourseData?.topic_title || '';
+            // Никаких бейджей для ученика, просто подменяем текст
+            document.getElementById('dash-topic-title').innerHTML = pTopic ? pTopic : cTopic;
+
+            const pDeadline = currentProgressData?.personal_hw_deadline;
+            const cDeadline = currentCourseData?.hw_deadline;
+            const finalDeadline = pDeadline || cDeadline;
+            document.getElementById('dash-hw-deadline').textContent = finalDeadline ? `Дедлайн: ${finalDeadline}` : '';
+
+            updateDashboardLinks();
+            renderTests();
+
+            const fcIframe = document.getElementById('student-fc-iframe');
+            if (fcIframe) {
+                getDoc(doc(db, 'courses', '_global_flashcards_')).then(fcSnap => {
+                    if (fcSnap.exists()) {
+                        const globalData = JSON.parse(fcSnap.data().json_data || '{}');
+                        const allowedStr = currentCourseData?.allowed_flashcards || '';
+                        let filteredData = {};
+                        
+                        if (allowedStr.trim() === '*' || allowedStr.trim() === '') {
+                            filteredData = globalData;
+                        } else {
+                            const allowedKeys = allowedStr.split(',').map(k => k.trim().toLowerCase());
+                            for (const key in globalData) {
+                                if (allowedKeys.includes(key.toLowerCase())) {
+                                    filteredData[key] = globalData[key];
+                                }
+                            }
+                        }
+                        
+                        fcIframe.onload = () => { fcIframe.contentWindow.postMessage({ type: 'LOAD_FLASHCARDS', data: filteredData }, '*'); };
+                        fcIframe.contentWindow.postMessage({ type: 'LOAD_FLASHCARDS', data: filteredData }, '*');
+                    }
+                }).catch(e => console.error("Ошибка загрузки базы карточек", e));
+            }
+        }
 
         function updateDashboardLinks() {
             const theoryContainer = document.getElementById('dash-theory-links-container');
@@ -1447,170 +1681,26 @@
             });
         }
 
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                currentUserUid = user.uid;
-                loginScreen.style.display = 'none';
-                appScreen.style.display = 'flex'; 
-                loginBtn.disabled = false; loginBtn.textContent = "Войти";
-                
-                try {
-                    const userRef = doc(db, 'users', user.uid);
-                    const userSnap = await getDoc(userRef);
-                    
-                    if (userSnap.exists()) {
-                        const userData = userSnap.data();
-                        currentUserName = userData.name || user.email.split('@')[0];
-                        const role = userData.role || 'student';
-                        const courseId = userData.physics_course_id || userData.course_id || '';
-                        
-                        let initials = "УЧ";
-                        if (currentUserName) {
-                            const nameParts = currentUserName.trim().split(/\s+/);
-                            if (nameParts.length > 1) {
-                                initials = (nameParts[0][0] + nameParts[1][0]).toUpperCase();
-                            } else if (nameParts.length === 1 && nameParts[0].length > 0) {
-                                initials = nameParts[0].substring(0, 2).toUpperCase();
-                            }
-                        }
-                        
-                        if (role === 'admin') {
-                            document.getElementById('student-view').classList.remove('active');
-                            document.getElementById('admin-view').classList.add('active');
-                            document.getElementById('admin-profile-name').textContent = currentUserName;
-                            document.getElementById('admin-profile-avatar').textContent = initials;
-                            if (!adminLogicSetup) {
-                                setupAdminLogic();
-                                adminLogicSetup = true;
-                            }
-                        } else {
-                            document.getElementById('admin-view').classList.remove('active');
-                            document.getElementById('student-view').classList.add('active');
-                            
-                            document.getElementById('profile-name').textContent = currentUserName;
-                            document.getElementById('student-profile-avatar').textContent = initials;
-                            document.getElementById('profile-course').textContent = courseId;
-                            document.getElementById('dash-greeting-name').textContent = currentUserName.split(' ')[0];
-                            
-                            if (courseId) {
-                                unsubCourse = onSnapshot(doc(db, 'courses', courseId), (docSnap) => {
-                                    if (docSnap.exists()) {
-                                        currentCourseData = docSnap.data();
-                                        updateStudentDashboardUI(user);
-                                    }
-                                });
-                            }
-
-                            unsubProgress = onSnapshot(doc(db, 'students_progress', user.uid), (docSnap) => {
-                                if (docSnap.exists()) {
-                                    const rawData = docSnap.data();
-                                    currentProgressData = rawData.physics || rawData; 
-                                    updateStudentDashboardUI(user);
-                                    renderArchive();
-                                }
-                            });
-                        }
-                    } else {
-                        document.getElementById('admin-view').classList.remove('active');
-                        document.getElementById('student-view').classList.add('active');
-                    }
-                } catch (error) { console.error("Ошибка базы данных:", error); }
-                if (window.lucide) window.lucide.createIcons();
-            } else {
-                currentUserUid = null;
-                currentUserName = null;
-                appScreen.style.display = 'none';
-                document.getElementById('student-view').classList.remove('active');
-                document.getElementById('admin-view').classList.remove('active');
-                loginScreen.style.display = 'flex';
-                document.getElementById('login-input').value = ""; document.getElementById('password-input').value = "";
-                if (unsubCourse) unsubCourse();
-                if (unsubProgress) unsubProgress();
-                currentCourseData = null; currentProgressData = null;
-            }
-        });
-
-        function updateStudentDashboardUI(user) {
-            const skillTree = document.getElementById('skilltree-frame');
-            const skillTreePlaceholder = document.getElementById('skilltree-placeholder');
-            if (skillTree && skillTreePlaceholder) {
-                const baseSrc = currentProgressData?.personal_skill_tree_url || currentCourseData?.skill_tree_url;
-                if (baseSrc) {
-                    skillTree.src = `${baseSrc}?student=${user.uid}`;
-                    skillTree.style.display = 'block'; skillTreePlaceholder.style.display = 'none';
-                    skillTree.parentElement.style.alignItems = 'stretch'; skillTree.parentElement.style.justifyContent = 'flex-start';
-                } else {
-                    skillTree.src = '';
-                    skillTree.style.display = 'none'; skillTreePlaceholder.style.display = 'block';
-                    skillTree.parentElement.style.alignItems = 'center'; skillTree.parentElement.style.justifyContent = 'center';
-                }
-            }
-
-            const progContainer = document.getElementById('course-progress-container');
-            if (currentCourseData?.start_date && currentCourseData?.end_date) {
-                const startDate = new Date(currentCourseData.start_date);
-                const endDate = new Date(currentCourseData.end_date);
-                const now = new Date();
-
-                if (!isNaN(startDate) && !isNaN(endDate) && endDate > startDate) {
-                    let percent = 0;
-                    if (now >= endDate) { percent = 100; } 
-                    else if (now <= startDate) { percent = 0; } 
-                    else { percent = Math.round(((now - startDate) / (endDate - startDate)) * 100); }
-
-                    document.getElementById('course-progress-fill').style.width = `${percent}%`;
-                    document.getElementById('course-progress-percent').textContent = `${percent}%`;
-                    
-                    const options = { day: 'numeric', month: 'short', year: 'numeric' };
-                    const startStr = startDate.toLocaleDateString('ru-RU', options);
-                    const endStr = endDate.toLocaleDateString('ru-RU', options);
-                    document.getElementById('course-progress-dates').textContent = `${startStr} — ${endStr}`;
-                    
-                    progContainer.style.display = 'block';
-                } else { progContainer.style.display = 'none'; }
-            } else {
-                progContainer.style.display = 'none';
-            }
-
-            const pTopic = currentProgressData?.personal_topic_title;
-            const cTopic = currentCourseData?.topic_title || '';
-            document.getElementById('dash-topic-title').textContent = pTopic ? pTopic : cTopic;
-
-            const pDeadline = currentProgressData?.personal_hw_deadline;
-            const cDeadline = currentCourseData?.hw_deadline;
-            const finalDeadline = pDeadline || cDeadline;
-            document.getElementById('dash-hw-deadline').textContent = finalDeadline ? `Дедлайн: ${finalDeadline}` : '';
-
-            updateDashboardLinks();
-            renderTests();
-
-            const fcIframe = document.getElementById('student-fc-iframe');
-            if (fcIframe) {
-                getDoc(doc(db, 'courses', '_global_flashcards_')).then(fcSnap => {
-                    if (fcSnap.exists()) {
-                        const globalData = JSON.parse(fcSnap.data().json_data || '{}');
-                        const allowedStr = currentCourseData?.allowed_flashcards || '';
-                        let filteredData = {};
-                        
-                        if (allowedStr.trim() === '*' || allowedStr.trim() === '') {
-                            filteredData = globalData;
-                        } else {
-                            const allowedKeys = allowedStr.split(',').map(k => k.trim().toLowerCase());
-                            for (const key in globalData) {
-                                if (allowedKeys.includes(key.toLowerCase())) {
-                                    filteredData[key] = globalData[key];
-                                }
-                            }
-                        }
-                        
-                        fcIframe.onload = () => { fcIframe.contentWindow.postMessage({ type: 'LOAD_FLASHCARDS', data: filteredData }, '*'); };
-                        fcIframe.contentWindow.postMessage({ type: 'LOAD_FLASHCARDS', data: filteredData }, '*');
-                    }
-                }).catch(e => console.error("Ошибка загрузки базы карточек", e));
-            }
-        }
-
         function setupAdminLogic() {
+            window.triggerAdminAutoSave = async () => {
+                if (!hasUnsavedAdminChanges) return;
+                
+                const courseActive = document.getElementById('admin-section-courses').classList.contains('active');
+                const studentsActive = document.getElementById('admin-section-students').classList.contains('active');
+                const fcActive = document.getElementById('admin-section-flashcards').classList.contains('active');
+
+                if (courseActive) {
+                    const btn = document.getElementById('admin-save-course');
+                    if (btn && !btn.disabled) await btn.onclick();
+                } else if (studentsActive) {
+                    const btn = document.getElementById('admin-save-progress');
+                    if (btn && !btn.disabled) await btn.onclick();
+                } else if (fcActive) {
+                    const btn = document.getElementById('admin-fc-save-db');
+                    if (btn && !btn.disabled) await btn.onclick();
+                }
+            };
+
             document.getElementById('admin-student-editor').addEventListener('input', (e) => {
                 if(e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') {
                     hasUnsavedAdminChanges = true;
@@ -2015,6 +2105,22 @@
                 finally { btn.disabled = false; btn.textContent = "Создать ученика"; }
             };
 
+            studentSelector.onchange = async (e) => {
+                if (hasUnsavedAdminChanges) await window.triggerAdminAutoSave();
+
+                selectedStudentUid = e.target.value;
+                const editor = document.getElementById('admin-student-editor');
+                
+                if (!selectedStudentUid) { editor.style.display = 'none'; return; }
+                hasUnsavedAdminChanges = false;
+
+                const userDoc = await getDoc(doc(db, 'users', selectedStudentUid));
+                if (userDoc.exists()) adminRawUserData = userDoc.data();
+                else adminRawUserData = {};
+
+                renderAdminStudentEditor();
+            };
+
             document.getElementById('btn-change-student-course').onclick = async (e) => {
                 e.preventDefault();
                 if (!selectedStudentUid) return;
@@ -2046,21 +2152,6 @@
                 } catch (error) {
                     console.error(error); status.textContent = "Ошибка при сохранении."; status.style.color = "var(--error)";
                 } finally { btn.disabled = false; }
-            };
-
-            studentSelector.onchange = async (e) => {
-                if (hasUnsavedAdminChanges) await window.triggerAdminAutoSave();
-
-                selectedStudentUid = e.target.value;
-                
-                if (!selectedStudentUid) { document.getElementById('admin-student-editor').style.display = 'none'; return; }
-                hasUnsavedAdminChanges = false;
-
-                const userDoc = await getDoc(doc(db, 'users', selectedStudentUid));
-                if (userDoc.exists()) adminRawUserData = userDoc.data();
-                else adminRawUserData = {};
-
-                renderAdminStudentEditor();
             };
 
             const persTheoryContainer = document.getElementById('admin-personal-theory-container');
@@ -2115,7 +2206,6 @@
                 const progressSnap = await getDoc(doc(db, 'students_progress', selectedStudentUid));
                 if (progressSnap.exists()) {
                     progressDataAll = progressSnap.data();
-                    
                     if (!progressDataAll.physics && !progressDataAll.math) {
                         progressDataAll.physics = {
                             personal_topic_title: progressDataAll.personal_topic_title,
@@ -2285,7 +2375,7 @@
                 }
 
                 adminArchiveState.pending_hw = progressDataAll.pending_hw || [];
-                renderAdminPendingHwList();
+                renderPendingHW(adminArchiveState.pending_hw);
 
                 adminArchiveState.topics = progressData.archive_topics || [];
                 adminArchiveState.hw = progressData.archive_hw || [];
@@ -2299,43 +2389,38 @@
                 document.getElementById('admin-student-editor').style.display = 'flex';
             }
 
-            function renderAdminPendingHwList() {
+            function renderPendingHW(hwArray) {
                 const list = document.getElementById('admin-pending-hw-list');
                 list.innerHTML = '';
-                if (adminArchiveState.pending_hw.length === 0) {
+                if (!hwArray || hwArray.length === 0) {
                     list.innerHTML = '<div style="color: var(--text-muted); font-size: 0.9rem;">Нет новых работ.</div>';
                     return;
                 }
 
-                const reversedPending = adminArchiveState.pending_hw.map((item, index) => ({ item, index })).reverse();
-
-                reversedPending.forEach((obj) => {
-                    const phw = obj.item;
-                    const originalIndex = obj.index;
+                hwArray.slice().reverse().forEach((hw) => {
+                    const item = document.createElement('div');
+                    item.style.cssText = "display: flex; justify-content: space-between; align-items: center; padding: 12px; background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 8px;";
+                    const d = new Date(hw.timestamp).toLocaleString('ru-RU', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' });
+                    const urlsHtml = (hw.file_urls || []).map((u, j) => `<a href="${u}" class="pdf-link" target="_blank" style="font-size: 0.8rem; margin-right: 12px;">Файл ${j+1}</a>`).join('');
                     
-                    const row = document.createElement('div');
-                    row.style.cssText = "display: flex; justify-content: space-between; align-items: center; padding: 12px; background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 8px;";
-                    const d = new Date(phw.timestamp).toLocaleString('ru-RU', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' });
-                    const urlsHtml = (phw.file_urls || []).map((u, j) => `<a href="${u}" class="pdf-link" target="_blank" style="font-size: 0.8rem; margin-right: 12px;">Файл ${j+1}</a>`).join('');
-                    
-                    row.innerHTML = `
+                    item.innerHTML = `
                         <div style="flex:1;">
-                            <div style="font-weight: 500;">Тема: <span style="color: var(--accent);">${phw.topic}</span></div>
+                            <div style="font-weight: 500;">Тема: <span style="color: var(--accent);">${hw.topic}</span></div>
                             <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;">Отправлено: ${d}</div>
                             <div style="margin-top: 8px;">${urlsHtml}</div>
                         </div>
                         <div style="display: flex; gap: 8px;">
-                            <button class="btn-primary btn-eval-pending" data-index="${originalIndex}" style="padding: 6px 12px; font-size: 0.85rem;">Оценить</button>
-                            <button class="btn-danger btn-delete-pending" data-index="${originalIndex}" style="padding: 6px 12px; font-size: 0.85rem;">Удалить</button>
+                            <button class="btn-primary btn-eval-pending" data-id="${hw.id}" style="padding: 6px 12px; font-size: 0.85rem;">Оценить</button>
+                            <button class="btn-danger btn-delete-pending" data-id="${hw.id}" style="padding: 6px 12px; font-size: 0.85rem;">Удалить</button>
                         </div>
                     `;
-                    list.appendChild(row);
+                    list.appendChild(item);
                 });
 
                 list.querySelectorAll('.btn-delete-pending').forEach(btn => {
                     btn.onclick = async (e) => {
                         const id = e.target.dataset.id;
-                        const hwObj = adminArchiveState.pending_hw.find(h => h.id === id);
+                        const hwObj = hwArray.find(h => h.id === id);
                         if (hwObj && selectedStudentUid) {
                             e.target.disabled = true; e.target.textContent = "Удаление...";
                             try {
@@ -2351,10 +2436,8 @@
                 list.querySelectorAll('.btn-eval-pending').forEach(btn => {
                     btn.onclick = (e) => {
                         e.preventDefault();
-                        const idx = parseInt(e.target.dataset.index);
-                        const item = adminArchiveState.pending_hw[idx];
-                        
-                        adminArchiveEditState.pendingHw = idx;
+                        const id = e.target.dataset.id;
+                        const item = hwArray.find(h => h.id === id);
                         
                         document.getElementById('arch-h-title-input').value = `ДЗ: ${item.topic}`;
                         document.getElementById('arch-h-solurl-input').value = (item.file_urls || []).join('\n');
