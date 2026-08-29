@@ -235,6 +235,7 @@
         </div>
     </div>
 
+    <!-- Общий оверлей (фрейм) для тестов и внешних страниц -->
     <div id="test-overlay" class="test-overlay">
         <div class="test-overlay-header">
             <div style="font-weight: 600; font-size: 1.1rem;"><i data-lucide="clipboard-check" style="width: 20px; vertical-align: middle; margin-right: 8px;"></i>Тестирование</div>
@@ -243,6 +244,7 @@
         <iframe id="test-overlay-iframe" class="test-overlay-iframe" src=""></iframe>
     </div>
 
+    <!-- Модалка: Создание нового курса -->
     <div id="course-create-modal" class="test-overlay" style="justify-content: center; align-items: center; background-color: rgba(0,0,0,0.8);">
         <div class="card" style="width: 100%; max-width: 400px; background-color: var(--bg-card); z-index: 10001;">
             <h2 style="margin-top: 0; border: none; padding-bottom: 0;">Создать новый курс</h2>
@@ -257,6 +259,7 @@
         </div>
     </div>
 
+    <!-- Модалка: Массовый импорт JSON для карточек -->
     <div id="fc-import-modal" class="test-overlay" style="justify-content: center; align-items: center; background-color: rgba(0,0,0,0.8);">
         <div class="card" style="width: 100%; max-width: 600px; background-color: var(--bg-card); z-index: 10001;">
             <h2 style="margin-top: 0; border: none; padding-bottom: 0;">Импорт карточек (JSON)</h2>
@@ -520,7 +523,6 @@
                 <main class="main-content content-mode">
                     <div class="content-container" style="padding: 48px; overflow-y: auto; height: 100%;">
                         
-                        <!-- Admin Courses Section -->
                         <div id="admin-section-courses" class="admin-section active">
                             <h1>Управление курсами</h1>
                             <div class="card" style="margin-bottom: 24px;">
@@ -553,7 +555,7 @@
                                             <input type="date" id="admin-course-end" class="form-input">
                                         </div>
                                     </div>
-                                    <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0;">На основе этих дат у учеников будет отрисовываться шкала прогресса.</p>
+                                    <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0;">На основе этих dates у учеников будет отрисовываться шкала прогресса.</p>
                                 </div>
 
                                 <div class="accordion-header" onclick="toggleAccordion(this)">
@@ -663,7 +665,6 @@
                             </div>
                         </div>
 
-                        <!-- Admin Flashcards Section -->
                         <div id="admin-section-flashcards" class="admin-section">
                             <h1>Глобальная База Карточек</h1>
                             <div class="grid-2 fc-builder-grid">
@@ -700,7 +701,6 @@
                             </div>
                         </div>
 
-                        <!-- Admin Students Section -->
                         <div id="admin-section-students" class="admin-section">
                             <h1>Ученики</h1>
 
@@ -730,7 +730,7 @@
                                     <div class="form-group" style="margin-top: 8px;">
                                         <label style="display:flex; align-items:center; gap:8px; cursor:pointer; color: var(--text-main);">
                                             <input type="checkbox" id="admin-new-student-ind" style="width: 16px; height: 16px; accent-color: var(--accent);">
-                                            <span style="font-weight: 500;">Индивидуальное обучение (Свои темы и расписание)</span>
+                                            <span style="font-weight: 500;">Индивидуальное обучение</span>
                                         </label>
                                     </div>
                                     <button id="btn-create-student" class="btn-primary">Создать ученика</button>
@@ -747,7 +747,6 @@
                                 </div>
                             </div>
                             
-                            <!-- Student Editor Block -->
                             <div id="admin-student-editor" style="display: none; flex-direction: column; gap: 24px;">
                                 
                                 <div style="display: flex; gap: 16px; padding-bottom: 16px; border-bottom: 1px solid var(--border);">
@@ -758,7 +757,7 @@
                                 <div class="card" style="margin-bottom: 0;">
                                     <div class="form-row" style="align-items: flex-end;">
                                         <div class="form-group" style="margin-bottom: 0; flex: 2;">
-                                            <label style="color: var(--text-muted); font-size: 0.85rem;">Назначенный курс (<span id="admin-subject-label">Физика</span>): <span id="current-student-course-display" style="color: var(--text-main); font-weight: 500;"></span></label>
+                                            <label style="color: var(--text-muted); font-size: 0.85rem;">Текущий курс (<span id="admin-subject-label">Физика</span>): <span id="current-student-course-display" style="color: var(--text-main); font-weight: 500;"></span></label>
                                             <select id="admin-change-student-course" class="form-select" style="margin-top: 8px;">
                                                 <option value="">-- Выберите новый курс --</option>
                                             </select>
@@ -937,6 +936,8 @@
 
     </div>
 
+    <!-- ВРЕМЕННЫЙ СКРИПТ МИГРАЦИИ БАЗЫ ДАННЫХ -->
+    <!-- Как использовать: Войдите как Админ -> Откройте Консоль (F12) -> Введите runDatabaseMigration() -> Нажмите Enter -->
     <script>
         lucide.createIcons();
 
@@ -1004,6 +1005,64 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
+
+        // ==========================================
+        // ВРЕМЕННЫЙ СКРИПТ МИГРАЦИИ БАЗЫ ДАННЫХ
+        // ==========================================
+        window.runDatabaseMigration = async () => {
+            const confirmMigration = confirm("Запустить перенос данных учеников в раздел 'physics'?");
+            if (!confirmMigration) return;
+
+            try {
+                console.log("Начинаем миграцию...");
+                const querySnapshot = await getDocs(collection(db, 'students_progress'));
+                let updatedCount = 0;
+
+                for (const docSnap of querySnapshot.docs) {
+                    const data = docSnap.data();
+                    const studentId = docSnap.id;
+                    
+                    // Проверяем, есть ли старые данные в корне (вне объекта physics)
+                    if (data.archive_hw || data.archive_topics || data.tests_results || data.checkpoints_results) {
+                        console.log(`Обновляем профиль ученика: ${studentId}`);
+                        
+                        // Берем существующий объект physics или создаем новый
+                        const physicsData = data.physics || {};
+                        
+                        // Переносим данные, если их еще нет внутри physics
+                        if (data.archive_hw && !physicsData.archive_hw) physicsData.archive_hw = data.archive_hw;
+                        if (data.archive_topics && !physicsData.archive_topics) physicsData.archive_topics = data.archive_topics;
+                        if (data.tests_results && !physicsData.tests_results) physicsData.tests_results = data.tests_results;
+                        if (data.checkpoints_results && !physicsData.checkpoints_results) physicsData.checkpoints_results = data.checkpoints_results;
+                        
+                        // Опциональный перенос персональных настроек (если они были)
+                        if (data.personal_hw_deadline) physicsData.personal_hw_deadline = data.personal_hw_deadline;
+                        if (data.personal_topic_title) physicsData.personal_topic_title = data.personal_topic_title;
+
+                        // Обновляем документ в базе
+                        await updateDoc(doc(db, 'students_progress', studentId), {
+                            physics: physicsData,
+                            archive_hw: deleteField(),
+                            archive_topics: deleteField(),
+                            tests_results: deleteField(),
+                            checkpoints_results: deleteField(),
+                            personal_hw_deadline: deleteField(),
+                            personal_topic_title: deleteField()
+                        });
+                        
+                        updatedCount++;
+                    }
+                }
+                
+                console.log("Миграция успешно завершена!");
+                alert(`Готово! Обновлено профилей учеников: ${updatedCount}`);
+                
+            } catch (error) {
+                console.error("Ошибка при миграции:", error);
+                alert("Произошла ошибка. Проверьте консоль.");
+            }
+        };
+        // ==========================================
 
         const secondaryApp = initializeApp(firebaseConfig, "SecondaryApp");
         const secondaryAuth = getAuth(secondaryApp);
@@ -1519,8 +1578,6 @@
                     }
                 } catch (error) { 
                     console.error("Ошибка базы данных:", error);
-                    errorMsg.textContent = "Ошибка загрузки профиля. Проверьте консоль."; 
-                    await signOut(auth);
                 }
                 if (window.lucide) window.lucide.createIcons();
             } else {
@@ -1536,88 +1593,6 @@
                 currentCourseData = null; currentProgressData = null;
             }
         });
-
-        function updateStudentDashboardUI(user) {
-            const skillTree = document.getElementById('skilltree-frame');
-            const skillTreePlaceholder = document.getElementById('skilltree-placeholder');
-            if (skillTree && skillTreePlaceholder) {
-                const baseSrc = currentProgressData?.personal_skill_tree_url || currentCourseData?.skill_tree_url;
-                if (baseSrc) {
-                    skillTree.src = `${baseSrc}?student=${user.uid}`;
-                    skillTree.style.display = 'block'; skillTreePlaceholder.style.display = 'none';
-                    skillTree.parentElement.style.alignItems = 'stretch'; skillTree.parentElement.style.justifyContent = 'flex-start';
-                } else {
-                    skillTree.src = '';
-                    skillTree.style.display = 'none'; skillTreePlaceholder.style.display = 'block';
-                    skillTree.parentElement.style.alignItems = 'center'; skillTree.parentElement.style.justifyContent = 'center';
-                }
-            }
-
-            const progContainer = document.getElementById('course-progress-container');
-            if (currentCourseData?.start_date && currentCourseData?.end_date) {
-                const startDate = new Date(currentCourseData.start_date);
-                const endDate = new Date(currentCourseData.end_date);
-                const now = new Date();
-
-                if (!isNaN(startDate) && !isNaN(endDate) && endDate > startDate) {
-                    let percent = 0;
-                    if (now >= endDate) { percent = 100; } 
-                    else if (now <= startDate) { percent = 0; } 
-                    else { percent = Math.round(((now - startDate) / (endDate - startDate)) * 100); }
-
-                    document.getElementById('course-progress-fill').style.width = `${percent}%`;
-                    document.getElementById('course-progress-percent').textContent = `${percent}%`;
-                    
-                    const options = { day: 'numeric', month: 'short', year: 'numeric' };
-                    const startStr = startDate.toLocaleDateString('ru-RU', options);
-                    const endStr = endDate.toLocaleDateString('ru-RU', options);
-                    document.getElementById('course-progress-dates').textContent = `${startStr} — ${endStr}`;
-                    
-                    progContainer.style.display = 'block';
-                } else { progContainer.style.display = 'none'; }
-            } else {
-                progContainer.style.display = 'none';
-            }
-
-            const pTopic = currentProgressData?.personal_topic_title;
-            const cTopic = currentCourseData?.topic_title || '';
-            document.getElementById('dash-topic-title').innerHTML = pTopic 
-                ? `${pTopic} <span style="background: rgba(76, 175, 80, 0.1); color: var(--accent); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; margin-left: 8px; vertical-align: middle;">Персонально</span>` 
-                : cTopic;
-
-            const pDeadline = currentProgressData?.personal_hw_deadline;
-            const cDeadline = currentCourseData?.hw_deadline;
-            const finalDeadline = pDeadline || cDeadline;
-            document.getElementById('dash-hw-deadline').textContent = finalDeadline ? `Дедлайн: ${finalDeadline}` : '';
-
-            updateDashboardLinks();
-            renderTests();
-
-            const fcIframe = document.getElementById('student-fc-iframe');
-            if (fcIframe) {
-                getDoc(doc(db, 'courses', '_global_flashcards_')).then(fcSnap => {
-                    if (fcSnap.exists()) {
-                        const globalData = JSON.parse(fcSnap.data().json_data || '{}');
-                        const allowedStr = currentCourseData?.allowed_flashcards || '';
-                        let filteredData = {};
-                        
-                        if (allowedStr.trim() === '*' || allowedStr.trim() === '') {
-                            filteredData = globalData;
-                        } else {
-                            const allowedKeys = allowedStr.split(',').map(k => k.trim().toLowerCase());
-                            for (const key in globalData) {
-                                if (allowedKeys.includes(key.toLowerCase())) {
-                                    filteredData[key] = globalData[key];
-                                }
-                            }
-                        }
-                        
-                        fcIframe.onload = () => { fcIframe.contentWindow.postMessage({ type: 'LOAD_FLASHCARDS', data: filteredData }, '*'); };
-                        fcIframe.contentWindow.postMessage({ type: 'LOAD_FLASHCARDS', data: filteredData }, '*');
-                    }
-                }).catch(e => console.error("Ошибка загрузки базы карточек", e));
-            }
-        }
 
         function setupAdminLogic() {
             
