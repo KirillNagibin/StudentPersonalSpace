@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Личный кабинет | Ученик</title>
+    <title>Личный кабинет | Физика</title>
     
     <script src="https://unpkg.com/lucide@latest"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -301,10 +301,9 @@
 
     <div id="app-screen" class="app-screen">
         
-        <!-- Вью Ученика -->
         <div id="student-view" class="role-view">
             <header class="mobile-header">
-                <div id="mobile-header-title" style="font-weight: 600; font-size: 1.2rem;">Личный Кабинет</div>
+                <div style="font-weight: 600; font-size: 1.2rem;">Личный Кабинет</div>
                 <button class="hamburger-btn" onclick="toggleSidebar('sidebar')"><i data-lucide="menu"></i></button>
             </header>
 
@@ -316,12 +315,6 @@
                         <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;" id="profile-course">...</div>
                     </div>
                     <button class="logout-btn" title="Выйти"><i data-lucide="log-out"></i></button>
-                </div>
-
-                <!-- Переключатель предметов для ученика -->
-                <div style="padding: 0 24px 16px 24px; border-bottom: 1px solid var(--border); margin-bottom: 16px; display: flex; gap: 8px;">
-                    <button class="btn-secondary student-subject-tab active" data-subject="physics" style="flex: 1; padding: 6px; font-size: 0.85rem; background-color: var(--bg-hover);"><i data-lucide="atom" style="width:16px; margin-right:4px;"></i> Физика</button>
-                    <button class="btn-secondary student-subject-tab" data-subject="math" style="flex: 1; padding: 6px; font-size: 0.85rem;"><i data-lucide="calculator" style="width:16px; margin-right:4px;"></i> Математ.</button>
                 </div>
 
                 <nav class="nav-menu">
@@ -406,7 +399,6 @@
                         </div>
                     </div>
 
-                    <!-- Additional Student Views (Skilltree, Tests, Archive, Flashcards) -->
                     <div id="view-skilltree" class="view" data-layout="embed">
                         <div class="embed-container" id="student-skilltree-container" style="align-items: center; justify-content: center;">
                             <div id="skilltree-placeholder" class="placeholder-text" style="color: var(--text-muted);">
@@ -507,7 +499,6 @@
             </div>
         </div>
 
-        <!-- Вью Администратора -->
         <div id="admin-view" class="role-view">
             <header class="mobile-header">
                 <div style="font-weight: 600; font-size: 1.2rem;">Управление | Кабинет</div>
@@ -532,7 +523,6 @@
                 <main class="main-content content-mode">
                     <div class="content-container" style="padding: 48px; overflow-y: auto; height: 100%;">
                         
-                        <!-- Admin Section: Courses -->
                         <div id="admin-section-courses" class="admin-section active">
                             <h1>Управление курсами</h1>
                             <div class="card" style="margin-bottom: 24px;">
@@ -740,7 +730,7 @@
                                     <div class="form-group" style="margin-top: 8px;">
                                         <label style="display:flex; align-items:center; gap:8px; cursor:pointer; color: var(--text-main);">
                                             <input type="checkbox" id="admin-new-student-ind" style="width: 16px; height: 16px; accent-color: var(--accent);">
-                                            <span style="font-weight: 500;">Индивидуальное обучение</span>
+                                            <span style="font-weight: 500;">Индивидуальное обучение (Свои темы и расписание)</span>
                                         </label>
                                     </div>
                                     <button id="btn-create-student" class="btn-primary">Создать ученика</button>
@@ -757,18 +747,19 @@
                                 </div>
                             </div>
                             
-                            <!-- Detailed Editor for Selected Student -->
                             <div id="admin-student-editor" style="display: none; flex-direction: column; gap: 24px;">
                                 
+                                <!-- Tabs for subjects -->
                                 <div style="display: flex; gap: 16px; padding-bottom: 16px; border-bottom: 1px solid var(--border);">
                                     <button class="btn-secondary admin-subject-tab active" data-subject="physics" style="background-color: var(--bg-hover);"><i data-lucide="atom" style="width:18px; margin-right: 8px;"></i> Физика</button>
                                     <button class="btn-secondary admin-subject-tab" data-subject="math"><i data-lucide="calculator" style="width:18px; margin-right: 8px;"></i> Математика</button>
                                 </div>
 
+                                <!-- Course assignment -->
                                 <div class="card" style="margin-bottom: 0;">
                                     <div class="form-row" style="align-items: flex-end;">
                                         <div class="form-group" style="margin-bottom: 0; flex: 2;">
-                                            <label style="color: var(--text-muted); font-size: 0.85rem;">Текущий курс (<span id="admin-subject-label">Физика</span>): <span id="current-student-course-display" style="color: var(--text-main); font-weight: 500;"></span></label>
+                                            <label style="color: var(--text-muted); font-size: 0.85rem;">Назначенный курс (<span id="admin-subject-label">Физика</span>): <span id="current-student-course-display" style="color: var(--text-main); font-weight: 500;"></span></label>
                                             <select id="admin-change-student-course" class="form-select" style="margin-top: 8px;">
                                                 <option value="">-- Выберите новый курс --</option>
                                             </select>
@@ -1030,21 +1021,16 @@
 
         let currentCourseData = null;
         let currentProgressData = null;
-        let currentProgressDataAll = null;
-        
         let currentUserUid = null;
         let currentUserName = null;
         
         let hasUnsavedAdminChanges = false;
         let adminLogicSetup = false;
         
-        // State for switching subjects
+        // Multi-subject state in admin
         let adminCurrentSubject = 'physics';
-        let studentCurrentSubject = 'physics';
-        let studentRawUserData = {};
         let adminRawUserData = {};
-
-        let studentFilesQueue = [];
+        let selectedStudentUid = null;
 
         window.addEventListener('visibilitychange', () => {
             if (document.visibilityState === 'hidden' && hasUnsavedAdminChanges && window.triggerAdminAutoSave) {
@@ -1104,6 +1090,7 @@
             if (e.key === 'Enter') pwdInput.focus();
         });
 
+        let studentFilesQueue = [];
         const hwDropzone = document.getElementById('hw-dropzone');
         const hwFileInput = document.getElementById('student-hw-files');
         const hwFileList = document.getElementById('hw-file-list');
@@ -1229,59 +1216,6 @@
             });
         }
 
-        function loadStudentSubjectData() {
-            if (unsubCourse) { unsubCourse(); unsubCourse = null; }
-            
-            let courseId = '';
-            if (studentCurrentSubject === 'physics') {
-                courseId = studentRawUserData.physics_course_id || studentRawUserData.course_id || '';
-            } else {
-                courseId = studentRawUserData.math_course_id || '';
-            }
-
-            const isInd = studentRawUserData.is_individual === true;
-            document.getElementById('profile-course').innerHTML = (courseId || 'Курс не назначен') + (isInd ? ' <span class="tag green" style="font-size: 0.6rem; vertical-align: middle; margin-left: 6px;">Индив.</span>' : '');
-
-            if (courseId) {
-                unsubCourse = onSnapshot(doc(db, 'courses', courseId), (courseSnap) => {
-                    if (courseSnap.exists()) {
-                        currentCourseData = courseSnap.data();
-                    } else {
-                        currentCourseData = null;
-                    }
-                    updateStudentDashboardUI();
-                    renderArchive();
-                });
-            } else {
-                currentCourseData = null;
-                updateStudentDashboardUI();
-                renderArchive();
-            }
-            
-            if (currentProgressDataAll) {
-                currentProgressData = currentProgressDataAll[studentCurrentSubject] || {};
-                updateStudentDashboardUI();
-                renderArchive();
-            }
-        }
-
-        document.querySelectorAll('.student-subject-tab').forEach(btn => {
-            btn.onclick = (e) => {
-                document.querySelectorAll('.student-subject-tab').forEach(b => {
-                    b.classList.remove('active');
-                    b.style.backgroundColor = 'transparent';
-                });
-                const target = e.target.closest('.student-subject-tab');
-                target.classList.add('active');
-                target.style.backgroundColor = 'var(--bg-hover)';
-                studentCurrentSubject = target.dataset.subject;
-                
-                document.getElementById('mobile-header-title').innerHTML = studentCurrentSubject === 'physics' ? 'Физика | Кабинет' : 'Математика | Кабинет';
-
-                loadStudentSubjectData();
-            };
-        });
-
         function renderArchive() {
             const topicsContainer = document.getElementById('dash-archive-topics-container');
             const checkContainer = document.getElementById('dash-archive-checkpoints-container');
@@ -1365,10 +1299,8 @@
                     try {
                         const studentRef = doc(db, 'students_progress', currentUserUid);
                         await setDoc(studentRef, {
-                            [studentCurrentSubject]: {
-                                tests_results: {
-                                    [data.testId]: data.score
-                                }
+                            tests_results: {
+                                [data.testId]: data.score
                             }
                         }, { merge: true });
                     } catch (e) {
@@ -1388,8 +1320,6 @@
 
             theoryContainer.innerHTML = ''; hwContainer.innerHTML = ''; refContainer.innerHTML = '';
 
-            const personalBadge = `<span style="background: rgba(76, 175, 80, 0.1); color: var(--accent); padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; margin-left: 8px;">Персонально</span>`;
-
             let hasTheory = false;
             if (currentCourseData?.theory_links && Array.isArray(currentCourseData.theory_links)) {
                 currentCourseData.theory_links.forEach((link, index) => {
@@ -1400,7 +1330,7 @@
             }
             if (currentProgressData?.personal_theory_links && Array.isArray(currentProgressData.personal_theory_links)) {
                 currentProgressData.personal_theory_links.forEach(link => {
-                    if(link.url) { theoryContainer.insertAdjacentHTML('beforeend', `<a href="${link.url}" class="pdf-link" target="_blank"><i data-lucide="file-text" style="width: 18px;"></i> ${link.title || 'Перс. Теория'} ${personalBadge}</a>`); hasTheory = true; }
+                    if(link.url) { theoryContainer.insertAdjacentHTML('beforeend', `<a href="${link.url}" class="pdf-link" target="_blank"><i data-lucide="file-text" style="width: 18px;"></i> ${link.title || 'Теория'}</a>`); hasTheory = true; }
                 });
             }
             if (!hasTheory) theoryContainer.innerHTML = '<span style="color: var(--text-muted); font-size: 0.9rem;">Нет файлов теории</span>';
@@ -1413,7 +1343,7 @@
             }
             if (currentProgressData?.personal_hw_links && Array.isArray(currentProgressData.personal_hw_links)) {
                 currentProgressData.personal_hw_links.forEach(link => {
-                    if(link.url) { hwContainer.insertAdjacentHTML('beforeend', `<a href="${link.url}" class="pdf-link" target="_blank"><i data-lucide="file-text" style="width: 18px;"></i> ${link.title || 'Перс. ДЗ'} ${personalBadge}</a>`); hasHw = true; }
+                    if(link.url) { hwContainer.insertAdjacentHTML('beforeend', `<a href="${link.url}" class="pdf-link" target="_blank"><i data-lucide="file-text" style="width: 18px;"></i> ${link.title || 'ДЗ'}</a>`); hasHw = true; }
                 });
             }
             if (!hasHw) hwContainer.innerHTML = '<span style="color: var(--text-muted); font-size: 0.9rem;">Нет файлов домашнего задания</span>';
@@ -1426,7 +1356,7 @@
             }
             if (currentProgressData?.personal_reference_links && Array.isArray(currentProgressData.personal_reference_links)) {
                 currentProgressData.personal_reference_links.forEach(link => {
-                    if(link.url) { refContainer.insertAdjacentHTML('beforeend', `<a href="${link.url}" class="pdf-link" target="_blank"><i data-lucide="external-link" style="width: 18px;"></i> ${link.title || 'Перс. Справочник'} ${personalBadge}</a>`); hasRef = true; }
+                    if(link.url) { refContainer.insertAdjacentHTML('beforeend', `<a href="${link.url}" class="pdf-link" target="_blank"><i data-lucide="external-link" style="width: 18px;"></i> ${link.title || 'Справочник'}</a>`); hasRef = true; }
                 });
             }
             if (!hasRef) refContainer.innerHTML = '<span style="color: var(--text-muted); font-size: 0.9rem;">Нет справочных материалов</span>';
@@ -1434,8 +1364,7 @@
             const finalLessonLink = currentProgressData?.personal_lesson_link || currentCourseData?.lesson_link;
             if (lessonLinkContainer) {
                 if (finalLessonLink) {
-                    const isPers = !!currentProgressData?.personal_lesson_link;
-                    lessonLinkContainer.innerHTML = `<a href="${finalLessonLink}" target="_blank" class="btn-primary" style="text-decoration: none; display: inline-flex; width: 100%; padding: 16px; font-size: 1.1rem;"><i data-lucide="play-circle" style="margin-right: 8px;"></i> Присоединиться к уроку ${isPers ? '<span style="font-size: 0.75rem; background: rgba(255,255,255,0.2); padding: 2px 6px; border-radius: 4px; margin-left: 8px;">Персональный</span>' : ''}</a>`;
+                    lessonLinkContainer.innerHTML = `<a href="${finalLessonLink}" target="_blank" class="btn-primary" style="text-decoration: none; display: inline-flex; width: 100%; padding: 16px; font-size: 1.1rem;"><i data-lucide="play-circle" style="margin-right: 8px;"></i> Присоединиться к уроку</a>`;
                 } else {
                     lessonLinkContainer.innerHTML = '<span style="color: var(--text-muted); font-size: 0.9rem;">Ссылка на занятие пока не добавлена.</span>';
                 }
@@ -1533,6 +1462,7 @@
                         const userData = userSnap.data();
                         currentUserName = userData.name || user.email.split('@')[0];
                         const role = userData.role || 'student';
+                        const courseId = userData.physics_course_id || userData.course_id || '';
                         
                         let initials = "УЧ";
                         if (currentUserName) {
@@ -1554,28 +1484,28 @@
                                 adminLogicSetup = true;
                             }
                         } else {
-                            studentRawUserData = userData;
-                            
                             document.getElementById('admin-view').classList.remove('active');
                             document.getElementById('student-view').classList.add('active');
                             
                             document.getElementById('profile-name').textContent = currentUserName;
                             document.getElementById('student-profile-avatar').textContent = initials;
+                            document.getElementById('profile-course').textContent = courseId;
                             document.getElementById('dash-greeting-name').textContent = currentUserName.split(' ')[0];
                             
-                            loadStudentSubjectData();
+                            if (courseId) {
+                                unsubCourse = onSnapshot(doc(db, 'courses', courseId), (docSnap) => {
+                                    if (docSnap.exists()) {
+                                        currentCourseData = docSnap.data();
+                                        updateStudentDashboardUI(user);
+                                    }
+                                });
+                            }
 
                             unsubProgress = onSnapshot(doc(db, 'students_progress', user.uid), (docSnap) => {
                                 if (docSnap.exists()) {
                                     const rawData = docSnap.data();
-                                    // Обратная совместимость для физики
-                                    if (!rawData.physics && !rawData.math) {
-                                        currentProgressDataAll = { physics: rawData, pending_hw: rawData.pending_hw || [] };
-                                    } else {
-                                        currentProgressDataAll = rawData;
-                                    }
-                                    currentProgressData = currentProgressDataAll[studentCurrentSubject] || {};
-                                    updateStudentDashboardUI();
+                                    currentProgressData = rawData.physics || rawData; 
+                                    updateStudentDashboardUI(user);
                                     renderArchive();
                                 }
                             });
@@ -1596,17 +1526,17 @@
                 document.getElementById('login-input').value = ""; document.getElementById('password-input').value = "";
                 if (unsubCourse) unsubCourse();
                 if (unsubProgress) unsubProgress();
-                currentCourseData = null; currentProgressData = null; currentProgressDataAll = null;
+                currentCourseData = null; currentProgressData = null;
             }
         });
 
-        function updateStudentDashboardUI() {
+        function updateStudentDashboardUI(user) {
             const skillTree = document.getElementById('skilltree-frame');
             const skillTreePlaceholder = document.getElementById('skilltree-placeholder');
             if (skillTree && skillTreePlaceholder) {
                 const baseSrc = currentProgressData?.personal_skill_tree_url || currentCourseData?.skill_tree_url;
                 if (baseSrc) {
-                    skillTree.src = `${baseSrc}?student=${currentUserUid}`;
+                    skillTree.src = `${baseSrc}?student=${user.uid}`;
                     skillTree.style.display = 'block'; skillTreePlaceholder.style.display = 'none';
                     skillTree.parentElement.style.alignItems = 'stretch'; skillTree.parentElement.style.justifyContent = 'flex-start';
                 } else {
@@ -1644,9 +1574,7 @@
 
             const pTopic = currentProgressData?.personal_topic_title;
             const cTopic = currentCourseData?.topic_title || '';
-            document.getElementById('dash-topic-title').innerHTML = pTopic 
-                ? `${pTopic} <span style="background: rgba(76, 175, 80, 0.1); color: var(--accent); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; margin-left: 8px; vertical-align: middle;">Персонально</span>` 
-                : cTopic;
+            document.getElementById('dash-topic-title').textContent = pTopic ? pTopic : cTopic;
 
             const pDeadline = currentProgressData?.personal_hw_deadline;
             const cDeadline = currentCourseData?.hw_deadline;
@@ -1675,54 +1603,23 @@
                             }
                         }
                         
-                        fcIframe.onload = () => { fcIframe.contentWindow.postMessage({ type: 'LOAD_FLASHCARDS', data: currentCourseData ? filteredData : {} }, '*'); };
-                        fcIframe.contentWindow.postMessage({ type: 'LOAD_FLASHCARDS', data: currentCourseData ? filteredData : {} }, '*');
+                        fcIframe.onload = () => { fcIframe.contentWindow.postMessage({ type: 'LOAD_FLASHCARDS', data: filteredData }, '*'); };
+                        fcIframe.contentWindow.postMessage({ type: 'LOAD_FLASHCARDS', data: filteredData }, '*');
                     }
                 }).catch(e => console.error("Ошибка загрузки базы карточек", e));
             }
         }
 
         function setupAdminLogic() {
-            const adminCourseSelect = document.getElementById('admin-course-id');
-            const saveBtn = document.getElementById('admin-save-course');
-            const courseForm = document.getElementById('admin-course-form');
-            const statusMsg = document.getElementById('admin-save-status');
-            
-            const theoryLinksContainer = document.getElementById('admin-theory-links-container');
-            const hwLinksContainer = document.getElementById('admin-hw-links-container');
-            const refLinksContainer = document.getElementById('admin-ref-links-container');
-            const testsLinksContainer = document.getElementById('admin-tests-links-container');
-
-            function markUnsaved() { hasUnsavedAdminChanges = true; }
-
-            window.triggerAdminAutoSave = async () => {
-                if (!hasUnsavedAdminChanges) return;
-                
-                const courseActive = document.getElementById('admin-section-courses').classList.contains('active');
-                const studentsActive = document.getElementById('admin-section-students').classList.contains('active');
-                const fcActive = document.getElementById('admin-section-flashcards').classList.contains('active');
-
-                if (courseActive) {
-                    const btn = document.getElementById('admin-save-course');
-                    if (btn && !btn.disabled) await btn.onclick();
-                } else if (studentsActive) {
-                    const btn = document.getElementById('admin-save-progress');
-                    if (btn && !btn.disabled) await btn.onclick();
-                } else if (fcActive) {
-                    const btn = document.getElementById('admin-fc-save-db');
-                    if (btn && !btn.disabled) await btn.onclick();
-                }
-            };
-
             document.getElementById('admin-student-editor').addEventListener('input', (e) => {
                 if(e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') {
-                    markUnsaved();
+                    hasUnsavedAdminChanges = true;
                 }
             });
 
             document.getElementById('admin-course-form').addEventListener('input', (e) => {
                 if(e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') {
-                    markUnsaved();
+                    hasUnsavedAdminChanges = true;
                 }
             });
 
@@ -1746,8 +1643,8 @@
                 row.innerHTML = `<div class="form-group" style="margin-bottom: 0;"><input type="text" class="form-input theory-link-title" placeholder="Название материала" value="${title}"></div>
                                  <div class="form-group" style="margin-bottom: 0;"><input type="text" class="form-input theory-link-url" placeholder="Ссылка на PDF теории" value="${url}"></div>
                                  <button class="btn-secondary remove-link-btn" style="padding: 12px; color: var(--error); border-color: #333;" title="удалить">✕</button>`;
-                row.querySelector('.remove-link-btn').onclick = (e) => { e.preventDefault(); row.remove(); markUnsaved(); };
-                theoryLinksContainer.appendChild(row);
+                row.querySelector('.remove-link-btn').onclick = (e) => { e.preventDefault(); row.remove(); hasUnsavedAdminChanges = true; };
+                document.getElementById('admin-theory-links-container').appendChild(row);
             }
 
             function createHwLinkRow(title = '', url = '') {
@@ -1755,8 +1652,8 @@
                 row.innerHTML = `<div class="form-group" style="margin-bottom: 0;"><input type="text" class="form-input hw-link-title" placeholder="Название (напр. Часть 1)" value="${title}"></div>
                                  <div class="form-group" style="margin-bottom: 0;"><input type="text" class="form-input hw-link-url" placeholder="Ссылка на PDF" value="${url}"></div>
                                  <button class="btn-secondary remove-link-btn" style="padding: 12px; color: var(--error); border-color: #333;" title="удалить">✕</button>`;
-                row.querySelector('.remove-link-btn').onclick = (e) => { e.preventDefault(); row.remove(); markUnsaved(); };
-                hwLinksContainer.appendChild(row);
+                row.querySelector('.remove-link-btn').onclick = (e) => { e.preventDefault(); row.remove(); hasUnsavedAdminChanges = true; };
+                document.getElementById('admin-hw-links-container').appendChild(row);
             }
 
             function createRefLinkRow(title = '', url = '') {
@@ -1764,8 +1661,8 @@
                 row.innerHTML = `<div class="form-group" style="margin-bottom: 0;"><input type="text" class="form-input ref-link-title" placeholder="Название справочника" value="${title}"></div>
                                  <div class="form-group" style="margin-bottom: 0;"><input type="text" class="form-input ref-link-url" placeholder="Ссылка на PDF" value="${url}"></div>
                                  <button class="btn-secondary remove-link-btn" style="padding: 12px; color: var(--error); border-color: #333;" title="удалить">✕</button>`;
-                row.querySelector('.remove-link-btn').onclick = (e) => { e.preventDefault(); row.remove(); markUnsaved(); };
-                refLinksContainer.appendChild(row);
+                row.querySelector('.remove-link-btn').onclick = (e) => { e.preventDefault(); row.remove(); hasUnsavedAdminChanges = true; };
+                document.getElementById('admin-ref-links-container').appendChild(row);
             }
 
             function createTestLinkRow(id = '', title = '', url = '', limit = '', questions = '', status = 'active') {
@@ -1791,8 +1688,8 @@
                         <button class="btn-secondary remove-link-btn" style="padding: 12px; color: var(--error); border-color: #333;" title="удалить">✕</button>
                     </div>
                 `;
-                row.querySelector('.remove-link-btn').onclick = (e) => { e.preventDefault(); row.remove(); markUnsaved(); };
-                testsLinksContainer.appendChild(row);
+                row.querySelector('.remove-link-btn').onclick = (e) => { e.preventDefault(); row.remove(); hasUnsavedAdminChanges = true; };
+                document.getElementById('admin-tests-links-container').appendChild(row);
             }
 
             function createCourseCheckpointRow(id = '', title = '', url = '', status = 'gray') {
@@ -1816,15 +1713,15 @@
                         <button class="btn-secondary remove-link-btn" style="padding: 12px; color: var(--error); border-color: #333;" title="удалить">✕</button>
                     </div>
                 `;
-                row.querySelector('.remove-link-btn').onclick = (e) => { e.preventDefault(); row.remove(); markUnsaved(); };
+                row.querySelector('.remove-link-btn').onclick = (e) => { e.preventDefault(); row.remove(); hasUnsavedAdminChanges = true; };
                 document.getElementById('admin-course-checkpoints-container').appendChild(row);
             }
 
-            document.getElementById('admin-add-theory-link').onclick = (e) => { e.preventDefault(); createTheoryLinkRow(); markUnsaved(); };
-            document.getElementById('admin-add-hw-link').onclick = (e) => { e.preventDefault(); createHwLinkRow(); markUnsaved(); };
-            document.getElementById('admin-add-ref-link').onclick = (e) => { e.preventDefault(); createRefLinkRow(); markUnsaved(); };
-            document.getElementById('admin-add-test-link').onclick = (e) => { e.preventDefault(); createTestLinkRow(); markUnsaved(); };
-            document.getElementById('admin-add-course-checkpoint').onclick = (e) => { e.preventDefault(); createCourseCheckpointRow(); markUnsaved(); };
+            document.getElementById('admin-add-theory-link').onclick = (e) => { e.preventDefault(); createTheoryLinkRow(); hasUnsavedAdminChanges = true; };
+            document.getElementById('admin-add-hw-link').onclick = (e) => { e.preventDefault(); createHwLinkRow(); hasUnsavedAdminChanges = true; };
+            document.getElementById('admin-add-ref-link').onclick = (e) => { e.preventDefault(); createRefLinkRow(); hasUnsavedAdminChanges = true; };
+            document.getElementById('admin-add-test-link').onclick = (e) => { e.preventDefault(); createTestLinkRow(); hasUnsavedAdminChanges = true; };
+            document.getElementById('admin-add-course-checkpoint').onclick = (e) => { e.preventDefault(); createCourseCheckpointRow(); hasUnsavedAdminChanges = true; };
 
             const studentSelector = document.getElementById('admin-student-selector');
 
@@ -1888,6 +1785,9 @@
 
             document.getElementById('confirm-create-course').onclick = () => {
                 const newId = document.getElementById('new-course-id-input').value.trim();
+                const adminCourseSelect = document.getElementById('admin-course-id');
+                const statusMsg = document.getElementById('admin-save-status');
+
                 if (!newId) return;
 
                 document.getElementById('course-create-modal').classList.remove('active');
@@ -1938,15 +1838,17 @@
                             lbl.style.pointerEvents = checked ? 'none' : 'auto';
                             lbl.querySelector('input').checked = checked;
                         });
-                        markUnsaved();
+                        hasUnsavedAdminChanges = true;
                     });
                 }
                 container.querySelectorAll('.fc-topic-checkbox').forEach(cb => {
-                    cb.addEventListener('change', () => markUnsaved());
+                    cb.addEventListener('change', () => hasUnsavedAdminChanges = true);
                 });
             }
 
             async function loadCourseData() {
+                const adminCourseSelect = document.getElementById('admin-course-id');
+                const courseForm = document.getElementById('admin-course-form');
                 const courseId = adminCourseSelect.value.trim();
                 if (!courseId) {
                     courseForm.style.opacity = '0.5';
@@ -1956,8 +1858,11 @@
 
                 try {
                     const docSnap = await getDoc(doc(db, 'courses', courseId));
-                    theoryLinksContainer.innerHTML = ''; hwLinksContainer.innerHTML = ''; refLinksContainer.innerHTML = ''; testsLinksContainer.innerHTML = '';
-                    const cpContainer = document.getElementById('admin-course-checkpoints-container'); cpContainer.innerHTML = '';
+                    document.getElementById('admin-theory-links-container').innerHTML = ''; 
+                    document.getElementById('admin-hw-links-container').innerHTML = ''; 
+                    document.getElementById('admin-ref-links-container').innerHTML = ''; 
+                    document.getElementById('admin-tests-links-container').innerHTML = '';
+                    document.getElementById('admin-course-checkpoints-container').innerHTML = '';
 
                     if (docSnap.exists()) {
                         const data = docSnap.data();
@@ -1996,15 +1901,17 @@
                 }
             }
 
-            adminCourseSelect.addEventListener('change', async () => {
+            document.getElementById('admin-course-id').addEventListener('change', async () => {
                 if (hasUnsavedAdminChanges) {
                     await window.triggerAdminAutoSave();
                 }
                 loadCourseData();
             });
 
-            saveBtn.onclick = async () => {
-                const courseId = adminCourseSelect.value.trim();
+            document.getElementById('admin-save-course').onclick = async () => {
+                const saveBtn = document.getElementById('admin-save-course');
+                const statusMsg = document.getElementById('admin-save-status');
+                const courseId = document.getElementById('admin-course-id').value.trim();
                 if (!courseId) return;
 
                 saveBtn.disabled = true; saveBtn.innerHTML = "Сохранение..."; statusMsg.textContent = "";
@@ -2108,22 +2015,6 @@
                 finally { btn.disabled = false; btn.textContent = "Создать ученика"; }
             };
 
-            studentSelector.onchange = async (e) => {
-                if (hasUnsavedAdminChanges) await window.triggerAdminAutoSave();
-
-                selectedStudentUid = e.target.value;
-                const editor = document.getElementById('admin-student-editor');
-                
-                if (!selectedStudentUid) { editor.style.display = 'none'; return; }
-                hasUnsavedAdminChanges = false;
-
-                const userDoc = await getDoc(doc(db, 'users', selectedStudentUid));
-                if (userDoc.exists()) adminRawUserData = userDoc.data();
-                else adminRawUserData = {};
-
-                renderAdminStudentEditor();
-            };
-
             document.getElementById('btn-change-student-course').onclick = async (e) => {
                 e.preventDefault();
                 if (!selectedStudentUid) return;
@@ -2157,6 +2048,21 @@
                 } finally { btn.disabled = false; }
             };
 
+            studentSelector.onchange = async (e) => {
+                if (hasUnsavedAdminChanges) await window.triggerAdminAutoSave();
+
+                selectedStudentUid = e.target.value;
+                
+                if (!selectedStudentUid) { document.getElementById('admin-student-editor').style.display = 'none'; return; }
+                hasUnsavedAdminChanges = false;
+
+                const userDoc = await getDoc(doc(db, 'users', selectedStudentUid));
+                if (userDoc.exists()) adminRawUserData = userDoc.data();
+                else adminRawUserData = {};
+
+                renderAdminStudentEditor();
+            };
+
             const persTheoryContainer = document.getElementById('admin-personal-theory-container');
             const persHwContainer = document.getElementById('admin-personal-hw-container');
             const persRefContainer = document.getElementById('admin-personal-ref-container');
@@ -2166,13 +2072,13 @@
                 row.innerHTML = `<div class="form-group" style="margin-bottom: 0;"><input type="text" class="form-input ${titleCls}" placeholder="Название" value="${titleVal}"></div>
                                  <div class="form-group" style="margin-bottom: 0;"><input type="text" class="form-input ${urlCls}" placeholder="URL" value="${urlVal}"></div>
                                  <button class="btn-secondary remove-link-btn" style="padding: 12px; color: var(--error); border-color: #333;" title="удалить">✕</button>`;
-                row.querySelector('.remove-link-btn').onclick = (e) => { e.preventDefault(); row.remove(); markUnsaved(); };
+                row.querySelector('.remove-link-btn').onclick = (e) => { e.preventDefault(); row.remove(); hasUnsavedAdminChanges = true; };
                 container.appendChild(row);
             }
 
-            document.getElementById('admin-add-personal-theory').onclick = (e) => { e.preventDefault(); createPersonalLinkRow(persTheoryContainer, 'pers-theory-title', 'pers-theory-url'); markUnsaved(); };
-            document.getElementById('admin-add-personal-hw').onclick = (e) => { e.preventDefault(); createPersonalLinkRow(persHwContainer, 'pers-hw-title', 'pers-hw-url'); markUnsaved(); };
-            document.getElementById('admin-add-personal-ref').onclick = (e) => { e.preventDefault(); createPersonalLinkRow(persRefContainer, 'pers-ref-title', 'pers-ref-url'); markUnsaved(); };
+            document.getElementById('admin-add-personal-theory').onclick = (e) => { e.preventDefault(); createPersonalLinkRow(persTheoryContainer, 'pers-theory-title', 'pers-theory-url'); hasUnsavedAdminChanges = true; };
+            document.getElementById('admin-add-personal-hw').onclick = (e) => { e.preventDefault(); createPersonalLinkRow(persHwContainer, 'pers-hw-title', 'pers-hw-url'); hasUnsavedAdminChanges = true; };
+            document.getElementById('admin-add-personal-ref').onclick = (e) => { e.preventDefault(); createPersonalLinkRow(persRefContainer, 'pers-ref-title', 'pers-ref-url'); hasUnsavedAdminChanges = true; };
 
             let adminArchiveState = { topics: [], hw: [], pending_hw: [] };
             let adminArchiveEditState = { topic: -1, hw: -1, pendingHw: -1 };
@@ -2320,7 +2226,7 @@
                                         }
                                     }, { merge: true });
                                     btn.parentElement.innerHTML = '<span style="color: var(--text-muted); font-size: 0.9rem;">Сброшено.</span>';
-                                    markUnsaved(); 
+                                    hasUnsavedAdminChanges = true; 
                                 } catch (err) { console.error(err); }
                             } else {
                                 btn.dataset.confirm = 'true';
@@ -2461,7 +2367,7 @@
                         });
                         
                         document.getElementById('arch-h-feedback-input').focus();
-                        markUnsaved();
+                        hasUnsavedAdminChanges = true;
                     };
                 });
             }
@@ -2496,7 +2402,7 @@
                 tList.querySelectorAll('.del-t-btn').forEach(btn => btn.onclick = (e) => {
                     adminArchiveState.topics.splice(e.target.dataset.index, 1);
                     adminArchiveEditState.topic = -1;
-                    markUnsaved();
+                    hasUnsavedAdminChanges = true;
                     document.getElementById('btn-add-arch-topic').innerText = 'Добавить';
                     document.getElementById('arch-t-title-input').value = '';
                     document.getElementById('arch-t-url-input').value = '';
@@ -2541,7 +2447,7 @@
                 hList.querySelectorAll('.del-h-btn').forEach(btn => btn.onclick = (e) => {
                     adminArchiveState.hw.splice(e.target.dataset.index, 1);
                     adminArchiveEditState.hw = -1;
-                    markUnsaved();
+                    hasUnsavedAdminChanges = true;
                     document.getElementById('btn-add-arch-hw').innerText = 'Добавить';
                     document.getElementById('arch-h-title-input').value = '';
                     document.getElementById('arch-h-hwurl-input').value = '';
@@ -2602,7 +2508,7 @@
                 document.getElementById('arch-h-hwurl-input').value = '';
                 document.getElementById('arch-h-solurl-input').value = '';
                 document.getElementById('arch-h-feedback-input').value = '';
-                markUnsaved();
+                hasUnsavedAdminChanges = true;
                 renderAdminArchiveLists();
             };
 
@@ -2632,7 +2538,7 @@
                 document.getElementById('arch-t-title-input').value = '';
                 document.getElementById('arch-t-url-input').value = '';
                 document.getElementById('arch-t-notes-input').value = '';
-                markUnsaved();
+                hasUnsavedAdminChanges = true;
                 renderAdminArchiveLists();
             };
 
